@@ -18,7 +18,7 @@ public:
 	// Destructor
 	~Tuple();
 
-	// Attributes
+	// Properties
 	float x, y, z, w;
 
 	// Methods

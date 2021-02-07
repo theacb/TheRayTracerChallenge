@@ -3,16 +3,16 @@
 
 const float EPSILON = 0.00001f;
 
-// ------------------------------------
+// ------------------------------------------------------------------------
 // Constructors
-// ------------------------------------
+// ------------------------------------------------------------------------
 
 Tuple::Tuple()
 {
-	x = 0.0;
-	y = 0.0;
-	z = 0.0;
-	w = 0.0;
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+	w = 0.0f;
 }
 
 Tuple::Tuple(float x_axis, float y_axis, float z_axis, float w_axis)
@@ -39,6 +39,10 @@ Tuple::~Tuple()
 {
 }
 
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
 // Magnitude
 float Tuple::magnitude()
 {
@@ -58,46 +62,70 @@ Tuple Tuple::normalize()
 // Dot product
 float Tuple::dot(const Tuple & left_tuple, const Tuple & right_tuple)
 {
-	return left_tuple.x * right_tuple.x + left_tuple.y * right_tuple.y + left_tuple.z * right_tuple.z + left_tuple.w * right_tuple.w;
+	return (
+		(left_tuple.x * right_tuple.x) + 
+		(left_tuple.y * right_tuple.y) + 
+		(left_tuple.z * right_tuple.z) + 
+		(left_tuple.w * right_tuple.w)
+		);
 }
 
 Tuple Tuple::cross(const Tuple & left_tuple, const Tuple & right_tuple)
 {
 	return Tuple(
-		left_tuple.y * right_tuple.z - left_tuple.z * right_tuple.y,
-		left_tuple.z * right_tuple.x - left_tuple.x * right_tuple.z,
-		left_tuple.x * right_tuple.y - left_tuple.y * right_tuple.x,
+		(left_tuple.y * right_tuple.z) - (left_tuple.z * right_tuple.y),
+		(left_tuple.z * right_tuple.x) - (left_tuple.x * right_tuple.z),
+		(left_tuple.x * right_tuple.y) - (left_tuple.y * right_tuple.x),
 		0.0f
 
 	);
 }
 
-// ------------------------------------
+// ------------------------------------------------------------------------
 // Overloaded Operators
-// ------------------------------------
+// ------------------------------------------------------------------------
 
 // Equality
 bool operator==(const Tuple & left_tuple, const Tuple & right_tuple)
 {
-	return flt_cmp(left_tuple.x, right_tuple.x) && flt_cmp(left_tuple.y, right_tuple.y) && flt_cmp(left_tuple.z, right_tuple.z) && flt_cmp(left_tuple.w, right_tuple.w);
+	return (
+		flt_cmp(left_tuple.x, right_tuple.x) && 
+		flt_cmp(left_tuple.y, right_tuple.y) && 
+		flt_cmp(left_tuple.z, right_tuple.z) && 
+		flt_cmp(left_tuple.w, right_tuple.w)
+		);
 }
 
 // Addition
 Tuple operator+(const Tuple & left_tuple, const Tuple & right_tuple)
 {
-	return Tuple(left_tuple.x + right_tuple.x, left_tuple.y + right_tuple.y, left_tuple.z + right_tuple.z, left_tuple.w + right_tuple.w);
+	return Tuple(
+		left_tuple.x + right_tuple.x, 
+		left_tuple.y + right_tuple.y, 
+		left_tuple.z + right_tuple.z, 
+		left_tuple.w + right_tuple.w);
 }
 
 // Subtraction
 Tuple operator-(const Tuple & left_tuple, const Tuple & right_tuple)
 {
-	return Tuple(left_tuple.x - right_tuple.x, left_tuple.y - right_tuple.y, left_tuple.z - right_tuple.z, left_tuple.w - right_tuple.w);
+	return Tuple(
+		left_tuple.x - right_tuple.x, 
+		left_tuple.y - right_tuple.y, 
+		left_tuple.z - right_tuple.z, 
+		left_tuple.w - right_tuple.w
+	);
 }
 
 // Scalar Multiplication
 Tuple operator*(const Tuple & tuple, const float & scalar)
 {
-	return Tuple(tuple.x * scalar, tuple.y * scalar, tuple.z * scalar, tuple.w * scalar);
+	return Tuple(
+		tuple.x * scalar, 
+		tuple.y * scalar, 
+		tuple.z * scalar, 
+		tuple.w * scalar
+	);
 }
 
 Tuple operator*(const float & scalar, const Tuple & tuple)
@@ -109,13 +137,23 @@ Tuple operator*(const float & scalar, const Tuple & tuple)
 // Scalar Division
 Tuple operator/(const Tuple & tuple, const float & scalar)
 {
-	return Tuple(tuple.x / scalar, tuple.y / scalar, tuple.z / scalar, tuple.w / scalar);
+	return Tuple(
+		tuple.x / scalar, 
+		tuple.y / scalar, 
+		tuple.z / scalar, 
+		tuple.w / scalar
+	);
 }
 
 // Negate (Unary Minus)
 Tuple operator-(const Tuple & tuple)
 {
-	return Tuple(0 - tuple.x, 0 - tuple.y, 0 - tuple.z, 0 - tuple.w);
+	return Tuple(
+		0 - tuple.x, 
+		0 - tuple.y, 
+		0 - tuple.z, 
+		0 - tuple.w
+	);
 }
 
 // Representation with std::cout
@@ -125,9 +163,9 @@ std::ostream & operator<< (std::ostream & os, const Tuple & tuple)
 	return os;
 }
 
-// ------------------------------------
+// ------------------------------------------------------------------------
 // Helpfer Functions
-// ------------------------------------
+// ------------------------------------------------------------------------
 
 // Float Comparison
 bool flt_cmp(float left_float, float right_float)
