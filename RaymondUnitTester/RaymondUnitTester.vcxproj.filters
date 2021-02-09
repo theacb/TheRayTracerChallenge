@@ -4,30 +4,33 @@
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="..\Raymond\Canvas.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClCompile>
     <ClCompile Include="..\Raymond\Color.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClCompile>
     <ClCompile Include="..\Raymond\tuple.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="..\Raymond\Canvas.h">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\Color.h">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\tuple.h">
-      <Filter>Source Files</Filter>
+      <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Source Files">
+    <Filter Include="files_to_test">
       <UniqueIdentifier>{d5e09e9d-5c38-4464-a661-d0e4df4ac02b}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

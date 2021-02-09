@@ -2,6 +2,8 @@
 
 #include "Color.h"
 #include <vector>
+#include <fstream>
+#include <sstream> 
 
 class Canvas
 {
@@ -20,6 +22,7 @@ public:
 	// methods
 	void write_pixel(int, int, Color);
 	Color pixel_at(int, int);
+	std::stringstream to_ppm_lines(const bool);
 
 	// iterators
 	Color * begin();
@@ -36,3 +39,5 @@ private:
 
 };
 
+// File Output
+void canvas_to_ppm(Canvas, std::string);

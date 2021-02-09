@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "math.h"
+#include <sstream> 
 
 #include "../Raymond/Tuple.h"
 #include "../Raymond/Color.h"
@@ -137,10 +138,10 @@ TEST(Chapter01Tests, ComputingMagnitudeOfAVector) {
 	ASSERT_TRUE(flt_cmp(v3.magnitude(), 1.0));
 
 	Tuple v4 = Tuple::Vector(1.0f, 2.0f, 3.0f);
-	ASSERT_TRUE(flt_cmp(v4.magnitude(), sqrt(14.0)));
+	ASSERT_TRUE(flt_cmp(v4.magnitude(), sqrt(14.0f)));
 
 	Tuple v5 = Tuple::Vector(-1.0f, -2.0f, -3.0f);
-	ASSERT_TRUE(flt_cmp(v5.magnitude(), sqrt(14.0)));
+	ASSERT_TRUE(flt_cmp(v5.magnitude(), sqrt(14.0f)));
 }
 
 TEST(Chapter01Tests, NormalizingAVector) {
@@ -229,6 +230,32 @@ TEST(Chapter02Tests, MultiplyingColors) {
 	ASSERT_EQ(c1.multiply(c2), Color(0.9f, 0.2f, 0.04f));
 }
 
+TEST(Chapter02Tests, ConvertingColorToInteger) {
+	Color c = Color(1.0f, 0.2f, 0.4f);
+
+	ASSERT_EQ(Color8Bit(c), Color8Bit(255, 51, 102));
+}
+
+TEST(Chapter02Tests, ConvertingOutOfRangeColorToInteger) {
+	Color c = Color(-1.0f, 2.2f, 10.4f);
+
+	ASSERT_EQ(Color8Bit(c), Color8Bit(0, 255, 255));
+}
+
+TEST(Chapter02Tests, ConvertingLinearColorToSRGB) {
+	Color c = Color(0.5f, 0.5f, 1.0f);
+	Color con = c.convert_linear_to_srgb();
+
+	ASSERT_GT(con.magnitude(), Color(0.7f, 0.7f, 0.99f).magnitude());
+}
+
+TEST(Chapter02Tests, ConvertingSRGBToLinear) {
+	Color c = Color(0.5f, 0.5f, 1.0f);
+	Color con = c.convert_srgb_to_linear();
+
+	ASSERT_LT(con.magnitude(), Color(0.3f, 0.3f, 1.0f).magnitude());
+}
+
 TEST(Chapter02Tests, CreatingACanvas) {
 	int width = 10;
 	int height = 20;
@@ -254,4 +281,74 @@ TEST(Chapter02Tests, WritingPixelsToACanvas) {
 	c.write_pixel(x, y, red);
 
 	ASSERT_EQ(c.pixel_at(x, y), red);
+}
+
+TEST(Chapter02Tests, ConstructingThePPMPixelData) {
+
+	Canvas c = Canvas(5, 3);
+
+	Color c1 = Color(1.5f, 0.0f, 0.0f);
+	Color c2 = Color(0.0f, 0.5f, 0.0f);
+	Color c3 = Color(-0.5f, 0.0f, 1.0f);
+
+	c.write_pixel(0, 0, c1);
+	c.write_pixel(2, 1, c2);
+	c.write_pixel(4, 2, c3);
+
+	std::stringstream result = c.to_ppm_lines(false);
+
+	ASSERT_EQ(result.str(), (
+		"255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127"
+		" 0 0 0 0 0 0 0 0 0 0 \n0 0 0 0 0 0 0 0 0 0 0 255 "
+		));
+}
+
+TEST(Chapter02Tests, SplittingLongLinesInPPMFiles) {
+	int width = 10;
+	int height = 2;
+
+	Canvas c = Canvas(width, height);
+
+	Color c1 = Color(1.0f, 0.8f, 0.6f);
+
+	for (size_t y = 0; y < height; y++)
+	{
+		for (size_t x = 0; x < width; x++)
+		{
+			c.write_pixel(x, y, c1);
+		}
+	}
+
+	std::stringstream result = c.to_ppm_lines(false);
+
+	ASSERT_EQ(result.str(), (
+		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
+		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
+		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
+		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 "
+		));
+}
+
+TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
+
+	Canvas c = Canvas(10, 10);
+
+	std::string file_path = "E:\\dump\\projects\\Raymond\\frames\\PPMFilesTerminateWithNewline.ppm";
+
+	canvas_to_ppm(c, file_path);
+
+	std::ifstream input_file;
+
+	input_file.open(file_path);
+
+	char last = 'x';
+	char x;
+
+	while (!input_file.eof())
+	{
+		input_file.get(x);
+		last = x;
+	}
+
+	ASSERT_EQ(last, '\n');
 }
