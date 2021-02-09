@@ -5,6 +5,7 @@
 #include "../Raymond/Tuple.h"
 #include "../Raymond/Color.h"
 #include "../Raymond/Canvas.h"
+#include "../Raymond/Matrix.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -261,8 +262,8 @@ TEST(Chapter02Tests, CreatingACanvas) {
 	int height = 20;
 	Canvas c = Canvas(width, height);
 
-	ASSERT_EQ(c.width, width);
-	ASSERT_EQ(c.height, height);
+	ASSERT_EQ(c.width(), width);
+	ASSERT_EQ(c.height(), height);
 
 	Color black = Color();
 
@@ -298,8 +299,8 @@ TEST(Chapter02Tests, ConstructingThePPMPixelData) {
 	std::stringstream result = c.to_ppm_lines(false);
 
 	ASSERT_EQ(result.str(), (
-		"255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127"
-		" 0 0 0 0 0 0 0 0 0 0 \n0 0 0 0 0 0 0 0 0 0 0 255 "
+		"255 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 "
+		"0 0 0 0 0 0 0 \n0 0 0 0 0 0 0 0 0 0 0 0 0 0 255 "
 		));
 }
 
@@ -311,22 +312,22 @@ TEST(Chapter02Tests, SplittingLongLinesInPPMFiles) {
 
 	Color c1 = Color(1.0f, 0.8f, 0.6f);
 
-	for (size_t y = 0; y < height; y++)
+	for (int y = 0; y < height; y++)
 	{
-		for (size_t x = 0; x < width; x++)
+		for (int x = 0; x < width; x++)
 		{
 			c.write_pixel(x, y, c1);
 		}
 	}
+	std::string line;
 
 	std::stringstream result = c.to_ppm_lines(false);
 
-	ASSERT_EQ(result.str(), (
-		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
-		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
-		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 \n"
-		"255 204 153 255 204 153 255 204 153 255 204 153 255 204 153 "
-		));
+	while (!result.eof())
+	{
+		std::getline(result, line);
+		ASSERT_LT(line.size(), 68);
+	}
 }
 
 TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
@@ -351,4 +352,89 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
 	}
 
 	ASSERT_EQ(last, '\n');
+}
+
+// ------------------------------------------------------------------------
+// Chapter 03 Matrices
+// ------------------------------------------------------------------------
+
+TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) {
+
+	Matrix m = Matrix(4, 4);
+	m.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.5f, 6.5f, 7.5f, 8.5f,
+		9.0f, 10.0f, 11.0f, 12.0f,
+		13.5f, 14.5f, 15.5f, 16.5f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.get(0, 0), 1.0f));
+	ASSERT_TRUE(flt_cmp(m.get(0, 3), 4.0f));
+	ASSERT_TRUE(flt_cmp(m.get(1, 0), 5.5f));
+	ASSERT_TRUE(flt_cmp(m.get(1, 2), 7.5f));
+	ASSERT_TRUE(flt_cmp(m.get(2, 2), 11.0f));
+	ASSERT_TRUE(flt_cmp(m.get(3, 0), 13.5f));
+	ASSERT_TRUE(flt_cmp(m.get(3, 2), 15.5f));
+}
+
+TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) {
+
+	Matrix m = Matrix(2, 2);
+	m.set_multiple({
+		-3.0f, 5.0f,
+		1.0f, -2.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.get(0, 0), -3.0f));
+	ASSERT_TRUE(flt_cmp(m.get(0, 1), 5.0f));
+	ASSERT_TRUE(flt_cmp(m.get(1, 0), 1.0f));
+	ASSERT_TRUE(flt_cmp(m.get(1, 1), -2.0f));
+}
+
+TEST(Chapter03Tests, ConstructingAndInspectingAThreeByThreeMatrix) {
+
+	Matrix m = Matrix(3, 3);
+	m.set_multiple({
+		-3.0f, 5.0f, 0.0f,
+		1.0f, -2.0f, -7.0f,
+		0.0f, 1.0f, 1.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.get(0, 0), -3.0f));
+	ASSERT_TRUE(flt_cmp(m.get(1, 1), -2.0f));
+	ASSERT_TRUE(flt_cmp(m.get(2, 2), 1.0f));
+}
+
+TEST(Chapter03Tests, MatrixSizeLimitations) {
+	bool too_large_error_thrown = false;
+	bool too_small_error_thrown = false;
+
+	Matrix m = Matrix(2, 2);
+	try
+	{
+		m.set_multiple({
+		-3.0f, 5.0f, 0.0f,
+		1.0f, -2.0f, -7.0f,
+		0.0f, 1.0f, 1.0f
+			});
+	}
+	catch (std::out_of_range e)
+	{
+		too_large_error_thrown = true;
+	}
+
+	ASSERT_TRUE(too_large_error_thrown);
+
+	try
+	{
+		m.set_multiple({
+		-3.0f, 5.0f
+			});
+	}
+	catch (std::out_of_range e)
+	{
+		too_small_error_thrown = true;
+	}
+
+	ASSERT_TRUE(too_small_error_thrown);
 }

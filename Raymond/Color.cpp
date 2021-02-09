@@ -99,6 +99,8 @@ Color8Bit::Color8Bit(int red, int green, int blue)
 
 Color8Bit::Color8Bit(const Color source_color)
 {
+	// Casts the float to an integer after clipping it to the 0.0 to 1.0 range 
+	// and multiplying it by 255
 	r = static_cast<int>(clip<float>(source_color.x, 0.0f, 1.0f) * 255);
 	g = static_cast<int>(clip<float>(source_color.y, 0.0f, 1.0f) * 255);
 	b = static_cast<int>(clip<float>(source_color.z, 0.0f, 1.0f) * 255);
@@ -110,11 +112,16 @@ Color8Bit::~Color8Bit()
 
 std::string Color8Bit::output()
 {
+	// returns a string representint the channel digits seperated by spaces
+	// Examples 
+	//		0 0 0
+	//		18 2 255
+	//		255 255 255
 	return std::to_string(r) + " " + std::to_string(g) + " " + std::to_string(b) + " ";
 }
 
 // ------------------------------------------------------------------------
-// Overloaded Operators
+// External Overloaded Operators
 // ------------------------------------------------------------------------
 
 bool operator==(const Color8Bit & left_color, const Color8Bit & right_color)
@@ -139,10 +146,12 @@ std::ostream & operator<< (std::ostream & os, const Color8Bit & color)
 
 float linear_to_srgb(const float x)
 {
+	// Converts the channel from linear values to the sRGB color curve
 	return (x >= 0.0031308f) ? (1.055f * (pow(x, (1.0f / 2.4f)))) - 0.055f : 12.92f * x;
 }
 
 float srgb_to_linear(const float x)
 {
+	// Converts the channel from the sRGB color curve to linear values
 	return (x >= 0.04045f) ? pow((x +0.055f)/1.055f, 2.4f) : x / 12.92f;
 }

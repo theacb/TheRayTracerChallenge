@@ -37,7 +37,6 @@ class Color8Bit
 {
 public:
 	// Constructors
-
 	Color8Bit();
 	Color8Bit(int, int, int);
 	Color8Bit(const Color);
@@ -45,20 +44,18 @@ public:
 	~Color8Bit();
 
 	// Properties
-
-	int r, g, b;
+	unsigned r, g, b;
 
 	// Methods
 	std::string output();
 
-	// Overloaded Operators
-
-	friend bool operator==(const Color8Bit &, const Color8Bit &);
-	friend std::ostream & operator<<(std::ostream &, const Color8Bit &);
 };
 
-// Helper Functions
+// Overloaded Operators
+bool operator==(const Color8Bit &, const Color8Bit &);
+std::ostream & operator<<(std::ostream &, const Color8Bit &);
 
+// Helper Functions
 float linear_to_srgb(const float);
 float srgb_to_linear(const float);
 

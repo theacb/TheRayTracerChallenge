@@ -85,82 +85,80 @@ Tuple Tuple::cross(const Tuple & left_tuple, const Tuple & right_tuple)
 // Overloaded Operators
 // ------------------------------------------------------------------------
 
-// Equality
-bool operator==(const Tuple & left_tuple, const Tuple & right_tuple)
-{
-	return (
-		flt_cmp(left_tuple.x, right_tuple.x) && 
-		flt_cmp(left_tuple.y, right_tuple.y) && 
-		flt_cmp(left_tuple.z, right_tuple.z) && 
-		flt_cmp(left_tuple.w, right_tuple.w)
-		);
-}
-
 // Addition
-Tuple operator+(const Tuple & left_tuple, const Tuple & right_tuple)
+Tuple Tuple::operator+(Tuple const & right_tuple) const
 {
 	return Tuple(
-		left_tuple.x + right_tuple.x, 
-		left_tuple.y + right_tuple.y, 
-		left_tuple.z + right_tuple.z, 
-		left_tuple.w + right_tuple.w);
+		x + right_tuple.x, 
+		y + right_tuple.y, 
+		z + right_tuple.z, 
+		w + right_tuple.w);
 }
 
 // Subtraction
-Tuple operator-(const Tuple & left_tuple, const Tuple & right_tuple)
+Tuple Tuple::operator-(const Tuple & right_tuple) const
 {
 	return Tuple(
-		left_tuple.x - right_tuple.x, 
-		left_tuple.y - right_tuple.y, 
-		left_tuple.z - right_tuple.z, 
-		left_tuple.w - right_tuple.w
+		x - right_tuple.x, 
+		y - right_tuple.y, 
+		z - right_tuple.z, 
+		w - right_tuple.w
 	);
 }
 
 // Scalar Multiplication
-Tuple operator*(const Tuple & tuple, const float & scalar)
+Tuple Tuple::operator*(const float & scalar) const
 {
 	return Tuple(
-		tuple.x * scalar, 
-		tuple.y * scalar, 
-		tuple.z * scalar, 
-		tuple.w * scalar
+		x * scalar, 
+		y * scalar, 
+		z * scalar, 
+		w * scalar
 	);
 }
 
-Tuple operator*(const float & scalar, const Tuple & tuple)
-{
-	return tuple * scalar;
-}
-
-
 // Scalar Division
-Tuple operator/(const Tuple & tuple, const float & scalar)
+Tuple Tuple::operator/(const float & scalar) const
 {
 	return Tuple(
-		tuple.x / scalar, 
-		tuple.y / scalar, 
-		tuple.z / scalar, 
-		tuple.w / scalar
+		x / scalar, 
+		y / scalar, 
+		z / scalar, 
+		w / scalar
 	);
 }
 
 // Negate (Unary Minus)
-Tuple operator-(const Tuple & tuple)
+Tuple Tuple::operator-()
 {
 	return Tuple(
-		0 - tuple.x, 
-		0 - tuple.y, 
-		0 - tuple.z, 
-		0 - tuple.w
+		0 - x, 
+		0 - y, 
+		0 - z, 
+		0 - w
 	);
 }
+
+// ------------------------------------------------------------------------
+// External Overloaded Operators
+// ------------------------------------------------------------------------
 
 // Representation with std::cout
 std::ostream & operator<< (std::ostream & os, const Tuple & tuple)
 {
 	os << "(" << tuple.x << ", " << tuple.y << ", " << tuple.z << ", " << tuple.w << ")";
 	return os;
+}
+
+// Equality
+bool operator==(const Tuple & left_tuple, const Tuple & right_tuple)
+{
+	return (
+		flt_cmp(left_tuple.x, right_tuple.x) &&
+		flt_cmp(left_tuple.y, right_tuple.y) &&
+		flt_cmp(left_tuple.z, right_tuple.z) &&
+		flt_cmp(left_tuple.w, right_tuple.w)
+		);
 }
 
 // ------------------------------------------------------------------------

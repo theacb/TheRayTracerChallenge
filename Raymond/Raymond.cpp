@@ -33,7 +33,7 @@ void projectile_to_square(Canvas & canvas, const Projectile proj)
 	Color fill = Color(0.5f, 0.5f, 1.0f);
 
 	center_x = static_cast<int>(round(proj.position.x));
-	center_y = canvas.height - static_cast<int>(round(proj.position.y));
+	center_y = canvas.height() - static_cast<int>(round(proj.position.y));
 
 	canvas.write_pixel(center_x, center_y, fill);
 	canvas.write_pixel(center_x + 1, center_y, line);
@@ -72,12 +72,12 @@ int main()
 			projectile_to_square(c, p);
 		}
 		p = tick(p, e);
-		this_tick++;
+		++this_tick;
 	}
 
 	//std::cout << c.to_ppm_lines(false).rdbuf();
 
-	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\ProjectileDotsCh02_tenth_01.ppm");
+	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\ProjectileDotsCh02_tenth_02.ppm");
 
 	return 0;
 }

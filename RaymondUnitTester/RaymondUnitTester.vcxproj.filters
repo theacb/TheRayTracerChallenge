@@ -12,6 +12,9 @@
     <ClCompile Include="..\Raymond\tuple.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\Matrix.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -22,6 +25,9 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\tuple.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Matrix.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>

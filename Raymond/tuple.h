@@ -11,7 +11,6 @@ public:
 	Tuple(float, float, float, float);
 
 	// Factories
-
 	static Tuple Point(float, float, float);
 	static Tuple Vector(float, float, float);
 
@@ -22,7 +21,6 @@ public:
 	float x, y, z, w;
 
 	// Methods
-
 	float magnitude();
 	Tuple normalize();
 
@@ -30,15 +28,17 @@ public:
 	static Tuple cross(const Tuple &, const Tuple &);
 
 	// Overloaded Operators
-
-	friend std::ostream & operator<<(std::ostream &, const Tuple &);
-	friend bool operator==(const Tuple &, const Tuple &);
-	friend Tuple operator+(const Tuple &, const Tuple &);
-	friend Tuple operator-(const Tuple &, const Tuple &);
-	friend Tuple operator-(const Tuple &);
-	friend Tuple operator*(const float &, const Tuple &);
-	friend Tuple operator*(const Tuple &, const float &);
-	friend Tuple operator/(const Tuple &, const float &);
+	Tuple operator+(const Tuple &) const;
+	Tuple operator-();
+	Tuple operator-(const Tuple &) const;
+	Tuple operator*(const float &) const;
+	Tuple operator/(const float &) const;
+ 
 };
 
+// Overloaded Operators
+std::ostream & operator<<(std::ostream &, const Tuple &);
+bool operator==(const Tuple &, const Tuple &);
+
+// Helper Functions
 bool flt_cmp(float, float);
