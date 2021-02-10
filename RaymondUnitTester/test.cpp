@@ -438,3 +438,169 @@ TEST(Chapter03Tests, MatrixSizeLimitations) {
 
 	ASSERT_TRUE(too_small_error_thrown);
 }
+
+
+TEST(Chapter03Tests, MatrixOutOfBoundsIndices) {
+	bool x_error_thrown = false;
+	bool y_error_thrown = false;
+
+	Matrix m = Matrix(2, 2);
+	try
+	{
+		m.get(0, 10);
+	}
+	catch (std::out_of_range e)
+	{
+		x_error_thrown = true;
+	}
+
+	ASSERT_TRUE(x_error_thrown);
+
+	try
+	{
+		m.get(10, 0);
+	}
+	catch (std::out_of_range e)
+	{
+		y_error_thrown = true;
+	}
+
+	ASSERT_TRUE(y_error_thrown);
+}
+
+TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) {
+
+	Matrix m1 = Matrix(4, 4);
+	Matrix m2 = Matrix(4, 4);
+	m1.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 4.0f, 3.0f, 2.0f
+		});
+
+	m2.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 4.0f, 3.0f, 2.0f
+		});
+
+	
+	ASSERT_EQ(m1, m2);
+}
+
+TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) {
+
+	Matrix m1 = Matrix(4, 4);
+	Matrix m2 = Matrix(4, 4);
+	m1.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 4.0f, 3.0f, 2.0f
+		});
+
+	m2.set_multiple({
+		5.0f, 4.0f, 3.0f, 2.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		1.0f, 2.0f, 3.0f, 4.0f
+		});
+
+
+	ASSERT_NE(m1, m2);
+}
+
+TEST(Chapter03Tests, MatrixInequalityWithDifferentSizedMatrices) {
+
+	Matrix m1 = Matrix(4, 4);
+	Matrix m2 = Matrix(2, 2);
+	m1.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 4.0f, 3.0f, 2.0f
+		});
+
+	m2.set_multiple({
+		1.0f, 2.0f,
+		3.0f, 4.0f
+		});
+
+
+	ASSERT_NE(m1, m2);
+}
+
+TEST(Chapter03Tests, Matrix4Multiplication) {
+
+	Matrix4 m1 = Matrix4();
+	Matrix4 m2 = Matrix4();
+	Matrix4 result = Matrix4();
+
+	m1.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		5.0f, 6.0f, 7.0f, 8.0f,
+		9.0f, 8.0f, 7.0f, 6.0f,
+		5.0f, 4.0f, 3.0f, 2.0f
+		});
+
+	m2.set_multiple({
+		-2.0f, 1.0f, 2.0f, 3.0f,
+		3.0f, 2.0f, 1.0f, -1.0f,
+		4.0f, 3.0f, 6.0f, 5.0f,
+		1.0f, 2.0f, 7.0f, 8.0f
+		});
+
+	result.set_multiple({
+		20.0f, 22.0f, 50.0f, 48.0f,
+		44.0f, 54.0f, 114.0f, 108.0f,
+		40.0f, 58.0f, 110.0f, 102.0f,
+		16.0f, 26.0f, 46.0f, 42.0f
+		});
+
+
+	ASSERT_EQ((m1 * m2), result) << (m1 * m2);
+}
+
+TEST(Chapter03Tests, Matrix4MultupliedWithATuple) {
+
+	Matrix4 m = Matrix4();
+
+	m.set_multiple({
+		1.0f, 2.0f, 3.0f, 4.0f,
+		2.0f, 4.0f, 4.0f, 2.0f,
+		8.0f, 6.0f, 4.0f, 1.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+		});
+
+	Tuple t = Tuple(1.0f, 2.0f, 3.0f, 1.0f);
+
+
+	ASSERT_EQ((m * t), Tuple(18.0f, 24.0f, 33.0f, 1.0f));
+}
+
+TEST(Chapter03Tests, MultiplyingAMatrix4ByTheIdentityMatrix) {
+
+	Matrix4 m = Matrix4();
+
+	m.set_multiple({
+		0.0f, 1.0f, 2.0f, 4.0f,
+		1.0f, 2.0f, 4.0f, 8.0f,
+		2.0f, 4.0f, 8.0f, 16.0f,
+		4.0f, 8.0f, 16.0f, 32.0f
+		});
+
+	Matrix4 identity = Matrix4::Identity();
+
+	ASSERT_EQ((m * identity), m);
+}
+
+TEST(Chapter03Tests, MultiplyingATupleByTheIdentityMatrix) {
+
+	Tuple t = Tuple(1, 2, 3, 4);
+
+	Matrix4 identity = Matrix4::Identity();
+
+	ASSERT_EQ((identity * t), t);
+}

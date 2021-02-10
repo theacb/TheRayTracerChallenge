@@ -67,7 +67,7 @@ std::stringstream Canvas::to_ppm_lines(const bool convert_toSRGB)
 		}
 		// The color is first converetd to sRGB, then to 8Bit, then to a string.
 		std::string converted_color = Color8Bit(cc).output();
-		int length = converted_color.length();
+		size_t length = converted_color.length();
 
 		// The maximum line length is 70 characters (68 + \n)
 		// A newline character is inserted.
@@ -119,13 +119,11 @@ Color * Canvas::end()
 // ------------------------------------------------------------------------
 Color Canvas::c_get_element_(int x, int y)
 {
-	// Return color at coordinates using a function that converts x,y to index
 	return c_pixels_.at(c_index_from_coordinates_(x, y));
 }
 
 void Canvas::c_set_element_(int x, int y, Color color)
 {
-	// Assign color at coordinates using a function that converts x,y to index
 	c_pixels_.at(c_index_from_coordinates_(x, y)) = color;
 }
 

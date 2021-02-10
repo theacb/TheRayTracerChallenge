@@ -39,6 +39,7 @@ public:
 // Overloaded Operators
 std::ostream & operator<<(std::ostream &, const Tuple &);
 bool operator==(const Tuple &, const Tuple &);
+bool operator!=(const Tuple &, const Tuple &);
 
 // Helper Functions
-bool flt_cmp(float, float);
+bool flt_cmp(const float &, const float &);

@@ -53,6 +53,7 @@ public:
 
 // Overloaded Operators
 bool operator==(const Color8Bit &, const Color8Bit &);
+bool operator!=(const Color8Bit &, const Color8Bit &);
 std::ostream & operator<<(std::ostream &, const Color8Bit &);
 
 // Helper Functions

@@ -133,6 +133,11 @@ bool operator==(const Color8Bit & left_color, const Color8Bit & right_color)
 		);
 }
 
+bool operator!=(const Color8Bit & left_color, const Color8Bit & right_color)
+{
+	return ! (left_color == right_color);
+}
+
 // Representation with std::cout
 std::ostream & operator<< (std::ostream & os, const Color8Bit & color)
 {

@@ -161,12 +161,17 @@ bool operator==(const Tuple & left_tuple, const Tuple & right_tuple)
 		);
 }
 
+bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple)
+{
+	return !(left_tuple == right_tuple);
+}
+
 // ------------------------------------------------------------------------
 // Helpfer Functions
 // ------------------------------------------------------------------------
 
 // Float Comparison
-bool flt_cmp(float left_float, float right_float)
+bool flt_cmp(const float & left_float, const float & right_float)
 {
 	return fabs(left_float - right_float) < EPSILON;
 }
