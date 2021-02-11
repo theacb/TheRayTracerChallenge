@@ -11,21 +11,21 @@
 // ------------------------------------------------------------------------
 
 // Optional parameter for a fill value
-Matrix::Matrix(int rows, int columns, float fill)
+Matrix::Matrix(int side, float fill)
 {
-	this->m_num_columns_ = rows;
-	this->m_num_rows_ = columns;
+	this->m_num_columns_ = side;
+	this->m_num_rows_ = side;
 
-	this->m_data_.resize(rows * columns, fill);
+	this->m_data_.resize(side * side, fill);
 }
 
-Matrix::Matrix(int rows, int columns, const std::vector<float> values)
+Matrix::Matrix(int side, const std::vector<float> values)
 {
-	this->m_num_columns_ = rows;
-	this->m_num_rows_ = columns;
+	this->m_num_columns_ = side;
+	this->m_num_rows_ = side;
 
 	// Check vector size before replacing it.
-	if (values.size() == rows * columns)
+	if (values.size() == side * side)
 		this->m_data_ = values;
 	else
 	{
@@ -40,7 +40,7 @@ Matrix::Matrix(int rows, int columns, const std::vector<float> values)
 	}
 }
 
-Matrix::Matrix(int rows, int columns): Matrix(rows, columns, 0.0f)
+Matrix::Matrix(int side): Matrix(side, 0.0f)
 {
 }
 
@@ -53,9 +53,9 @@ Matrix::~Matrix()
 // Factories
 // ------------------------------------------------------------------------
 
-Matrix Matrix::Identity(int rows, int columns)
+Matrix Matrix::Identity(int side)
 {
-	Matrix result = Matrix(rows, columns);
+	Matrix result = Matrix(side);
 	result.generate_identity();
 	return result;
 }
@@ -78,6 +78,21 @@ float Matrix::get(int row, int col)
 			std::to_string(row) +
 			"), is not within the bounds of the matrix."
 		);
+}
+
+float Matrix::get(int row, int col) const
+{
+	return this->get(row, col);
+}
+
+float & Matrix::get(int index)
+{
+	return this->m_data_[index];
+}
+
+float Matrix::get(int index) const
+{
+	return this->m_data_[index];
 }
 
 // At() wrappers
@@ -112,7 +127,7 @@ std::vector<float> Matrix::get_column(int col) const
 	// using the number of rows as an offset
 	for (int i = 0; i < this->m_num_rows_; i++)
 	{
-		result.at(i) = this->m_data_[col + (this->m_num_rows_ * i)];
+		result[i] = this->m_data_[col + (this->m_num_rows_ * i)];
 	}
 
 	return result;
@@ -138,6 +153,11 @@ void Matrix::set(int row, int col, float value)
 		this->m_data_[m_index_from_coordinates_(row, col)] = value;
 }
 
+void Matrix::set(int index, float value)
+{
+	this->m_data_[index] = value;
+}
+
 // Set the data of the matrix by passing in a vector with each row in series.
 void Matrix::set_multiple(const std::vector<float> values)
 {
@@ -156,22 +176,6 @@ void Matrix::set_multiple(const std::vector<float> values)
 		);
 	}
 
-}
-
-// Turns columns into rows and rows into columns
-Matrix Matrix::transpose()
-{
-	Matrix result = Matrix(this->m_num_columns_, this->m_num_rows_);
-
-	for (int r = 0; r < this->m_num_rows_; r++)
-	{
-		for (int c = 0; c < this->m_num_columns_; c++)
-		{
-			result.at((c * this->get_num_columns()) + r) = this->m_data_[(r * this->m_num_rows_) + c];
-		}
-	}
-
-	return result;
 }
 
 // Overwite the Matrix with the Identity matrix
@@ -196,14 +200,28 @@ void Matrix::generate_identity()
 	}
 }
 
+// Turns columns into rows and rows into columns
+Matrix Matrix::transpose()
+{
+	Matrix result = Matrix(this->m_num_columns_, this->m_num_rows_);
+
+	for (int r = 0; r < this->m_num_rows_; r++)
+	{
+		for (int c = 0; c < this->m_num_columns_; c++)
+		{
+			result.set((c * this->get_num_columns()) + r, this->m_data_[(r * this->m_num_rows_) + c]);
+		}
+	}
+
+	return result;
+}
+
 std::vector<float> Matrix::sub_matrix_vector(int remove_row, int remove_col) const
 {
 	// Check that the requested row and column are in bounds
 	if (
 		remove_row >= 0 && 
-		remove_row < this->m_num_rows_ && 
-		remove_col >= 0 && 
-		remove_col < this->m_num_columns_
+		remove_row < this->m_num_rows_
 		)
 	{
 		// Create a new vector which is smaller by 1 row and 1 column
@@ -255,10 +273,49 @@ Matrix Matrix::sub_matrix(int remove_row, int remove_col) const
 {
 	return Matrix(
 		this->m_num_rows_ - 1, 
-		this->m_num_columns_ - 1, 
 		this->sub_matrix_vector(remove_row, remove_col)
 	);
 }
+
+// Minor
+float Matrix::minor(int row, int col) const
+{
+	// Determinant of the submatrix
+	return (this->sub_matrix(row, col)).determinant();
+}
+
+float Matrix::cofactor(int row, int col) const
+{
+	float minor = this->minor(row, col);
+	if (((row + col) % 2) == 0)
+	{
+		return minor;
+	}
+	else
+	{
+		return -minor;
+	}
+}
+
+float Matrix::determinant() const
+{
+	if (this->m_num_columns_ == 2)
+	{
+		return (this->m_data_[0] * this->m_data_[3]) - (this->m_data_[1] * this->m_data_[2]);
+	}
+	else
+	{
+		float result = 0.0f;
+		for (int i = 0; i < this->get_num_columns(); i++)
+		{
+			float element = this->m_data_[i];
+			float det = this->cofactor(0, i);
+
+			result += (element * det);
+		}
+		return result;
+	}
+	}
 
 // iterators
 // Allows iteration access to the underlying vector
@@ -280,6 +337,11 @@ float * Matrix::end()
 const float * Matrix::end() const
 {
 	return this->m_data_.data() + this->m_data_.size();
+}
+
+float & Matrix::operator[](int index)
+{
+	return this->m_data_[index];
 }
 
 // Private
@@ -362,15 +424,15 @@ bool operator!=(const Matrix & left_matrix, const Matrix & right_matrix)
 // Constructors
 // ------------------------------------------------------------------------
 
-Matrix2::Matrix2() : Matrix(2, 2)
+Matrix2::Matrix2() : Matrix(2)
 {
 }
 
-Matrix2::Matrix2(float fill) : Matrix(2, 2, fill)
+Matrix2::Matrix2(float fill) : Matrix(2, fill)
 {
 }
 
-Matrix2::Matrix2(const std::vector<float> v) : Matrix(2, 2, v)
+Matrix2::Matrix2(const std::vector<float> v) : Matrix(2, v)
 {
 }
 
@@ -393,8 +455,8 @@ std::vector<float> Matrix2::get_row(int row) const
 {
 	int num_col = this->get_num_columns();
 	float x, y;
-	x = this->at(row * num_col);
-	y = this->at((row * num_col) + 1);
+	x = this->get(row * num_col);
+	y = this->get((row * num_col) + 1);
 	return { x, y };
 }
 
@@ -402,14 +464,14 @@ std::vector<float> Matrix2::get_column(int col) const
 {
 	int num_row = this->get_num_rows();
 	float x, y;
-	x = this->at(col);
-	y = this->at(col + num_row);
+	x = this->get(col);
+	y = this->get(col + num_row);
 	return { x, y };
 }
 
 float Matrix2::determinant() const
 {
-	return (this->at(0) * this->at(3)) - (this->at(1) * this->at(2));
+	return (this->get(0) * this->get(3)) - (this->get(1) * this->get(2));
 }
 
 // ------------------------------------------------------------------------
@@ -420,15 +482,15 @@ float Matrix2::determinant() const
 // Constructors
 // ------------------------------------------------------------------------
 
-Matrix3::Matrix3() : Matrix(3, 3)
+Matrix3::Matrix3() : Matrix(3)
 {
 }
 
-Matrix3::Matrix3(float fill) : Matrix(3, 3, fill)
+Matrix3::Matrix3(float fill) : Matrix(3, fill)
 {
 }
 
-Matrix3::Matrix3(const std::vector<float> v) : Matrix(3, 3, v)
+Matrix3::Matrix3(const std::vector<float> v) : Matrix(3, v)
 {
 }
 
@@ -451,9 +513,9 @@ std::vector<float> Matrix3::get_row(int row) const
 {
 	int num_col = this->get_num_columns();
 	float x, y, z;
-	x = this->at(row * num_col);
-	y = this->at((row * num_col) + 1);
-	z = this->at((row * num_col) + 2);
+	x = this->get(row * num_col);
+	y = this->get((row * num_col) + 1);
+	z = this->get((row * num_col) + 2);
 	return { x, y, z };
 }
 
@@ -461,9 +523,9 @@ std::vector<float> Matrix3::get_column(int col) const
 {
 	int num_row = this->get_num_rows();
 	float x, y, z;
-	x = this->at(col);
-	y = this->at(col + num_row);
-	z = this->at(col + (num_row * 2));
+	x = this->get(col);
+	y = this->get(col + num_row);
+	z = this->get(col + (num_row * 2));
 	return { x, y, z };
 }
 
@@ -498,7 +560,7 @@ float Matrix3::determinant() const
 	float result = 0.0f;
 	for (int i = 0; i < this->get_num_columns(); i++)
 	{
-		float element = this->at(i);
+		float element = this->get(i);
 		float det = this->cofactor(0, i);
 
 		result += (element * det);
@@ -514,15 +576,15 @@ float Matrix3::determinant() const
 // Constructors
 // ------------------------------------------------------------------------
 
-Matrix4::Matrix4(): Matrix(4, 4)
+Matrix4::Matrix4(): Matrix(4)
 {
 }
 
-Matrix4::Matrix4(float fill) : Matrix(4, 4, fill)
+Matrix4::Matrix4(float fill) : Matrix(4, fill)
 {
 }
 
-Matrix4::Matrix4(const std::vector<float> v) : Matrix(4, 4, v)
+Matrix4::Matrix4(const std::vector<float> v) : Matrix(4, v)
 {
 }
 
@@ -545,10 +607,10 @@ std::vector<float> Matrix4::get_row(int row) const
 {
 	int num_col = this->get_num_columns();
 	float x, y, z, w;
-	x = this->at(row * num_col);
-	y = this->at((row * num_col) + 1);
-	z = this->at((row * num_col) + 2);
-	w = this->at((row * num_col) + 3);
+	x = this->get(row * num_col);
+	y = this->get((row * num_col) + 1);
+	z = this->get((row * num_col) + 2);
+	w = this->get((row * num_col) + 3);
 	return { x, y, z, w };
 }
 
@@ -556,10 +618,10 @@ std::vector<float> Matrix4::get_column(int col) const
 {
 	int num_row = this->get_num_rows();
 	float x, y, z, w;
-	x = this->at(col);
-	y = this->at(col + num_row);
-	z = this->at(col + (num_row * 2));
-	w = this->at(col + (num_row * 3));
+	x = this->get(col);
+	y = this->get(col + num_row);
+	z = this->get(col + (num_row * 2));
+	w = this->get(col + (num_row * 3));
 	return { x, y, z, w };
 }
 
@@ -567,10 +629,10 @@ Tuple Matrix4::get_row_tuple(int row) const
 {
 	int num_col = this->get_num_columns();
 	float x, y, z, w;
-	x = this->at(row * num_col);
-	y = this->at((row * num_col) + 1);
-	z = this->at((row * num_col) + 2);
-	w = this->at((row * num_col) + 3);
+	x = this->get(row * num_col);
+	y = this->get((row * num_col) + 1);
+	z = this->get((row * num_col) + 2);
+	w = this->get((row * num_col) + 3);
 	return Tuple(x, y, z, w);
 }
 
@@ -578,10 +640,10 @@ Tuple Matrix4::get_column_tuple(int col) const
 {
 	int num_row = this->get_num_rows();
 	float x, y, z, w;
-	x = this->at(col);
-	y = this->at(col + num_row);
-	z = this->at(col + (num_row * 2));
-	w = this->at(col + (num_row * 3));
+	x = this->get(col);
+	y = this->get(col + num_row);
+	z = this->get(col + (num_row * 2));
+	w = this->get(col + (num_row * 3));
 	return Tuple(x, y, z, w);
 }
 
@@ -615,7 +677,7 @@ float Matrix4::determinant() const
 	float result = 0.0f;
 	for (int i = 0; i < this->get_num_columns(); i++)
 	{
-		float element = this->at(i);
+		float element = this->get(i);
 		float det = this->cofactor(0, i);
 
 		result += (element * det);
@@ -644,7 +706,7 @@ Matrix4 Matrix4::operator*(const Matrix4 & right_matrix) const
 			float dot_product = Tuple::dot(row, col);
 
 			// Set the result of the dot product to the position in the new Matrix
-			result.at((r * this->get_num_rows()) + c) = dot_product;
+			result.set((r * this->get_num_rows()) + c, dot_product);
 		}
 	};
 

@@ -11,17 +11,20 @@ class Matrix
 {
 public:
 	// Constructors
-	Matrix(int, int, float);
-	Matrix(int, int, std::vector<float>);
-	Matrix(int, int);
+	Matrix(int, float);
+	Matrix(int, std::vector<float>);
+	Matrix(int);
 	~Matrix();
 
 	// Factories
-	static Matrix Identity(int, int);
+	static Matrix Identity(int);
 
 	//Methods
 	// Accessors
 	float get(int, int);
+	float get(int, int) const;
+	float& get(int);
+	float get(int) const;
 	float& at(int);
 	float at(int) const;
 
@@ -32,18 +35,26 @@ public:
 	int get_num_rows() const;
 
 	void set(int, int, float);
+	void set(int, float);
 	void set_multiple(const std::vector<float>);
 
-	Matrix transpose();
 	void generate_identity();
+
+	Matrix transpose();
 	std::vector<float> sub_matrix_vector(int, int) const;
 	Matrix sub_matrix(int, int) const;
+	float minor(int, int) const;
+	float cofactor(int, int) const;
+	float determinant() const;
 
 	// iterators
 	float * begin();
 	const float * begin() const;
 	float * end();
 	const float * end() const;
+
+	// Overloaded Operators
+	float& operator[](int index);
 
 	// Friendly Overloaded Operators
 	friend std::ostream & operator<<(std::ostream &, const Matrix &);

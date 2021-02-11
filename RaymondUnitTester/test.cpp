@@ -360,7 +360,7 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
 
 TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) {
 
-	Matrix m = Matrix(4, 4);
+	Matrix m = Matrix(4);
 	m.set_multiple({
 		1.0f, 2.0f, 3.0f, 4.0f,
 		5.5f, 6.5f, 7.5f, 8.5f,
@@ -379,7 +379,7 @@ TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) {
 
 TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) {
 
-	Matrix m = Matrix(2, 2);
+	Matrix m = Matrix(2);
 	m.set_multiple({
 		-3.0f, 5.0f,
 		1.0f, -2.0f
@@ -393,7 +393,7 @@ TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) {
 
 TEST(Chapter03Tests, ConstructingAndInspectingAThreeByThreeMatrix) {
 
-	Matrix m = Matrix(3, 3);
+	Matrix m = Matrix(3);
 	m.set_multiple({
 		-3.0f, 5.0f, 0.0f,
 		1.0f, -2.0f, -7.0f,
@@ -409,7 +409,7 @@ TEST(Chapter03Tests, MatrixSizeLimitations) {
 	bool too_large_error_thrown = false;
 	bool too_small_error_thrown = false;
 
-	Matrix m = Matrix(2, 2);
+	Matrix m = Matrix(2);
 	try
 	{
 		m.set_multiple({
@@ -444,7 +444,7 @@ TEST(Chapter03Tests, MatrixOutOfBoundsIndices) {
 	bool x_error_thrown = false;
 	bool y_error_thrown = false;
 
-	Matrix m = Matrix(2, 2);
+	Matrix m = Matrix(2);
 	try
 	{
 		m.get(0, 10);
@@ -470,8 +470,8 @@ TEST(Chapter03Tests, MatrixOutOfBoundsIndices) {
 
 TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) {
 
-	Matrix m1 = Matrix(4, 4);
-	Matrix m2 = Matrix(4, 4);
+	Matrix m1 = Matrix(4);
+	Matrix m2 = Matrix(4);
 	m1.set_multiple({
 		1.0f, 2.0f, 3.0f, 4.0f,
 		5.0f, 6.0f, 7.0f, 8.0f,
@@ -492,8 +492,8 @@ TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) {
 
 TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) {
 
-	Matrix m1 = Matrix(4, 4);
-	Matrix m2 = Matrix(4, 4);
+	Matrix m1 = Matrix(4);
+	Matrix m2 = Matrix(4);
 	m1.set_multiple({
 		1.0f, 2.0f, 3.0f, 4.0f,
 		5.0f, 6.0f, 7.0f, 8.0f,
@@ -514,8 +514,8 @@ TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) {
 
 TEST(Chapter03Tests, MatrixInequalityWithDifferentSizedMatrices) {
 
-	Matrix m1 = Matrix(4, 4);
-	Matrix m2 = Matrix(2, 2);
+	Matrix m1 = Matrix(4);
+	Matrix m2 = Matrix(2);
 	m1.set_multiple({
 		1.0f, 2.0f, 3.0f, 4.0f,
 		5.0f, 6.0f, 7.0f, 8.0f,
@@ -677,7 +677,7 @@ TEST(Chapter03Tests, ASubMatrixOfAMatrix3IsAMatrix2) {
 
 TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) {
 
-	Matrix m = Matrix(5, 5, {
+	Matrix m = Matrix(5, {
 		1.0f, 5.0f, 0.0f, 1.0f, 2.0f,
 		-3.0f, 2.0f, 7.0f, 3.0f, 5.0f,
 		0.0f, 6.0f, -3.0f, 4.0f, 6.0f,
@@ -758,3 +758,15 @@ TEST(Chapter03Tests, DeterminantOfAMatrix4) {
 	ASSERT_TRUE(flt_cmp(m.determinant(), -4071.0f));
 }
 
+TEST(Chapter03Tests, DeterminantOfAnArbitrarySizedMatrix) {
+
+	Matrix m = Matrix(5, {
+		1.0f, 5.0f, 0.0f, 1.0f, 2.0f,
+		-3.0f, 2.0f, 7.0f, 3.0f, 5.0f,
+		0.0f, 6.0f, -3.0f, 4.0f, 6.0f,
+		-1.0f, -2.0f, -3.0f, -4.0f, -5.0f,
+		6.0f, 7.0f, 8.0f, 9.0f, 10.0f
+		});
+
+	ASSERT_EQ(m.determinant(), -405.0f) << m.determinant();
+}
