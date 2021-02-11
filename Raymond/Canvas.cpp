@@ -67,7 +67,7 @@ std::stringstream Canvas::to_ppm_lines(const bool convert_toSRGB)
 		}
 		// The color is first converetd to sRGB, then to 8Bit, then to a string.
 		std::string converted_color = Color8Bit(cc).output();
-		size_t length = converted_color.length();
+		int length = static_cast<int>(converted_color.length());
 
 		// The maximum line length is 70 characters (68 + \n)
 		// A newline character is inserted.

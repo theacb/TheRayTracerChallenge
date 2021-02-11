@@ -12,6 +12,7 @@ class Matrix
 public:
 	// Constructors
 	Matrix(int, int, float);
+	Matrix(int, int, std::vector<float>);
 	Matrix(int, int);
 	~Matrix();
 
@@ -23,13 +24,20 @@ public:
 	float get(int, int);
 	float& at(int);
 	float at(int) const;
+
+	virtual std::vector<float> get_row(int) const;
+	virtual std::vector<float> get_column(int) const;
+
 	int get_num_columns() const;
 	int get_num_rows() const;
 
 	void set(int, int, float);
 	void set_multiple(const std::vector<float>);
 
+	Matrix transpose();
 	void generate_identity();
+	std::vector<float> sub_matrix_vector(int, int) const;
+	Matrix sub_matrix(int, int) const;
 
 	// iterators
 	float * begin();
@@ -51,10 +59,48 @@ private:
 	int m_index_from_coordinates_(int, int);
 };
 
+class Matrix2 :
+	public Matrix
+{
+public:
+	// Constructors
+	Matrix2();
+	Matrix2(float);
+	Matrix2(const std::vector<float>);
+
+	// Factories
+	static Matrix2 Identity();
+
+	// Methods
+	std::vector<float> get_row(int) const;
+	std::vector<float> get_column(int) const;
+	float determinant() const;
+};
+
+class Matrix3 :
+	public Matrix
+{
+public:
+	// Constructors
+	Matrix3();
+	Matrix3(float);
+	Matrix3(const std::vector<float>);
+
+	// Factories
+	static Matrix3 Identity();
+
+	// Methods
+	std::vector<float> get_row(int) const;
+	std::vector<float> get_column(int) const;
+
+	Matrix2 sub_matrix3(int, int) const;
+};
+
 class Matrix4 :
 	public Matrix
 {
 public:
+	// Constructors
 	Matrix4();
 	Matrix4(float);
 	Matrix4(const std::vector<float>);
@@ -63,8 +109,12 @@ public:
 	static Matrix4 Identity();
 
 	// Methods
-	Tuple get_row(int) const;
-	Tuple get_col(int) const;
+	std::vector<float> get_row(int) const;
+	std::vector<float> get_column(int) const;
+	Tuple get_row_tuple(int) const;
+	Tuple get_column_tuple(int) const;
+
+	Matrix3 sub_matrix4(int, int) const;
 
 	// Overloaded Operators
 	Matrix4 operator*(const Matrix4 &) const;

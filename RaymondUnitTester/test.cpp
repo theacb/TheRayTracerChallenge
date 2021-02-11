@@ -576,7 +576,6 @@ TEST(Chapter03Tests, Matrix4MultupliedWithATuple) {
 
 	Tuple t = Tuple(1.0f, 2.0f, 3.0f, 1.0f);
 
-
 	ASSERT_EQ((m * t), Tuple(18.0f, 24.0f, 33.0f, 1.0f));
 }
 
@@ -603,4 +602,97 @@ TEST(Chapter03Tests, MultiplyingATupleByTheIdentityMatrix) {
 	Matrix4 identity = Matrix4::Identity();
 
 	ASSERT_EQ((identity * t), t);
+}
+
+TEST(Chapter03Tests, TransposingAMatrix4) {
+
+	Matrix4 m = Matrix4();
+
+	m.set_multiple({
+		0.0f, 9.0f, 3.0f, 0.0f,
+		9.0f, 8.0f, 0.0f, 8.0f,
+		1.0f, 8.0f, 5.0f, 3.0f,
+		0.0f, 0.0f, 5.0f, 8.0f
+		});
+
+	Matrix4 result = Matrix4();
+
+	result.set_multiple({
+		0.0f, 9.0f, 1.0f, 0.0f,
+		9.0f, 8.0f, 8.0f, 0.0f,
+		3.0f, 0.0f, 5.0f, 5.0f,
+		0.0f, 8.0f, 3.0f, 8.0f
+		});
+
+	ASSERT_EQ(m.transpose(), result);
+}
+
+TEST(Chapter03Tests, DeterminateOfAMatrix2) {
+
+	Matrix2 m = Matrix2({
+		1.0f, 5.0f,
+		-3.0f, 2.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.determinant(), 17.0f));
+}
+
+TEST(Chapter03Tests, ASubMatrixOfAMatrix4IsAMatrix3) {
+
+	Matrix4 m = Matrix4({
+		-6.0f, 1.0f, 1.0f, 6.0f,
+		-8.0f, 5.0f, 8.0f, 6.0f,
+		-1.0f, 0.0f, 8.0f, 2.0f,
+		-7.0f, 1.0f, -1.0f, 1.0f
+		});
+
+	Matrix3 expected_result = Matrix3({
+		-6.0f, 1.0f, 6.0f,
+		-8.0f, 8.0f, 6.0f,
+		-7.0f, -1.0f, 1.0f
+		});
+
+	Matrix3 result = m.sub_matrix4(2, 1);
+
+	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
+}
+
+TEST(Chapter03Tests, ASubMatrixOfAMatrix3IsAMatrix2) {
+
+	Matrix3 m = Matrix3({
+		1.0f, 5.0f, 0.0f,
+		-3.0f, 2.0f, 7.0f,
+		0.0f, 6.0f, -3.0f
+		});
+
+	Matrix2 expected_result = Matrix2({
+		-3.0f, 2.0f,
+		-0.0f, 6.0f,
+		});
+
+	Matrix2 result = m.sub_matrix3(0, 2);
+
+	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
+}
+
+TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) {
+
+	Matrix m = Matrix(5, 5, {
+		1.0f, 5.0f, 0.0f, 1.0f, 2.0f,
+		-3.0f, 2.0f, 7.0f, 3.0f, 5.0f,
+		0.0f, 6.0f, -3.0f, 4.0f, 6.0f,
+		-1.0f, -2.0f, -3.0f, -4.0f, -5.0f,
+		6.0f, 7.0f, 8.0f, 9.0f, 10.0f
+		});
+
+	Matrix4 expected_result = Matrix4({
+		1.0f, 0.0f, 1.0f, 2.0f,
+		-3.0f, 7.0f, 3.0f, 5.0f,
+		-1.0f, -3.0f, -4.0f, -5.0f,
+		6.0f, 8.0f, 9.0f, 10.0f
+		});
+
+	Matrix result = m.sub_matrix(2, 1);
+
+	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
 }
