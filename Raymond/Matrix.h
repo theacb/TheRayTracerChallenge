@@ -94,6 +94,9 @@ public:
 	std::vector<float> get_column(int) const;
 
 	Matrix2 sub_matrix3(int, int) const;
+	float minor(int, int) const;
+	float cofactor(int, int) const;
+	float determinant() const;
 };
 
 class Matrix4 :
@@ -115,6 +118,10 @@ public:
 	Tuple get_column_tuple(int) const;
 
 	Matrix3 sub_matrix4(int, int) const;
+
+	float minor(int, int) const;
+	float cofactor(int, int) const;
+	float determinant() const;
 
 	// Overloaded Operators
 	Matrix4 operator*(const Matrix4 &) const;

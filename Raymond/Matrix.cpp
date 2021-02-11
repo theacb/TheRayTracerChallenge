@@ -467,9 +467,43 @@ std::vector<float> Matrix3::get_column(int col) const
 	return { x, y, z };
 }
 
+// Submatrix
 Matrix2 Matrix3::sub_matrix3(int remove_row, int remove_col) const
 {
 	return Matrix2(this->sub_matrix_vector(remove_row, remove_col));
+}
+
+// Minor
+float Matrix3::minor(int row, int col) const
+{
+	// Determinant of the submatrix
+	return (this->sub_matrix3(row, col)).determinant();
+}
+
+float Matrix3::cofactor(int row, int col) const
+{
+	float minor = this->minor(row, col);
+	if (((row + col) % 2) == 0)
+	{
+		return minor;
+	}
+	else
+	{
+		return -minor;
+	}
+}
+
+float Matrix3::determinant() const
+{
+	float result = 0.0f;
+	for (int i = 0; i < this->get_num_columns(); i++)
+	{
+		float element = this->at(i);
+		float det = this->cofactor(0, i);
+
+		result += (element * det);
+	}
+	return result;
 }
 
 // ------------------------------------------------------------------------
@@ -554,6 +588,39 @@ Tuple Matrix4::get_column_tuple(int col) const
 Matrix3 Matrix4::sub_matrix4(int remove_row, int remove_col) const
 {
 	return Matrix3(this->sub_matrix_vector(remove_row, remove_col));
+}
+
+// Minor
+float Matrix4::minor(int row, int col) const
+{
+	// Determinant of the submatrix
+	return (this->sub_matrix4(row, col)).determinant();
+}
+
+float Matrix4::cofactor(int row, int col) const
+{
+	float minor = this->minor(row, col);
+	if (((row + col) % 2) == 0)
+	{
+		return minor;
+	}
+	else
+	{
+		return -minor;
+	}
+}
+
+float Matrix4::determinant() const
+{
+	float result = 0.0f;
+	for (int i = 0; i < this->get_num_columns(); i++)
+	{
+		float element = this->at(i);
+		float det = this->cofactor(0, i);
+
+		result += (element * det);
+	}
+	return result;
 }
 
 // ------------------------------------------------------------------------

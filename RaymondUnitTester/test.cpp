@@ -696,3 +696,65 @@ TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) {
 
 	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
 }
+
+TEST(Chapter03Tests, MinorOfAMatrix3) {
+
+	Matrix3 m = Matrix3({
+		3.0f, 5.0f, 0.0f,
+		2.0f, -1.0f, -7.0f,
+		6.0f, -1.0f, 5.0f
+		});
+
+	float det = (m.sub_matrix3(1, 0)).determinant();
+	float min = m.minor(1, 0);
+
+	ASSERT_TRUE(flt_cmp(det, min));
+}
+
+TEST(Chapter03Tests, CofactorOfAMatrix3) {
+
+	Matrix3 m = Matrix3({
+		3.0f, 5.0f, 0.0f,
+		2.0f, -1.0f, -7.0f,
+		6.0f, -1.0f, 5.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.minor(0, 0), -12.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 0), -12.0f));
+	ASSERT_TRUE(flt_cmp(m.minor(1, 0), 25.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(1, 0), -25.0f));
+
+	ASSERT_TRUE(flt_cmp(m.minor(0, 0), m.cofactor(0, 0)));
+	ASSERT_FALSE(flt_cmp(m.minor(1, 0), m.cofactor(1, 0)));
+}
+
+TEST(Chapter03Tests, DeterminantOfAMatrix3) {
+
+	Matrix3 m = Matrix3({
+		1.0f, 2.0f, 6.0f,
+		-5.0f, 8.0f, -4.0f,
+		2.0f, 6.0f, 4.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 0), 56.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 1), 12.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 2), -46.0f));
+	ASSERT_TRUE(flt_cmp(m.determinant(), -196.0f));
+}
+
+TEST(Chapter03Tests, DeterminantOfAMatrix4) {
+
+	Matrix4 m = Matrix4({
+		-2.0f, -8.0f, 3.0f, 5.0f,
+		-3.0f, 1.0f, 7.0f, 3.0f,
+		1.0f, 2.0f, -9.0f, 6.0f,
+		-6.0f, 7.0f, 7.0f, -9.0f
+		});
+
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 0), 690.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 1), 447.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 2), 210.0f));
+	ASSERT_TRUE(flt_cmp(m.cofactor(0, 3), 51.0f));
+	ASSERT_TRUE(flt_cmp(m.determinant(), -4071.0f));
+}
+
