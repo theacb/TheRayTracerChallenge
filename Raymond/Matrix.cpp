@@ -64,11 +64,11 @@ Matrix Matrix::Identity(int side)
 // Methods
 // ------------------------------------------------------------------------
 
-float Matrix::get(int row, int col)
+float Matrix::get(int row, int col) const
 {
 	// Check if the index is within the bounds of the matrix
 	if (col >= 0 && col < this->m_num_columns_ && row >= 0 && row < this->m_num_rows_)
-		return this->m_data_.at(m_index_from_coordinates_(row, col));
+		return this->m_data_[this->m_index_from_coordinates_(row, col)];
 	else
 		// Out of bounds throws an error
 		throw std::out_of_range(
@@ -78,11 +78,6 @@ float Matrix::get(int row, int col)
 			std::to_string(row) +
 			"), is not within the bounds of the matrix."
 		);
-}
-
-float Matrix::get(int row, int col) const
-{
-	return this->get(row, col);
 }
 
 float & Matrix::get(int index)
@@ -203,7 +198,7 @@ void Matrix::generate_identity()
 // Turns columns into rows and rows into columns
 Matrix Matrix::transpose()
 {
-	Matrix result = Matrix(this->m_num_columns_, this->m_num_rows_);
+	Matrix result = Matrix(this->m_num_columns_);
 
 	for (int r = 0; r < this->m_num_rows_; r++)
 	{
@@ -218,6 +213,8 @@ Matrix Matrix::transpose()
 
 std::vector<float> Matrix::sub_matrix_vector(int remove_row, int remove_col) const
 {
+	// Seperates functionality from specified class return to facilitate overloading
+
 	// Check that the requested row and column are in bounds
 	if (
 		remove_row >= 0 && 
@@ -317,6 +314,72 @@ float Matrix::determinant() const
 	}
 	}
 
+bool Matrix::is_invertable() const
+{
+	return ! (flt_cmp(this->determinant(), 0.0f));
+}
+
+std::vector<float> Matrix::inverse_vector() const
+{
+	// Seperates functionality from specified class return to facilitate overloading
+	float det = this->determinant();
+	if (flt_cmp(det, 0.0f))
+	{
+		// Requested out of bounds row or column
+		throw NoninvertableMatrix(*this);
+	}
+	std::vector<float> result = std::vector<float>(this->m_num_rows_ * this->m_num_columns_);
+
+	// Transposed vector of cofactors devided by the original Matrix's determinant
+
+	for (int r = 0; r < this->m_num_rows_; r++)
+	{
+		for (int c = 0; c < this->m_num_columns_; c++)
+		{
+			result[(c *  this->m_num_rows_) + r] = cofactor(r, c) / det;
+		}
+	}
+
+	return result;
+}
+
+Matrix Matrix::inverse() const
+{
+	return Matrix(this->m_num_rows_, this->inverse_vector());
+}
+
+std::string Matrix::to_string() const
+{
+	int current = 0;
+	int col = 1;
+
+	int last = (this->m_num_rows_ * this->m_num_columns_) - 1;
+
+	std::string result = "([";
+
+	// Iterates through the internal vector, adding formatting when conditions are met.
+	for (float v : *this)
+	{
+		std::string vs = std::to_string(v);
+		if (col == this->m_num_columns_ && current != last)
+		{
+			col = 0;
+			result += (vs + "], [");
+		}
+		else if (current == last)
+		{
+			result += (vs + "])");
+		}
+		else
+		{
+			result += (vs + ", ");
+		}
+		++col;
+		++current;
+	}
+	return result;
+}
+
 // iterators
 // Allows iteration access to the underlying vector
 float * Matrix::begin()
@@ -348,7 +411,7 @@ float & Matrix::operator[](int index)
 // -------
 
 // Converts x,y cartesian coords to an index in the internal vector
-int Matrix::m_index_from_coordinates_(int row, int col)
+int Matrix::m_index_from_coordinates_(int row, int col) const
 {
 	return (row *  this->m_num_columns_) + col;
 }
@@ -474,6 +537,11 @@ float Matrix2::determinant() const
 	return (this->get(0) * this->get(3)) - (this->get(1) * this->get(2));
 }
 
+Matrix2 Matrix2::inverse() const
+{
+	return Matrix2(this->inverse_vector());
+}
+
 // ------------------------------------------------------------------------
 //
 // Matrix3
@@ -566,6 +634,11 @@ float Matrix3::determinant() const
 		result += (element * det);
 	}
 	return result;
+}
+
+Matrix3 Matrix3::inverse() const
+{
+	return Matrix3(this->inverse_vector());
 }
 
 // ------------------------------------------------------------------------
@@ -685,6 +758,11 @@ float Matrix4::determinant() const
 	return result;
 }
 
+Matrix4 Matrix4::inverse() const
+{
+	return Matrix4(this->inverse_vector());
+}
+
 // ------------------------------------------------------------------------
 // Overloaded Operators
 // ------------------------------------------------------------------------
@@ -724,4 +802,17 @@ Tuple Matrix4::operator*(const Tuple & tuple) const
 	w = Tuple::dot(tuple, this->get_row_tuple(3));
 
 	return Tuple(x, y, z, w);
+}
+
+// ------------------------------------------------------------------------
+// Exceptions
+// ------------------------------------------------------------------------
+
+NoninvertableMatrix::NoninvertableMatrix(Matrix m) : 
+	logic_error(
+		"Matrix: " + 
+		m.to_string() + 
+		" has a determinate of 0.0 and is therefore unable to be inverted."
+	)
+{
 }

@@ -770,3 +770,119 @@ TEST(Chapter03Tests, DeterminantOfAnArbitrarySizedMatrix) {
 
 	ASSERT_EQ(m.determinant(), -405.0f) << m.determinant();
 }
+
+TEST(Chapter03Tests, TestingInvertibleMatrixForInvertability) {
+
+	Matrix4 m = Matrix4({
+		6.0f, 4.0f, 4.0f, 4.0f,
+		5.0f, 5.0f, 7.0f, 6.0f,
+		4.0f, -9.0f, 3.0f, -7.0f,
+		9.0f, 1.0f, 7.0f, -6.0f
+		});
+
+	ASSERT_TRUE(m.is_invertable());
+}
+
+TEST(Chapter03Tests, TestingNoninvertibleMatrixForInvertability) {
+
+	Matrix4 m = Matrix4({
+		-4.0f, 2.0f, -2.0f, -3.0f,
+		9.0f, 6.0f, 2.0f, 6.0f,
+		0.0f, -5.0f, 1.0f, -5.0f,
+		0.0f, 0.0f, 0.0f, 0.0f
+		});
+
+	ASSERT_FALSE(m.is_invertable());
+}
+
+TEST(Chapter03Tests, CalculatingTheInverseOfAMatrix) {
+
+	Matrix m = Matrix(4, {
+		-5.0f, 2.0f, 6.0f, -8.0f,
+		1.0f, -5.0f, 1.0f, 8.0f,
+		7.0f, 7.0f, -6.0f, -7.0f,
+		1.0f, -3.0f, 7.0f, 4.0f
+		});
+
+	Matrix result = m.inverse();
+
+	Matrix expected_result = Matrix(4, {
+		0.21805f, 0.45113f, 0.24060f, -0.04511f,
+		-0.80827f, -1.45677f, -0.44361f, 0.52068f,
+		-0.07895f, -0.22368f, -0.05263f, 0.19737f,
+		-0.52256f, -0.81391f, -0.30075f, 0.30639f
+	});
+
+	ASSERT_TRUE(flt_cmp(m.determinant(), 532));
+
+	ASSERT_TRUE(flt_cmp(m.cofactor(2, 3), -160.0f));
+	ASSERT_TRUE(flt_cmp(result.get(3, 2), -160.0f / 532));
+
+	ASSERT_TRUE(flt_cmp(m.cofactor(3, 2), 105.0f));
+	ASSERT_TRUE(flt_cmp(result.get(2, 3), 105.0f / 532));
+
+	ASSERT_EQ(result, expected_result);
+}
+
+TEST(Chapter03Tests, CalculatingTheInverseOfAnotherMatrix) {
+
+	Matrix m = Matrix(4, {
+		8.0f, -5.0f, 9.0f, 2.0f,
+		7.0f, 5.0f, 6.0f, 1.0f,
+		-6.0f, 0.0f, 9.0f, 6.0f,
+		-3.0f, 0.0f, -9.0f, -4.0f
+		});
+
+	Matrix result = m.inverse();
+
+	Matrix expected_result = Matrix(4, {
+		-0.15385f, -0.15385f, -0.28205f, -0.53846f,
+		-0.07692f, 0.12308f, 0.02564f, 0.03077f,
+		0.35897f, 0.35897f, 0.43590f, 0.92308f,
+		-0.69231f, -0.69231f, -0.76923f, -1.92308f
+		});
+
+	ASSERT_EQ(result, expected_result);
+}
+
+TEST(Chapter03Tests, CalculatingTheInverseOfAThirdMatrix) {
+
+	Matrix m = Matrix(4, {
+		9.0f, 3.0f, 0.0f, 9.0f,
+		-5.0f, -2.0f, -6.0f, -3.0f,
+		-4.0f, 9.0f, 6.0f, 4.0f,
+		-7.0f, 6.0f, 6.0f, 2.0f
+		});
+
+	Matrix result = m.inverse();
+
+	Matrix expected_result = Matrix(4, {
+		-0.04074f, -0.07778f, 0.14444f, -0.22222f,
+		-0.07778f, 0.03333f, 0.36667f, -0.33333f,
+		-0.02901f, -0.14630f, -0.10926f, 0.12963f,
+		0.17778f, 0.06667f, -0.26667f, 0.33333f
+		});
+
+	ASSERT_EQ(result, expected_result);
+}
+
+TEST(Chapter03Tests, MultiplyingAProductbyItsInverse) {
+
+	Matrix4 m1 = Matrix4({
+		3.0f, -9.0f, 7.0f, 3.0f,
+		3.0f, -8.0f, 2.0f, -9.0f,
+		-4.0f, 4.0f, 4.0f, 1.0f,
+		-6.0f, 5.0f, -1.0f, 1.0f
+		});
+
+	Matrix4 m2 = Matrix4({
+		8.0f, 2.0f, 2.0f, 2.0f,
+		3.0f, -1.0f, 7.0f, 0.0f,
+		7.0f, 0.0f, 5.0f, 4.0f,
+		6.0f, -2.0f, 0.0f, 5.0f
+		});
+
+	Matrix4 m3 = m1 * m2;
+
+	ASSERT_EQ(m3 * m2.inverse(), m1);
+}

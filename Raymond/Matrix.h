@@ -21,7 +21,6 @@ public:
 
 	//Methods
 	// Accessors
-	float get(int, int);
 	float get(int, int) const;
 	float& get(int);
 	float get(int) const;
@@ -46,6 +45,11 @@ public:
 	float minor(int, int) const;
 	float cofactor(int, int) const;
 	float determinant() const;
+	bool is_invertable() const;
+	std::vector<float> inverse_vector() const;
+	Matrix inverse() const;
+
+	std::string to_string() const;
 
 	// iterators
 	float * begin();
@@ -67,7 +71,7 @@ private:
 	int m_num_columns_, m_num_rows_;
 
 	//Methods
-	int m_index_from_coordinates_(int, int);
+	int m_index_from_coordinates_(int, int) const;
 };
 
 class Matrix2 :
@@ -86,6 +90,7 @@ public:
 	std::vector<float> get_row(int) const;
 	std::vector<float> get_column(int) const;
 	float determinant() const;
+	Matrix2 inverse() const;
 };
 
 class Matrix3 :
@@ -108,6 +113,7 @@ public:
 	float minor(int, int) const;
 	float cofactor(int, int) const;
 	float determinant() const;
+	Matrix3 inverse() const;
 };
 
 class Matrix4 :
@@ -133,8 +139,15 @@ public:
 	float minor(int, int) const;
 	float cofactor(int, int) const;
 	float determinant() const;
+	Matrix4 inverse() const;
 
 	// Overloaded Operators
 	Matrix4 operator*(const Matrix4 &) const;
 	Tuple operator*(const Tuple &) const;
+};
+
+class NoninvertableMatrix : public std::logic_error
+{
+public:
+	NoninvertableMatrix(const Matrix);
 };
