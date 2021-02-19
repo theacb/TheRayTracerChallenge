@@ -83,22 +83,42 @@ int simulate_projectile()
 	return 0;
 }
 
+int render_clock()
+{
+	int width = 500;
+	float clock_radius = static_cast<float>(width) * (3.0f / 8.0f);
+	float center = static_cast<float>(width) * 0.5f;
+
+	Canvas c = Canvas(width, width);
+	Color pen_color = Color(1.0f, 1.0f, 1.0f);
+
+	Tuple hour_point = Tuple::Point(0.0f, 0.0f, clock_radius);
+
+	int hours = 0;
+
+
+	Matrix4 increment = Matrix4::Rotation_Y((2.0f * M_PI) * (1.0f / 12.0f));
+	Matrix4 view_x_form = Matrix4::Translation(center, 0.0f, center);
+
+	while (hours <= 12)
+	{
+		hour_point = increment * hour_point;
+
+		Tuple pen = view_x_form * hour_point;
+
+		std::cout << "Hour Point: " << hour_point << "\nPen point: " << pen << "\n";
+
+		c.write_pixel(static_cast<int>(pen.x), static_cast<int>(pen.z), pen_color);
+
+		++hours;
+	}
+
+	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\ClockCh04_01.ppm");
+
+	return 0;
+}
+
 int main()
 {
-	Matrix3 m = Matrix3({
-	1.0f, 5.0f, 0.0f,
-	-3.0f, 2.0f, 7.0f,
-	0.0f, 6.0f, -3.0f
-		});
-
-	Matrix2 expected_result = Matrix2({
-		-3.0f, 2.0f,
-		-0.0f, 6.0f,
-		});
-
-	Matrix2 result = m.sub_matrix3(0, 2);
-
-	std::cout << "\n" << result << "\n";
-
-	std::cout << (result == expected_result) << "\n";
+	render_clock();
 }

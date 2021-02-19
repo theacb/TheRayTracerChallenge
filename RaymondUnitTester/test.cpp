@@ -11,7 +11,8 @@
 // Chapter 01 Tuples, Points, and Vectors
 // ------------------------------------------------------------------------
 
-TEST(Chapter01Tests, PointTuple) {
+TEST(Chapter01Tests, PointTuple) 
+{
 	float x = 4.3f;
 	float y = -4.2f;
 	float z = 3.1f;
@@ -28,7 +29,8 @@ TEST(Chapter01Tests, PointTuple) {
 	ASSERT_NE(a.w, 0.0);
 }
 
-TEST(Chapter01Tests, VectporTuple) {
+TEST(Chapter01Tests, VectporTuple) 
+{
 	float x = 4.3f;
 	float y = -4.2f;
 	float z = 3.1f;
@@ -45,7 +47,8 @@ TEST(Chapter01Tests, VectporTuple) {
 	ASSERT_NE(a.w, 1.0);
 }
 
-TEST(Chapter01Tests, PointFactory) {
+TEST(Chapter01Tests, PointFactory) 
+{
 	float x = 4.0f;
 	float y = -4.0f;
 	float z = 3.0f;
@@ -57,7 +60,8 @@ TEST(Chapter01Tests, PointFactory) {
 	ASSERT_EQ(a, p);
 }
 
-TEST(Chapter01Tests, VectorFactory) {
+TEST(Chapter01Tests, VectorFactory) 
+{
 	float x = 4.0f;
 	float y = -4.0f;
 	float z = 3.0f;
@@ -69,66 +73,76 @@ TEST(Chapter01Tests, VectorFactory) {
 	ASSERT_EQ(a, p);
 }
 
-TEST(Chapter01Tests, AddingTuples) {
+TEST(Chapter01Tests, AddingTuples) 
+{
 	Tuple a1 = Tuple(3.0f, -2.0f, 5.0f, 1.0f);
 	Tuple a2 = Tuple(-2.0f, 3.0f, 1.0f, 0.0f);
 
 	ASSERT_EQ(a1 + a2, Tuple(1.0f, 1.0f, 6.0f, 1.0f));
 }
 
-TEST(Chapter01Tests, SubtractingTwoPoints) {
+TEST(Chapter01Tests, SubtractingTwoPoints) 
+{
 	Tuple p1 = Tuple::Point(3.0f, 2.0f, 1.0f);
 	Tuple p2 = Tuple::Point(5.0f, 6.0f, 7.0f);
 
 	ASSERT_EQ(p1 - p2, Tuple::Vector(-2.0f, -4.0f, -6.0f));
 }
 
-TEST(Chapter01Tests, SubtractingAVectorFromAPoint) {
+TEST(Chapter01Tests, SubtractingAVectorFromAPoint) 
+{
 	Tuple p = Tuple::Point(3.0f, 2.0f, 1.0f);
 	Tuple v = Tuple::Vector(5.0f, 6.0f, 7.0f);
 
 	ASSERT_EQ(p - v, Tuple::Point(-2.0f, -4.0f, -6.0f));
 }
 
-TEST(Chapter01Tests, SubtractingTwoVectors) {
+TEST(Chapter01Tests, SubtractingTwoVectors) 
+{
 	Tuple v1 = Tuple::Vector(3.0f, 2.0f, 1.0f);
 	Tuple v2 = Tuple::Vector(5.0f, 6.0f, 7.0f);
 
 	ASSERT_EQ(v1 - v2, Tuple::Vector(-2.0f, -4.0f, -6.0f));
 }
 
-TEST(Chapter01Tests, SubtractingAZeroVector) {
+TEST(Chapter01Tests, SubtractingAZeroVector) 
+{
 	Tuple zero = Tuple::Vector(0.0f, 0.0f, 0.0f);
 	Tuple v = Tuple::Vector(1.0f, -2.0f, 3.0f);
 
 	ASSERT_EQ(zero - v, Tuple::Vector(-1.0f, 2.0f, -3.0f));
 }
 
-TEST(Chapter01Tests, NegatingATuple) {
+TEST(Chapter01Tests, NegatingATuple) 
+{
 	Tuple a = Tuple(1.0f, -2.0f, 3.0f, -4.0f);
 
 	ASSERT_EQ(-a, Tuple(-1.0f, 2.0f, -3.0f, 4.0f));
 }
 
-TEST(Chapter01Tests, MultiplyingATupleByAScalar) {
+TEST(Chapter01Tests, MultiplyingATupleByAScalar) 
+{
 	Tuple a = Tuple(1.0f, -2.0f, 3.0f, -4.0f);
 
 	ASSERT_EQ(a * 3.5, Tuple(3.5f, -7.0f, 10.5f, -14.0f));
 }
 
-TEST(Chapter01Tests, MultiplyingATupleByAFraction) {
+TEST(Chapter01Tests, MultiplyingATupleByAFraction) 
+{
 	Tuple a = Tuple(1.0f, -2.0f, 3.0f, -4.0f);
 
 	ASSERT_EQ(a * 0.5, Tuple(0.5f, -1.0f, 1.5f, -2.0f));
 }
 
-TEST(Chapter01Tests, DividingATupleByAScalar) {
+TEST(Chapter01Tests, DividingATupleByAScalar) 
+{
 	Tuple a = Tuple(1.0f, -2.0f, 3.0f, -4.0f);
 
 	ASSERT_EQ(a / 2, Tuple(0.5f, -1.0f, 1.5f, -2.0f));
 }
 
-TEST(Chapter01Tests, ComputingMagnitudeOfAVector) {
+TEST(Chapter01Tests, ComputingMagnitudeOfAVector) 
+{
 	Tuple v1 = Tuple::Vector(1.0f, 0.0f, 0.0f);
 	ASSERT_TRUE(flt_cmp(v1.magnitude(), 1.0));
 
@@ -145,7 +159,8 @@ TEST(Chapter01Tests, ComputingMagnitudeOfAVector) {
 	ASSERT_TRUE(flt_cmp(v5.magnitude(), sqrt(14.0f)));
 }
 
-TEST(Chapter01Tests, NormalizingAVector) {
+TEST(Chapter01Tests, NormalizingAVector) 
+{
 	Tuple v1 = Tuple::Vector(4.0f, 0.0f, 0.0f);
 	ASSERT_EQ(v1.normalize(), Tuple::Vector(1.0f, 0.0f, 0.0f));
 
@@ -153,20 +168,23 @@ TEST(Chapter01Tests, NormalizingAVector) {
 	ASSERT_EQ(v2.normalize(), Tuple::Vector(0.26726f, 0.53452f, 0.80178f));
 }
 
-TEST(Chapter01Tests, ComputingMagnitudeOfANormalizedVector) {
+TEST(Chapter01Tests, ComputingMagnitudeOfANormalizedVector) 
+{
 	Tuple v = Tuple::Vector(1.0f, 2.0f, 3.0f);
 	Tuple norm = v.normalize();
 	ASSERT_TRUE(flt_cmp(norm.magnitude(), 1.0));
 }
 
-TEST(Chapter01Tests, DotProductOfTwoVectors) {
+TEST(Chapter01Tests, DotProductOfTwoVectors) 
+{
 	Tuple v1 = Tuple::Vector(1.0f, 2.0f, 3.0f);
 	Tuple v2 = Tuple::Vector(2.0f, 3.0f, 4.0f);
 
 	ASSERT_TRUE(flt_cmp(Tuple::dot(v1, v2), 20.0));
 }
 
-TEST(Chapter01Tests, CrossProductOfTwoVectors) {
+TEST(Chapter01Tests, CrossProductOfTwoVectors) 
+{
 	Tuple a = Tuple::Vector(1.0f, 2.0f, 3.0f);
 	Tuple b = Tuple::Vector(2.0f, 3.0f, 4.0f);
 
@@ -178,7 +196,8 @@ TEST(Chapter01Tests, CrossProductOfTwoVectors) {
 // Chapter 02 Drawing on a Canvas
 // ------------------------------------------------------------------------
 
-TEST(Chapter02Tests, CallingColorChannels) {
+TEST(Chapter02Tests, CallingColorChannels) 
+{
 	float red = -0.5f;
 	float green = 0.4f;
 	float blue = 1.7f;
@@ -190,7 +209,8 @@ TEST(Chapter02Tests, CallingColorChannels) {
 	ASSERT_EQ(c.b(), blue);
 }
 
-TEST(Chapter02Tests, AssigningColorChannels) {
+TEST(Chapter02Tests, AssigningColorChannels) 
+{
 	float red = -0.5f;
 	float green = 0.4f;
 	float blue = 1.7f;
@@ -204,60 +224,69 @@ TEST(Chapter02Tests, AssigningColorChannels) {
 	ASSERT_EQ(c, Color(red, green, blue));
 }
 
-TEST(Chapter02Tests, AddingColors) {
+TEST(Chapter02Tests, AddingColors) 
+{
 	Color c1 = Color(0.9f, 0.6f, 0.75f);
 	Color c2 = Color(0.7f, 0.1f, 0.25f);
 
 	ASSERT_EQ(c1 + c2, Color(1.6f, 0.7f, 1.0f));
 }
 
-TEST(Chapter02Tests, SubtractingColors) {
+TEST(Chapter02Tests, SubtractingColors) 
+{
 	Color c1 = Color(0.9f, 0.6f, 0.75f);
 	Color c2 = Color(0.7f, 0.1f, 0.25f);
 
 	ASSERT_EQ(c1 - c2, Color(0.2f, 0.5f, 0.5f));
 }
 
-TEST(Chapter02Tests, MultiplyingColorByAScalar) {
+TEST(Chapter02Tests, MultiplyingColorByAScalar) 
+{
 	Color c = Color(0.2f, 0.3f, 0.4f);
 
 	ASSERT_EQ(c * 2.0f, Color(0.4f, 0.6f, 0.8f));
 }
 
-TEST(Chapter02Tests, MultiplyingColors) {
+TEST(Chapter02Tests, MultiplyingColors) 
+{
 	Color c1 = Color(1.0f, 0.2f, 0.4f);
 	Color c2 = Color(0.9f, 1.0f, 0.1f);
 
 	ASSERT_EQ(c1.multiply(c2), Color(0.9f, 0.2f, 0.04f));
 }
 
-TEST(Chapter02Tests, ConvertingColorToInteger) {
+TEST(Chapter02Tests, ConvertingColorToInteger) 
+{
 	Color c = Color(1.0f, 0.2f, 0.4f);
 
 	ASSERT_EQ(Color8Bit(c), Color8Bit(255, 51, 102));
 }
 
-TEST(Chapter02Tests, ConvertingOutOfRangeColorToInteger) {
+TEST(Chapter02Tests, ConvertingOutOfRangeColorToInteger) 
+{
 	Color c = Color(-1.0f, 2.2f, 10.4f);
 
 	ASSERT_EQ(Color8Bit(c), Color8Bit(0, 255, 255));
 }
 
-TEST(Chapter02Tests, ConvertingLinearColorToSRGB) {
+TEST(Chapter02Tests, ConvertingLinearColorToSRGB) 
+{
 	Color c = Color(0.5f, 0.5f, 1.0f);
 	Color con = c.convert_linear_to_srgb();
 
 	ASSERT_GT(con.magnitude(), Color(0.7f, 0.7f, 0.99f).magnitude());
 }
 
-TEST(Chapter02Tests, ConvertingSRGBToLinear) {
+TEST(Chapter02Tests, ConvertingSRGBToLinear) 
+{
 	Color c = Color(0.5f, 0.5f, 1.0f);
 	Color con = c.convert_srgb_to_linear();
 
 	ASSERT_LT(con.magnitude(), Color(0.3f, 0.3f, 1.0f).magnitude());
 }
 
-TEST(Chapter02Tests, CreatingACanvas) {
+TEST(Chapter02Tests, CreatingACanvas) 
+{
 	int width = 10;
 	int height = 20;
 	Canvas c = Canvas(width, height);
@@ -271,7 +300,8 @@ TEST(Chapter02Tests, CreatingACanvas) {
 		ASSERT_EQ(i, black);
 }
 
-TEST(Chapter02Tests, WritingPixelsToACanvas) {
+TEST(Chapter02Tests, WritingPixelsToACanvas) 
+{
 	int x = 2;
 	int y = 3;
 
@@ -284,8 +314,8 @@ TEST(Chapter02Tests, WritingPixelsToACanvas) {
 	ASSERT_EQ(c.pixel_at(x, y), red);
 }
 
-TEST(Chapter02Tests, ConstructingThePPMPixelData) {
-
+TEST(Chapter02Tests, ConstructingThePPMPixelData) 
+{
 	Canvas c = Canvas(5, 3);
 
 	Color c1 = Color(1.5f, 0.0f, 0.0f);
@@ -304,7 +334,8 @@ TEST(Chapter02Tests, ConstructingThePPMPixelData) {
 		));
 }
 
-TEST(Chapter02Tests, SplittingLongLinesInPPMFiles) {
+TEST(Chapter02Tests, SplittingLongLinesInPPMFiles) 
+{
 	int width = 10;
 	int height = 2;
 
@@ -330,8 +361,8 @@ TEST(Chapter02Tests, SplittingLongLinesInPPMFiles) {
 	}
 }
 
-TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
-
+TEST(Chapter02Tests, PPMFilesTerminateWithNewline) 
+{
 	Canvas c = Canvas(10, 10);
 
 	std::string file_path = "E:\\dump\\projects\\Raymond\\frames\\PPMFilesTerminateWithNewline.ppm";
@@ -358,8 +389,8 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline) {
 // Chapter 03 Matrices
 // ------------------------------------------------------------------------
 
-TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) {
-
+TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) 
+{
 	Matrix m = Matrix(4);
 	m.set_multiple({
 		1.0f, 2.0f, 3.0f, 4.0f,
@@ -377,8 +408,8 @@ TEST(Chapter03Tests, ConstructingAndInspectingAFourByFourMatrix) {
 	ASSERT_TRUE(flt_cmp(m.get(3, 2), 15.5f));
 }
 
-TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) {
-
+TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) 
+{
 	Matrix m = Matrix(2);
 	m.set_multiple({
 		-3.0f, 5.0f,
@@ -391,8 +422,8 @@ TEST(Chapter03Tests, ConstructingAndInspectingATwoByTwoMatrix) {
 	ASSERT_TRUE(flt_cmp(m.get(1, 1), -2.0f));
 }
 
-TEST(Chapter03Tests, ConstructingAndInspectingAThreeByThreeMatrix) {
-
+TEST(Chapter03Tests, ConstructingAndInspectingAThreeByThreeMatrix) 
+{
 	Matrix m = Matrix(3);
 	m.set_multiple({
 		-3.0f, 5.0f, 0.0f,
@@ -405,7 +436,8 @@ TEST(Chapter03Tests, ConstructingAndInspectingAThreeByThreeMatrix) {
 	ASSERT_TRUE(flt_cmp(m.get(2, 2), 1.0f));
 }
 
-TEST(Chapter03Tests, MatrixSizeLimitations) {
+TEST(Chapter03Tests, MatrixSizeLimitations) 
+{
 	bool too_large_error_thrown = false;
 	bool too_small_error_thrown = false;
 
@@ -440,7 +472,8 @@ TEST(Chapter03Tests, MatrixSizeLimitations) {
 }
 
 
-TEST(Chapter03Tests, MatrixOutOfBoundsIndices) {
+TEST(Chapter03Tests, MatrixOutOfBoundsIndices) 
+{
 	bool x_error_thrown = false;
 	bool y_error_thrown = false;
 
@@ -468,8 +501,8 @@ TEST(Chapter03Tests, MatrixOutOfBoundsIndices) {
 	ASSERT_TRUE(y_error_thrown);
 }
 
-TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) {
-
+TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) 
+{
 	Matrix m1 = Matrix(4);
 	Matrix m2 = Matrix(4);
 	m1.set_multiple({
@@ -490,8 +523,8 @@ TEST(Chapter03Tests, MatrixEqualityWithIdenticalMatrices) {
 	ASSERT_EQ(m1, m2);
 }
 
-TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) {
-
+TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) 
+{
 	Matrix m1 = Matrix(4);
 	Matrix m2 = Matrix(4);
 	m1.set_multiple({
@@ -512,8 +545,8 @@ TEST(Chapter03Tests, MatrixInequalityWithDifferentMatrices) {
 	ASSERT_NE(m1, m2);
 }
 
-TEST(Chapter03Tests, MatrixInequalityWithDifferentSizedMatrices) {
-
+TEST(Chapter03Tests, MatrixInequalityWithDifferentSizedMatrices) 
+{
 	Matrix m1 = Matrix(4);
 	Matrix m2 = Matrix(2);
 	m1.set_multiple({
@@ -532,8 +565,8 @@ TEST(Chapter03Tests, MatrixInequalityWithDifferentSizedMatrices) {
 	ASSERT_NE(m1, m2);
 }
 
-TEST(Chapter03Tests, Matrix4Multiplication) {
-
+TEST(Chapter03Tests, Matrix4Multiplication) 
+{
 	Matrix4 m1 = Matrix4();
 	Matrix4 m2 = Matrix4();
 	Matrix4 result = Matrix4();
@@ -563,8 +596,8 @@ TEST(Chapter03Tests, Matrix4Multiplication) {
 	ASSERT_EQ((m1 * m2), result) << (m1 * m2);
 }
 
-TEST(Chapter03Tests, Matrix4MultupliedWithATuple) {
-
+TEST(Chapter03Tests, Matrix4MultupliedWithATuple) 
+{
 	Matrix4 m = Matrix4();
 
 	m.set_multiple({
@@ -579,8 +612,8 @@ TEST(Chapter03Tests, Matrix4MultupliedWithATuple) {
 	ASSERT_EQ((m * t), Tuple(18.0f, 24.0f, 33.0f, 1.0f));
 }
 
-TEST(Chapter03Tests, MultiplyingAMatrix4ByTheIdentityMatrix) {
-
+TEST(Chapter03Tests, MultiplyingAMatrix4ByTheIdentityMatrix) 
+{
 	Matrix4 m = Matrix4();
 
 	m.set_multiple({
@@ -595,8 +628,8 @@ TEST(Chapter03Tests, MultiplyingAMatrix4ByTheIdentityMatrix) {
 	ASSERT_EQ((m * identity), m);
 }
 
-TEST(Chapter03Tests, MultiplyingATupleByTheIdentityMatrix) {
-
+TEST(Chapter03Tests, MultiplyingATupleByTheIdentityMatrix) 
+{
 	Tuple t = Tuple(1, 2, 3, 4);
 
 	Matrix4 identity = Matrix4::Identity();
@@ -604,8 +637,8 @@ TEST(Chapter03Tests, MultiplyingATupleByTheIdentityMatrix) {
 	ASSERT_EQ((identity * t), t);
 }
 
-TEST(Chapter03Tests, TransposingAMatrix4) {
-
+TEST(Chapter03Tests, TransposingAMatrix4) 
+{
 	Matrix4 m = Matrix4();
 
 	m.set_multiple({
@@ -627,8 +660,8 @@ TEST(Chapter03Tests, TransposingAMatrix4) {
 	ASSERT_EQ(m.transpose(), result);
 }
 
-TEST(Chapter03Tests, DeterminateOfAMatrix2) {
-
+TEST(Chapter03Tests, DeterminateOfAMatrix2) 
+{
 	Matrix2 m = Matrix2({
 		1.0f, 5.0f,
 		-3.0f, 2.0f
@@ -637,8 +670,8 @@ TEST(Chapter03Tests, DeterminateOfAMatrix2) {
 	ASSERT_TRUE(flt_cmp(m.determinant(), 17.0f));
 }
 
-TEST(Chapter03Tests, ASubMatrixOfAMatrix4IsAMatrix3) {
-
+TEST(Chapter03Tests, ASubMatrixOfAMatrix4IsAMatrix3) 
+{
 	Matrix4 m = Matrix4({
 		-6.0f, 1.0f, 1.0f, 6.0f,
 		-8.0f, 5.0f, 8.0f, 6.0f,
@@ -657,8 +690,8 @@ TEST(Chapter03Tests, ASubMatrixOfAMatrix4IsAMatrix3) {
 	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
 }
 
-TEST(Chapter03Tests, ASubMatrixOfAMatrix3IsAMatrix2) {
-
+TEST(Chapter03Tests, ASubMatrixOfAMatrix3IsAMatrix2) 
+{
 	Matrix3 m = Matrix3({
 		1.0f, 5.0f, 0.0f,
 		-3.0f, 2.0f, 7.0f,
@@ -675,8 +708,8 @@ TEST(Chapter03Tests, ASubMatrixOfAMatrix3IsAMatrix2) {
 	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
 }
 
-TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) {
-
+TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) 
+{
 	Matrix m = Matrix(5, {
 		1.0f, 5.0f, 0.0f, 1.0f, 2.0f,
 		-3.0f, 2.0f, 7.0f, 3.0f, 5.0f,
@@ -697,8 +730,8 @@ TEST(Chapter03Tests, ASubMatrixOfAMatrixIsASmallerMatrix) {
 	ASSERT_EQ(result, expected_result) << result << " != " << expected_result;
 }
 
-TEST(Chapter03Tests, MinorOfAMatrix3) {
-
+TEST(Chapter03Tests, MinorOfAMatrix3) 
+{
 	Matrix3 m = Matrix3({
 		3.0f, 5.0f, 0.0f,
 		2.0f, -1.0f, -7.0f,
@@ -711,8 +744,8 @@ TEST(Chapter03Tests, MinorOfAMatrix3) {
 	ASSERT_TRUE(flt_cmp(det, min));
 }
 
-TEST(Chapter03Tests, CofactorOfAMatrix3) {
-
+TEST(Chapter03Tests, CofactorOfAMatrix3) 
+{
 	Matrix3 m = Matrix3({
 		3.0f, 5.0f, 0.0f,
 		2.0f, -1.0f, -7.0f,
@@ -728,8 +761,8 @@ TEST(Chapter03Tests, CofactorOfAMatrix3) {
 	ASSERT_FALSE(flt_cmp(m.minor(1, 0), m.cofactor(1, 0)));
 }
 
-TEST(Chapter03Tests, DeterminantOfAMatrix3) {
-
+TEST(Chapter03Tests, DeterminantOfAMatrix3) 
+{
 	Matrix3 m = Matrix3({
 		1.0f, 2.0f, 6.0f,
 		-5.0f, 8.0f, -4.0f,
@@ -742,8 +775,8 @@ TEST(Chapter03Tests, DeterminantOfAMatrix3) {
 	ASSERT_TRUE(flt_cmp(m.determinant(), -196.0f));
 }
 
-TEST(Chapter03Tests, DeterminantOfAMatrix4) {
-
+TEST(Chapter03Tests, DeterminantOfAMatrix4) 
+{
 	Matrix4 m = Matrix4({
 		-2.0f, -8.0f, 3.0f, 5.0f,
 		-3.0f, 1.0f, 7.0f, 3.0f,
@@ -758,8 +791,8 @@ TEST(Chapter03Tests, DeterminantOfAMatrix4) {
 	ASSERT_TRUE(flt_cmp(m.determinant(), -4071.0f));
 }
 
-TEST(Chapter03Tests, DeterminantOfAnArbitrarySizedMatrix) {
-
+TEST(Chapter03Tests, DeterminantOfAnArbitrarySizedMatrix) 
+{
 	Matrix m = Matrix(5, {
 		1.0f, 5.0f, 0.0f, 1.0f, 2.0f,
 		-3.0f, 2.0f, 7.0f, 3.0f, 5.0f,
@@ -771,8 +804,8 @@ TEST(Chapter03Tests, DeterminantOfAnArbitrarySizedMatrix) {
 	ASSERT_EQ(m.determinant(), -405.0f) << m.determinant();
 }
 
-TEST(Chapter03Tests, TestingInvertibleMatrixForInvertability) {
-
+TEST(Chapter03Tests, TestingInvertibleMatrixForInvertability) 
+{
 	Matrix4 m = Matrix4({
 		6.0f, 4.0f, 4.0f, 4.0f,
 		5.0f, 5.0f, 7.0f, 6.0f,
@@ -783,8 +816,8 @@ TEST(Chapter03Tests, TestingInvertibleMatrixForInvertability) {
 	ASSERT_TRUE(m.is_invertable());
 }
 
-TEST(Chapter03Tests, TestingNoninvertibleMatrixForInvertability) {
-
+TEST(Chapter03Tests, TestingNoninvertibleMatrixForInvertability) 
+{
 	Matrix4 m = Matrix4({
 		-4.0f, 2.0f, -2.0f, -3.0f,
 		9.0f, 6.0f, 2.0f, 6.0f,
@@ -795,8 +828,8 @@ TEST(Chapter03Tests, TestingNoninvertibleMatrixForInvertability) {
 	ASSERT_FALSE(m.is_invertable());
 }
 
-TEST(Chapter03Tests, CalculatingTheInverseOfAMatrix) {
-
+TEST(Chapter03Tests, CalculatingTheInverseOfAMatrix) 
+{
 	Matrix m = Matrix(4, {
 		-5.0f, 2.0f, 6.0f, -8.0f,
 		1.0f, -5.0f, 1.0f, 8.0f,
@@ -824,8 +857,8 @@ TEST(Chapter03Tests, CalculatingTheInverseOfAMatrix) {
 	ASSERT_EQ(result, expected_result);
 }
 
-TEST(Chapter03Tests, CalculatingTheInverseOfAnotherMatrix) {
-
+TEST(Chapter03Tests, CalculatingTheInverseOfAnotherMatrix) 
+{
 	Matrix m = Matrix(4, {
 		8.0f, -5.0f, 9.0f, 2.0f,
 		7.0f, 5.0f, 6.0f, 1.0f,
@@ -845,8 +878,8 @@ TEST(Chapter03Tests, CalculatingTheInverseOfAnotherMatrix) {
 	ASSERT_EQ(result, expected_result);
 }
 
-TEST(Chapter03Tests, CalculatingTheInverseOfAThirdMatrix) {
-
+TEST(Chapter03Tests, CalculatingTheInverseOfAThirdMatrix) 
+{
 	Matrix m = Matrix(4, {
 		9.0f, 3.0f, 0.0f, 9.0f,
 		-5.0f, -2.0f, -6.0f, -3.0f,
@@ -866,8 +899,8 @@ TEST(Chapter03Tests, CalculatingTheInverseOfAThirdMatrix) {
 	ASSERT_EQ(result, expected_result);
 }
 
-TEST(Chapter03Tests, MultiplyingAProductbyItsInverse) {
-
+TEST(Chapter03Tests, MultiplyingAProductbyItsInverse) 
+{
 	Matrix4 m1 = Matrix4({
 		3.0f, -9.0f, 7.0f, 3.0f,
 		3.0f, -8.0f, 2.0f, -9.0f,
@@ -885,4 +918,186 @@ TEST(Chapter03Tests, MultiplyingAProductbyItsInverse) {
 	Matrix4 m3 = m1 * m2;
 
 	ASSERT_EQ(m3 * m2.inverse(), m1);
+}
+
+// ------------------------------------------------------------------------
+// Chapter 03 Matrix Transformations
+// ------------------------------------------------------------------------
+
+TEST(Chapter04Tests, MultiplyingByATranslationMatrix) 
+{
+	Matrix4 tm = Matrix4::Translation(5.0f, -3.0f, 2.0f);
+	Tuple p = Tuple::Point(-3.0f, 4.0f, 5.0f);
+
+	ASSERT_EQ(tm * p, Tuple::Point(2.0f, 1.0f, 7.0f));
+}
+
+TEST(Chapter04Tests, MultiplyingByATheInverseOfATranslationMatrix) 
+{
+	Matrix4 tm = Matrix4::Translation(5.0f, -3.0f, 2.0f);
+	Tuple p = Tuple::Point(-3.0f, 4.0f, 5.0f);
+
+	ASSERT_EQ(tm.inverse() * p, Tuple::Point(-8.0f, 7.0f, 3.0f));
+}
+
+TEST(Chapter04Tests, TranslationDoesNotAffectVectors) 
+{
+	Matrix4 tm = Matrix4::Translation(5.0f, -3.0f, 2.0f);
+	Tuple v = Tuple::Vector(-3.0f, 4.0f, 5.0f);
+
+	ASSERT_EQ(tm * v, v);
+}
+
+TEST(Chapter04Tests, ScalingMatrixAppliedToAPoint) 
+{
+	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Tuple p = Tuple::Point(-4.0f, 6.0f, 8.0f);
+
+	ASSERT_EQ(tm * p, Tuple::Point(-8.0f, 18.0f, 32.0f));
+}
+
+TEST(Chapter04Tests, ScalingMatrixAppliedToAVector) 
+{
+	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Tuple v = Tuple::Vector(-4.0f, 6.0f, 8.0f);
+
+	ASSERT_EQ(tm * v, Tuple::Vector(-8.0f, 18.0f, 32.0f));
+}
+
+TEST(Chapter04Tests, MultiplyingByTheInverseOfTheScalingMatrix) 
+{
+	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Tuple p = Tuple::Vector(-4.0f, 6.0f, 8.0f);
+
+	ASSERT_EQ(tm.inverse() * p, Tuple::Vector(-2.0f, 2.0f, 2.0f));
+}
+
+TEST(Chapter04Tests, ReflectionIsScalingByANegativeValue) 
+{
+	Matrix4 tm = Matrix4::Scale(-1.0f, 1.0f, 1.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(tm * p, Tuple::Point(-2.0f, 3.0f, 4.0f));
+}
+
+TEST(Chapter04Tests, RotatingAPointAroundTheXAxis) 
+{
+	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
+
+	Matrix4 eighth = Matrix4::Rotation_X(M_PI / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_X(M_PI / 2.0f);
+
+	ASSERT_EQ(eighth * p, Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, sqrt(2.0f) / 2.0f));
+	ASSERT_EQ(quarter * p, Tuple::Point(0.0f, 0.0f, 1.0f));
+}
+
+TEST(Chapter04Tests, TheInverseOfAnXRotationRotatesInTheOpositeDirection) 
+{
+	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
+
+	Matrix4 eighth = Matrix4::Rotation_X(M_PI / 4.0f);
+
+	ASSERT_EQ(eighth.inverse() * p, Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, -(sqrt(2.0f) / 2.0f)));
+}
+
+TEST(Chapter04Tests, RotatingAPointAroundTheYAxis) 
+{
+	Tuple p = Tuple::Point(0.0f, 0.0f, 1.0f);
+
+	Matrix4 eighth = Matrix4::Rotation_Y(M_PI / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_Y(M_PI / 2.0f);
+
+	ASSERT_EQ(eighth * p, Tuple::Point(sqrt(2.0f) / 2.0f, 0.0f, sqrt(2.0f) / 2.0f));
+	ASSERT_EQ(quarter * p, Tuple::Point(1.0f, 0.0f, 0.0f));
+}
+
+TEST(Chapter04Tests, RotatingAPointAroundTheZAxis) 
+{
+	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
+
+	Matrix4 eighth = Matrix4::Rotation_Z(M_PI / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_Z(M_PI / 2.0f);
+
+	ASSERT_EQ(eighth * p, Tuple::Point(-(sqrt(2.0f) / 2.0f), sqrt(2.0f) / 2.0f, 0.0f));
+	ASSERT_EQ(quarter * p, Tuple::Point(-1.0f, 0.0f, 0.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesXInProportionToY) 
+{
+	Matrix4 shear = Matrix4::Shear(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(5.0f, 3.0f, 4.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesXInProportionToZ) 
+{
+	Matrix4 shear = Matrix4::Shear(0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(6.0f, 3.0f, 4.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesYInProportionToX)
+{
+	Matrix4 shear = Matrix4::Shear(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(2.0f, 5.0f, 4.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesYInProportionToZ)
+{
+	Matrix4 shear = Matrix4::Shear(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(2.0f, 7.0f, 4.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesZInProportionToX)
+{
+	Matrix4 shear = Matrix4::Shear(0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(2.0f, 3.0f, 6.0f));
+}
+
+TEST(Chapter04Tests, AShearingTransformationMovesZInProportionToY)
+{
+	Matrix4 shear = Matrix4::Shear(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
+
+	ASSERT_EQ(shear * p, Tuple::Point(2.0f, 3.0f, 7.0f));
+}
+
+TEST(Chapter04Tests, IndividualTransfromsAreAppliedInSequence)
+{
+	Tuple p = Tuple::Point(1.0f, 0.0f, 1.0f);
+	Matrix4 A = Matrix4::Rotation_X(M_PI / 2.0f);
+	Matrix4 B = Matrix4::Scale(5.0f, 5.0f, 5.0f);
+	Matrix4 C = Matrix4::Translation(10.0f, 5.0f, 7.0f);
+
+	Tuple p2 = A * p;
+
+	ASSERT_EQ(p2, Tuple::Point(1.0f, -1.0f, 0.0f));
+
+	Tuple p3 = B * p2;
+
+	ASSERT_EQ(p3, Tuple::Point(5.0f, -5.0f, 0.0f));
+
+	Tuple p4 = C * p3;
+
+	ASSERT_EQ(p4, Tuple::Point(15.0f, 0.0f, 7.0f));
+}
+
+TEST(Chapter04Tests, ChainedTransfromationsMustBeAppliedInReverseOrder)
+{
+	Tuple p = Tuple::Point(1.0f, 0.0f, 1.0f);
+	Matrix4 A = Matrix4::Rotation_X(M_PI / 2.0f);
+	Matrix4 B = Matrix4::Scale(5.0f, 5.0f, 5.0f);
+	Matrix4 C = Matrix4::Translation(10.0f, 5.0f, 7.0f);
+
+	Matrix4 T = C * B * A;
+
+	ASSERT_EQ(T * p, Tuple::Point(15.0f, 0.0f, 7.0f));
 }

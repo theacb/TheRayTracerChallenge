@@ -195,20 +195,28 @@ void Matrix::generate_identity()
 	}
 }
 
-// Turns columns into rows and rows into columns
-Matrix Matrix::transpose()
+std::vector<float> Matrix::transpose_vector() const
 {
-	Matrix result = Matrix(this->m_num_columns_);
+	std::vector<float> result = std::vector<float>(this->m_num_rows_ * this->m_num_columns_ ,0.0f);
 
 	for (int r = 0; r < this->m_num_rows_; r++)
 	{
 		for (int c = 0; c < this->m_num_columns_; c++)
 		{
-			result.set((c * this->get_num_columns()) + r, this->m_data_[(r * this->m_num_rows_) + c]);
+			result[(c * this->get_num_columns()) + r] = this->m_data_[(r * this->m_num_rows_) + c];
 		}
 	}
 
 	return result;
+}
+
+// Turns columns into rows and rows into columns
+Matrix Matrix::transpose() const
+{
+	return Matrix(
+		this->m_num_rows_,
+		this->transpose_vector()
+	);
 }
 
 std::vector<float> Matrix::sub_matrix_vector(int remove_row, int remove_col) const
@@ -402,6 +410,8 @@ const float * Matrix::end() const
 	return this->m_data_.data() + this->m_data_.size();
 }
 
+// Overloaded Operators
+
 float & Matrix::operator[](int index)
 {
 	return this->m_data_[index];
@@ -542,6 +552,11 @@ Matrix2 Matrix2::inverse() const
 	return Matrix2(this->inverse_vector());
 }
 
+Matrix2 Matrix2::transpose() const
+{
+	return Matrix2(this->transpose_vector());
+}
+
 // ------------------------------------------------------------------------
 //
 // Matrix3
@@ -641,6 +656,11 @@ Matrix3 Matrix3::inverse() const
 	return Matrix3(this->inverse_vector());
 }
 
+Matrix3 Matrix3::transpose() const
+{
+	return Matrix3(this->transpose_vector());
+}
+
 // ------------------------------------------------------------------------
 //
 // Matrix4
@@ -669,6 +689,66 @@ Matrix4 Matrix4::Identity()
 {
 	Matrix4 result = Matrix4();
 	result.generate_identity();
+	return result;
+}
+
+Matrix4 Matrix4::Translation(float x, float y, float z)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[3] = x;
+	result[7] = y;
+	result[11] = z;
+	return result;
+}
+
+Matrix4 Matrix4::Scale(float x, float y, float z)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[0] = x;
+	result[5] = y;
+	result[10] = z;
+	return result;
+}
+
+Matrix4 Matrix4::Rotation_X(float r)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[5] = cos(r);
+	result[6] = -(sin(r));
+	result[9] = sin(r);
+	result[10] = cos(r);
+	return result;
+}
+
+Matrix4 Matrix4::Rotation_Y(float r)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[0] = cos(r);
+	result[2] = sin(r);
+	result[8] = -(sin(r));
+	result[10] = cos(r);
+	return result;
+}
+
+Matrix4 Matrix4::Rotation_Z(float r)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[0] = cos(r);
+	result[1] = -(sin(r));
+	result[4] = sin(r);
+	result[5] = cos(r);
+	return result;
+}
+
+Matrix4 Matrix4::Shear(float xy, float xz, float yx, float yz, float zx, float zy)
+{
+	Matrix4 result = Matrix4::Identity();
+	result[1] = xy;
+	result[2] = xz;
+	result[4] = yx;
+	result[6] = yz;
+	result[8] = zx;
+	result[9] = zy;
 	return result;
 }
 
@@ -761,6 +841,11 @@ float Matrix4::determinant() const
 Matrix4 Matrix4::inverse() const
 {
 	return Matrix4(this->inverse_vector());
+}
+
+Matrix4 Matrix4::transpose() const
+{
+	return Matrix4(this->transpose_vector());
 }
 
 // ------------------------------------------------------------------------

@@ -39,7 +39,8 @@ public:
 
 	void generate_identity();
 
-	Matrix transpose();
+	std::vector<float> transpose_vector() const;
+	Matrix transpose() const;
 	std::vector<float> sub_matrix_vector(int, int) const;
 	Matrix sub_matrix(int, int) const;
 	float minor(int, int) const;
@@ -91,6 +92,7 @@ public:
 	std::vector<float> get_column(int) const;
 	float determinant() const;
 	Matrix2 inverse() const;
+	Matrix2 transpose() const;
 };
 
 class Matrix3 :
@@ -114,6 +116,7 @@ public:
 	float cofactor(int, int) const;
 	float determinant() const;
 	Matrix3 inverse() const;
+	Matrix3 transpose() const;
 };
 
 class Matrix4 :
@@ -128,6 +131,14 @@ public:
 	// Factories
 	static Matrix4 Identity();
 
+	// Transformation Matrix Factories
+	static Matrix4 Translation(float, float, float);
+	static Matrix4 Scale(float, float, float);
+	static Matrix4 Rotation_X(float);
+	static Matrix4 Rotation_Y(float);
+	static Matrix4 Rotation_Z(float);
+	static Matrix4 Shear(float, float, float, float, float, float);
+
 	// Methods
 	std::vector<float> get_row(int) const;
 	std::vector<float> get_column(int) const;
@@ -140,6 +151,7 @@ public:
 	float cofactor(int, int) const;
 	float determinant() const;
 	Matrix4 inverse() const;
+	Matrix4 transpose() const;
 
 	// Overloaded Operators
 	Matrix4 operator*(const Matrix4 &) const;

@@ -6,3 +6,5 @@
 #pragma once
 
 #include "gtest/gtest.h"
+#include <math.h>
+#define _USE_MATH_DEFINES
