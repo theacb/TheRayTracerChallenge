@@ -6,6 +6,8 @@
 #include "../Raymond/Color.h"
 #include "../Raymond/Canvas.h"
 #include "../Raymond/Matrix.h"
+#include "../Raymond/Ray.h"
+#include "../Raymond/Object.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -921,7 +923,7 @@ TEST(Chapter03Tests, MultiplyingAProductbyItsInverse)
 }
 
 // ------------------------------------------------------------------------
-// Chapter 03 Matrix Transformations
+// Chapter 04 Matrix Transformations
 // ------------------------------------------------------------------------
 
 TEST(Chapter04Tests, MultiplyingByATranslationMatrix) 
@@ -950,7 +952,7 @@ TEST(Chapter04Tests, TranslationDoesNotAffectVectors)
 
 TEST(Chapter04Tests, ScalingMatrixAppliedToAPoint) 
 {
-	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Matrix4 tm = Matrix4::Scaling(2.0f, 3.0f, 4.0f);
 	Tuple p = Tuple::Point(-4.0f, 6.0f, 8.0f);
 
 	ASSERT_EQ(tm * p, Tuple::Point(-8.0f, 18.0f, 32.0f));
@@ -958,7 +960,7 @@ TEST(Chapter04Tests, ScalingMatrixAppliedToAPoint)
 
 TEST(Chapter04Tests, ScalingMatrixAppliedToAVector) 
 {
-	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Matrix4 tm = Matrix4::Scaling(2.0f, 3.0f, 4.0f);
 	Tuple v = Tuple::Vector(-4.0f, 6.0f, 8.0f);
 
 	ASSERT_EQ(tm * v, Tuple::Vector(-8.0f, 18.0f, 32.0f));
@@ -966,7 +968,7 @@ TEST(Chapter04Tests, ScalingMatrixAppliedToAVector)
 
 TEST(Chapter04Tests, MultiplyingByTheInverseOfTheScalingMatrix) 
 {
-	Matrix4 tm = Matrix4::Scale(2.0f, 3.0f, 4.0f);
+	Matrix4 tm = Matrix4::Scaling(2.0f, 3.0f, 4.0f);
 	Tuple p = Tuple::Vector(-4.0f, 6.0f, 8.0f);
 
 	ASSERT_EQ(tm.inverse() * p, Tuple::Vector(-2.0f, 2.0f, 2.0f));
@@ -974,7 +976,7 @@ TEST(Chapter04Tests, MultiplyingByTheInverseOfTheScalingMatrix)
 
 TEST(Chapter04Tests, ReflectionIsScalingByANegativeValue) 
 {
-	Matrix4 tm = Matrix4::Scale(-1.0f, 1.0f, 1.0f);
+	Matrix4 tm = Matrix4::Scaling(-1.0f, 1.0f, 1.0f);
 	Tuple p = Tuple::Point(2.0f, 3.0f, 4.0f);
 
 	ASSERT_EQ(tm * p, Tuple::Point(-2.0f, 3.0f, 4.0f));
@@ -984,8 +986,8 @@ TEST(Chapter04Tests, RotatingAPointAroundTheXAxis)
 {
 	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
 
-	Matrix4 eighth = Matrix4::Rotation_X(M_PI / 4.0f);
-	Matrix4 quarter = Matrix4::Rotation_X(M_PI / 2.0f);
+	Matrix4 eighth = Matrix4::Rotation_X(static_cast<float>(M_PI) / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_X(static_cast<float>(M_PI) / 2.0f);
 
 	ASSERT_EQ(eighth * p, Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, sqrt(2.0f) / 2.0f));
 	ASSERT_EQ(quarter * p, Tuple::Point(0.0f, 0.0f, 1.0f));
@@ -995,7 +997,7 @@ TEST(Chapter04Tests, TheInverseOfAnXRotationRotatesInTheOpositeDirection)
 {
 	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
 
-	Matrix4 eighth = Matrix4::Rotation_X(M_PI / 4.0f);
+	Matrix4 eighth = Matrix4::Rotation_X(static_cast<float>(M_PI) / 4.0f);
 
 	ASSERT_EQ(eighth.inverse() * p, Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, -(sqrt(2.0f) / 2.0f)));
 }
@@ -1004,8 +1006,8 @@ TEST(Chapter04Tests, RotatingAPointAroundTheYAxis)
 {
 	Tuple p = Tuple::Point(0.0f, 0.0f, 1.0f);
 
-	Matrix4 eighth = Matrix4::Rotation_Y(M_PI / 4.0f);
-	Matrix4 quarter = Matrix4::Rotation_Y(M_PI / 2.0f);
+	Matrix4 eighth = Matrix4::Rotation_Y(static_cast<float>(M_PI) / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_Y(static_cast<float>(M_PI) / 2.0f);
 
 	ASSERT_EQ(eighth * p, Tuple::Point(sqrt(2.0f) / 2.0f, 0.0f, sqrt(2.0f) / 2.0f));
 	ASSERT_EQ(quarter * p, Tuple::Point(1.0f, 0.0f, 0.0f));
@@ -1015,8 +1017,8 @@ TEST(Chapter04Tests, RotatingAPointAroundTheZAxis)
 {
 	Tuple p = Tuple::Point(0.0f, 1.0f, 0.0f);
 
-	Matrix4 eighth = Matrix4::Rotation_Z(M_PI / 4.0f);
-	Matrix4 quarter = Matrix4::Rotation_Z(M_PI / 2.0f);
+	Matrix4 eighth = Matrix4::Rotation_Z(static_cast<float>(M_PI) / 4.0f);
+	Matrix4 quarter = Matrix4::Rotation_Z(static_cast<float>(M_PI) / 2.0f);
 
 	ASSERT_EQ(eighth * p, Tuple::Point(-(sqrt(2.0f) / 2.0f), sqrt(2.0f) / 2.0f, 0.0f));
 	ASSERT_EQ(quarter * p, Tuple::Point(-1.0f, 0.0f, 0.0f));
@@ -1073,8 +1075,8 @@ TEST(Chapter04Tests, AShearingTransformationMovesZInProportionToY)
 TEST(Chapter04Tests, IndividualTransfromsAreAppliedInSequence)
 {
 	Tuple p = Tuple::Point(1.0f, 0.0f, 1.0f);
-	Matrix4 A = Matrix4::Rotation_X(M_PI / 2.0f);
-	Matrix4 B = Matrix4::Scale(5.0f, 5.0f, 5.0f);
+	Matrix4 A = Matrix4::Rotation_X(static_cast<float>(M_PI) / 2.0f);
+	Matrix4 B = Matrix4::Scaling(5.0f, 5.0f, 5.0f);
 	Matrix4 C = Matrix4::Translation(10.0f, 5.0f, 7.0f);
 
 	Tuple p2 = A * p;
@@ -1093,11 +1095,249 @@ TEST(Chapter04Tests, IndividualTransfromsAreAppliedInSequence)
 TEST(Chapter04Tests, ChainedTransfromationsMustBeAppliedInReverseOrder)
 {
 	Tuple p = Tuple::Point(1.0f, 0.0f, 1.0f);
-	Matrix4 A = Matrix4::Rotation_X(M_PI / 2.0f);
-	Matrix4 B = Matrix4::Scale(5.0f, 5.0f, 5.0f);
+	Matrix4 A = Matrix4::Rotation_X(static_cast<float>(M_PI) / 2.0f);
+	Matrix4 B = Matrix4::Scaling(5.0f, 5.0f, 5.0f);
 	Matrix4 C = Matrix4::Translation(10.0f, 5.0f, 7.0f);
 
 	Matrix4 T = C * B * A;
 
 	ASSERT_EQ(T * p, Tuple::Point(15.0f, 0.0f, 7.0f));
+}
+
+// ------------------------------------------------------------------------
+// Chapter 05 Ray-Sphere Intersections
+// ------------------------------------------------------------------------
+
+TEST(Chapter05Tests, CreatingAndQueryingARay)
+{
+	Tuple origin = Tuple::Point(1.0f, 2.0f, 3.0f);
+	Tuple direction = Tuple::Vector(4.0f, 5.0f, 6.0f);
+	Ray r = Ray(origin, direction);
+
+	ASSERT_EQ(r.origin, origin);
+	ASSERT_EQ(r.direction, direction);
+}
+
+TEST(Chapter05Tests, ComputingAPointFromADistance)
+{
+	Ray r = Ray(Tuple::Point(2.0f, 3.0f, 4.0f), Tuple::Vector(1.0f, 0.0f, 0.0f));
+
+	ASSERT_EQ(r.position(0.0f), Tuple::Point(2.0f, 3.0f, 4.0f));
+	ASSERT_EQ(r.position(1.0f), Tuple::Point(3.0f, 3.0f, 4.0f));
+	ASSERT_EQ(r.position(-1.0f), Tuple::Point(1.0f, 3.0f, 4.0f));
+	ASSERT_EQ(r.position(2.5f), Tuple::Point(4.5f, 3.0f, 4.0f));
+}
+
+TEST(Chapter05Tests, ARayIntersectsASphereAtTwoPoints)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere S = Sphere();
+
+	std::vector<float> xs = S.intersect_t(r);
+
+	ASSERT_EQ(xs.size(), 2);
+	ASSERT_TRUE(flt_cmp(xs[0], 4.0));
+	ASSERT_TRUE(flt_cmp(xs[1], 6.0));
+}
+
+TEST(Chapter05Tests, ARayIntersectsASphereAtATangent)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 1.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere S = Sphere();
+
+	std::vector<float> xs = S.intersect_t(r);
+
+	ASSERT_EQ(xs.size(), 2);
+	ASSERT_TRUE(flt_cmp(xs[0], 5.0)) << xs[0];
+	ASSERT_TRUE(flt_cmp(xs[1], 5.0)) << xs[1];
+}
+
+TEST(Chapter05Tests, ARayMissesASphere)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 2.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere S = Sphere();
+
+	std::vector<float> xs = S.intersect_t(r);
+
+	ASSERT_EQ(xs.size(), 0);
+}
+
+TEST(Chapter05Tests, ARayOriginatesInsideASphere)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 0.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere S = Sphere();
+
+	std::vector<float> xs = S.intersect_t(r);
+
+	ASSERT_EQ(xs.size(), 2);
+	ASSERT_TRUE(flt_cmp(xs[0], -1.0));
+	ASSERT_TRUE(flt_cmp(xs[1], 1.0));
+}
+
+TEST(Chapter05Tests, ASphereIsBehindARay)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere s = Sphere();
+
+	std::vector<float> xs = s.intersect_t(r);
+
+	ASSERT_EQ(xs.size(), 2);
+	ASSERT_TRUE(flt_cmp(xs[0], -6.0));
+	ASSERT_TRUE(flt_cmp(xs[1], -4.0));
+}
+
+TEST(Chapter05Tests, AnIntersectionEncapsulatesTAndAnObject)
+{
+	Sphere s = Sphere();
+
+	Intersection i = Intersection(3.5f, &s);
+
+	ASSERT_TRUE(flt_cmp(i.t_value, 3.5f));
+	ASSERT_EQ(i.object, &s);
+}
+
+TEST(Chapter05Tests, AggregatingIntersections)
+{
+	Sphere s = Sphere();
+
+	Intersection i1 = Intersection(1.0f, &s);
+	Intersection i2 = Intersection(2.0f, &s);
+
+	Intersections xs = Intersections({ i1, i2 });
+
+	ASSERT_EQ(xs.size(), 2);
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 1.0f));
+	ASSERT_TRUE(flt_cmp(xs[1].t_value, 2.0f));
+}
+
+TEST(Chapter05Tests, IntersectSetsTheObjectOnTheIntersection)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Sphere s = Sphere();
+
+	Intersections xs = intersect(r, &s);
+
+	ASSERT_EQ(xs.size(), 2) << xs;
+	ASSERT_EQ(xs[0].object, &s);
+	ASSERT_EQ(xs[1].object, &s);
+}
+
+TEST(Chapter05Tests, TheHitWhenAllIntersectionsHavePositiveT)
+{
+	Sphere s = Sphere();
+
+	Intersection i1 = Intersection(1.0f, &s);
+	Intersection i2 = Intersection(2.0f, &s);
+
+	Intersections xs = Intersections({ i1, i2 });
+
+	Intersection hit = xs.hit();
+	ASSERT_EQ(hit, i1) << xs;
+}
+
+TEST(Chapter05Tests, TheHitWhenSomeIntersectionsHaveNegativeT)
+{
+	Sphere s = Sphere();
+
+	Intersection i1 = Intersection(-1.0f, &s);
+	Intersection i2 = Intersection(1.0f, &s);
+
+	Intersections xs = Intersections({ i1, i2 });
+
+	Intersection hit = xs.hit();
+	ASSERT_EQ(hit, i2);
+}
+
+TEST(Chapter05Tests, TheHitWhenAllIntersectionsHaveNegativeT)
+{
+	Sphere s = Sphere();
+
+	Intersection i1 = Intersection(-2.0f, &s);
+	Intersection i2 = Intersection(-1.0f, &s);
+
+	Intersections xs = Intersections({ i1, i2 });
+
+	Intersection hit = xs.hit();
+	ASSERT_FALSE(hit.is_valid());
+}
+
+TEST(Chapter05Tests, TheHitIsAlwaysTheLowestNonNegativeIntersection)
+{
+	Sphere s = Sphere();
+
+	Intersection i1 = Intersection(5.0f, &s);
+	Intersection i2 = Intersection(7.0f, &s);
+	Intersection i3 = Intersection(-3.0f, &s);
+	Intersection i4 = Intersection(2.0f, &s);
+
+	Intersections xs = Intersections({ i1, i2, i3, i4 });
+
+	Intersection hit = xs.hit();
+	ASSERT_EQ(hit, i4);
+}
+
+TEST(Chapter05Tests, TranslatingARay)
+{
+	Ray r = Ray(Tuple::Point(1.0f, 2.0f, 3.0f), Tuple::Vector(0.0f, 1.0f, 0.0f));
+	Matrix4 m = Matrix4::Translation(3.0f, 4.0f, 5.0f);
+
+	Ray r2 = r.transform(m);
+	ASSERT_EQ(r2.origin, Tuple::Point(4.0f, 6.0f, 8.0f));
+	ASSERT_EQ(r2.direction, Tuple::Vector(0.0f, 1.0f, 0.0f));
+}
+
+TEST(Chapter05Tests, ScalingARay)
+{
+	Ray r = Ray(Tuple::Point(1.0f, 2.0f, 3.0f), Tuple::Vector(0.0f, 1.0f, 0.0f));
+	Matrix4 m = Matrix4::Scaling(2.0f, 3.0f, 4.0f);
+
+	Ray r2 = r.transform(m);
+	ASSERT_EQ(r2.origin, Tuple::Point(2.0f, 6.0f, 12.0f));
+	ASSERT_EQ(r2.direction, Tuple::Vector(0.0f, 3.0f, 0.0f));
+}
+
+TEST(Chapter05Tests, ASpheresDefaultTransformation)
+{
+	Sphere s = Sphere();
+
+	ASSERT_EQ(s.get_transform(), Matrix4::Identity());
+}
+
+TEST(Chapter05Tests, ChangingASpheresTransformation)
+{
+	Sphere s = Sphere();
+	Matrix4 t = Matrix4::Translation(2.0f, 3.0f, 4.0f);
+
+	s.set_transform(t);
+
+	ASSERT_EQ(s.get_transform(), t);
+}
+
+TEST(Chapter05Tests, IntersectingAScaledSphereWithARay)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+	Sphere s = Sphere();
+	s.set_transform(Matrix4::Scaling(2.0f, 2.0f, 2.0f));
+	Intersections xs = intersect(r, &s);
+
+	ASSERT_EQ(xs.size(), 2);
+
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 3.0f)) << xs[0].t_value;
+	ASSERT_TRUE(flt_cmp(xs[1].t_value, 7.0f));
+}
+
+TEST(Chapter05Tests, IntersectingATranslatedSphereWithARay)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+	Sphere s = Sphere();
+	s.set_transform(Matrix4::Translation(5.0f, 0.0f, 0.0f));
+	Intersections xs = intersect(r, &s);
+
+	ASSERT_EQ(xs.size(), 0);
 }

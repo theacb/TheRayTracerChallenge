@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "tuple.h"
+#include "Tuple.h"
 
 const float EPSILON = 0.00001f;
 

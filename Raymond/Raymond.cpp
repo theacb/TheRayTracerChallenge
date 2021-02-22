@@ -7,6 +7,8 @@
 #include "canvas.h"
 #include "color.h"
 #include "Matrix.h"
+#include "Ray.h"
+#include "Object.h"
 
 struct Projectile
 {
@@ -97,7 +99,7 @@ int render_clock()
 	int hours = 0;
 
 
-	Matrix4 increment = Matrix4::Rotation_Y((2.0f * M_PI) * (1.0f / 12.0f));
+	Matrix4 increment = Matrix4::Rotation_Y((2.0f * static_cast<float>(M_PI)) * (1.0f / 12.0f));
 	Matrix4 view_x_form = Matrix4::Translation(center, 0.0f, center);
 
 	while (hours <= 12)
@@ -118,7 +120,66 @@ int render_clock()
 	return 0;
 }
 
+int render_sphere()
+{
+	int canvas_width = 400;
+	float ortho_width = 7.0f;
+	float pixel_size = ortho_width / static_cast<float>(canvas_width);
+	float half_ortho_size = ortho_width * 0.5f;
+	float wall_z = 10.0f;
+
+	Canvas c = Canvas(canvas_width, canvas_width);
+
+	Color brush_color = Color(0.0f, 0.5f, 1.0f);
+	Color bkg_color = Color(0.5f, 0.5f, 1.0f);
+
+	Sphere s = Sphere();
+
+	s.set_transform(Matrix4::Shear(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) * Matrix4::Scaling(0.5f, 1.0f, 1.0f));
+
+	Tuple ray_origin = Tuple::Point(0.0f, 0.0f, -5.0f);
+
+	std::cout << "Tracing...\n";
+
+	for (int y = 0; y < canvas_width; y++)
+	{
+		float y_pos = half_ortho_size - (static_cast<float>(y) * pixel_size);
+
+		for (int x = 0; x < canvas_width; x++)
+		{
+
+			float x_pos = -half_ortho_size + (static_cast<float>(x) * pixel_size);
+
+			Tuple ray_target = Tuple::Point(y_pos, x_pos, wall_z);
+			
+			Ray r = Ray(ray_origin, (ray_target - ray_origin).normalize());
+
+
+			Intersections xs = intersect(r, &s);
+
+
+			Intersection h = xs.hit();
+
+			if (h.is_valid())
+			{
+				c.write_pixel(x, y, brush_color);
+			}
+			else
+			{
+				c.write_pixel(x, y, bkg_color);
+			}
+
+		}
+	}
+
+	std::cout << "Complete\n";
+
+	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\RaySphereIntersect_CH05_06.ppm");
+
+	return 0;
+}
+
 int main()
 {
-	render_clock();
+	render_sphere();
 }

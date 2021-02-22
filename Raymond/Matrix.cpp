@@ -410,25 +410,16 @@ const float * Matrix::end() const
 	return this->m_data_.data() + this->m_data_.size();
 }
 
+// ------------------------------------------------------------------------
+// Overloaded Operators
+// ------------------------------------------------------------------------
+
 // Overloaded Operators
 
 float & Matrix::operator[](int index)
 {
 	return this->m_data_[index];
 }
-
-// Private
-// -------
-
-// Converts x,y cartesian coords to an index in the internal vector
-int Matrix::m_index_from_coordinates_(int row, int col) const
-{
-	return (row *  this->m_num_columns_) + col;
-}
-
-// ------------------------------------------------------------------------
-// Overloaded Operators
-// ------------------------------------------------------------------------
 
 // Output
 std::ostream & operator<<(std::ostream & os, const Matrix & m)
@@ -487,6 +478,17 @@ bool operator==(const Matrix & left_matrix, const Matrix & right_matrix)
 bool operator!=(const Matrix & left_matrix, const Matrix & right_matrix)
 {
 	return !(left_matrix == right_matrix);
+}
+
+
+// ------------------------------------------------------------------------
+// Private
+// ------------------------------------------------------------------------
+
+// Converts x,y cartesian coords to an index in the internal vector
+int Matrix::m_index_from_coordinates_(int row, int col) const
+{
+	return (row *  this->m_num_columns_) + col;
 }
 
 // ------------------------------------------------------------------------
@@ -701,7 +703,7 @@ Matrix4 Matrix4::Translation(float x, float y, float z)
 	return result;
 }
 
-Matrix4 Matrix4::Scale(float x, float y, float z)
+Matrix4 Matrix4::Scaling(float x, float y, float z)
 {
 	Matrix4 result = Matrix4::Identity();
 	result[0] = x;

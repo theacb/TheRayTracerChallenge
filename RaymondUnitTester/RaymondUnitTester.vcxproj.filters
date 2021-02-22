@@ -15,6 +15,12 @@
     <ClCompile Include="..\Raymond\Matrix.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\Ray.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\Object.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -28,6 +34,12 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\Matrix.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Ray.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Object.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>
