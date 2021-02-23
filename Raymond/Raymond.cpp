@@ -9,6 +9,7 @@
 #include "Matrix.h"
 #include "Ray.h"
 #include "Object.h"
+#include "Primitive.h"
 
 struct Projectile
 {

@@ -12,6 +12,7 @@ public:
 
 	// Factories
 	static Tuple Point(float, float, float);
+	static Tuple Origin();
 	static Tuple Vector(float, float, float);
 
 	// Destructor
@@ -21,8 +22,8 @@ public:
 	float x, y, z, w;
 
 	// Methods
-	float magnitude();
-	Tuple normalize();
+	float magnitude() const;
+	Tuple normalize() const;
 
 	static float dot(const Tuple &, const Tuple &);
 	static Tuple cross(const Tuple &, const Tuple &);

@@ -9,23 +9,28 @@ const float EPSILON = 0.00001f;
 
 Tuple::Tuple()
 {
-	x = 0.0f;
-	y = 0.0f;
-	z = 0.0f;
-	w = 0.0f;
+	this->x = 0.0f;
+	this->y = 0.0f;
+	this->z = 0.0f;
+	this->w = 0.0f;
 }
 
 Tuple::Tuple(float x_axis, float y_axis, float z_axis, float w_axis)
 {
-	x = x_axis;
-	y = y_axis;
-	z = z_axis;
-	w = w_axis;
+	this->x = x_axis;
+	this->y = y_axis;
+	this->z = z_axis;
+	this->w = w_axis;
 }
 
 Tuple Tuple::Point(float x_axis, float y_axis, float z_axis)
 {
 	return Tuple(x_axis, y_axis, z_axis, 1.0f);
+}
+
+Tuple Tuple::Origin()
+{
+	return Tuple::Point(0.0f, 0.0f, 0.0f);
 }
 
 Tuple Tuple::Vector(float x_axis, float y_axis, float z_axis)
@@ -44,19 +49,19 @@ Tuple::~Tuple()
 // ------------------------------------------------------------------------
 
 // Magnitude
-float Tuple::magnitude()
+float Tuple::magnitude() const
 {
 	// Computes magnitude using Pythagorean theorem
 	// sqrt(x^2 + y^2 + z^2 + w^2)
 	const float power = 2.0f;
-	return sqrt(pow(x, power) + pow(y, power) + pow(z, power) + pow(w, power));
+	return sqrt(pow(this->x, power) + pow(this->y, power) + pow(this->z, power) + pow(this->w, power));
 }
 
 // Normalize
-Tuple Tuple::normalize()
+Tuple Tuple::normalize() const
 {
-	const float mag = this->magnitude();
-	return Tuple(x / mag, y / mag, z / mag, w / mag);
+	float mag = this->magnitude();
+	return Tuple(this->x / mag, this->y / mag, this->z / mag, this->w / mag);
 }
 
 // Dot product
@@ -89,20 +94,20 @@ Tuple Tuple::cross(const Tuple & left_tuple, const Tuple & right_tuple)
 Tuple Tuple::operator+(Tuple const & right_tuple) const
 {
 	return Tuple(
-		x + right_tuple.x, 
-		y + right_tuple.y, 
-		z + right_tuple.z, 
-		w + right_tuple.w);
+		this->x + right_tuple.x,
+		this->y + right_tuple.y,
+		this->z + right_tuple.z,
+		this->w + right_tuple.w);
 }
 
 // Subtraction
 Tuple Tuple::operator-(const Tuple & right_tuple) const
 {
 	return Tuple(
-		x - right_tuple.x, 
-		y - right_tuple.y, 
-		z - right_tuple.z, 
-		w - right_tuple.w
+		this->x - right_tuple.x,
+		this->y - right_tuple.y,
+		this->z - right_tuple.z,
+		this->w - right_tuple.w
 	);
 }
 
@@ -110,10 +115,10 @@ Tuple Tuple::operator-(const Tuple & right_tuple) const
 Tuple Tuple::operator*(const float & scalar) const
 {
 	return Tuple(
-		x * scalar, 
-		y * scalar, 
-		z * scalar, 
-		w * scalar
+		this->x * scalar,
+		this->y * scalar,
+		this->z * scalar,
+		this->w * scalar
 	);
 }
 
@@ -121,10 +126,10 @@ Tuple Tuple::operator*(const float & scalar) const
 Tuple Tuple::operator/(const float & scalar) const
 {
 	return Tuple(
-		x / scalar, 
-		y / scalar, 
-		z / scalar, 
-		w / scalar
+		this->x / scalar,
+		this->y / scalar,
+		this->z / scalar,
+		this->w / scalar
 	);
 }
 
@@ -132,10 +137,10 @@ Tuple Tuple::operator/(const float & scalar) const
 Tuple Tuple::operator-()
 {
 	return Tuple(
-		0 - x, 
-		0 - y, 
-		0 - z, 
-		0 - w
+		0 - this->x,
+		0 - this->y,
+		0 - this->z,
+		0 - this->w
 	);
 }
 

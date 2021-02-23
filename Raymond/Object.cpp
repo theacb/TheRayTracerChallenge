@@ -175,55 +175,8 @@ std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
 }
 
 // ------------------------------------------------------------------------
-//
-// Sphere
-//
+// Intersector
 // ------------------------------------------------------------------------
-// Constructors
-// ------------------------------------------------------------------------
-
-Sphere::Sphere() : ObjectBase()
-{
-	this->radius = 1.0f;
-	this->set_name("Default Sphere 000");
-}
-
-Sphere::~Sphere()
-{
-}
-
-std::vector<float> Sphere::intersect_t(Ray r) const
-{
-	std::vector<float> result = std::vector<float>();
-
-	// The vector from the sphere's center to the ray origin
-	Tuple sphere_to_ray = r.origin - Tuple::Point(0.0f, 0.0f, 0.0f);
-
-	// Calculate discriminant
-	float a = Tuple::dot(r.direction, r.direction);
-	float b = 2.0f * Tuple::dot(r.direction, sphere_to_ray);
-	float c = Tuple::dot(sphere_to_ray, sphere_to_ray) - 1;
-
-	float discriminant = (b * b) - (4 * a * c);
-
-	if (discriminant >= 0)
-	{
-		// resize vector
-		result.resize(2);
-
-		float sqrt_discriminant = sqrt(discriminant);
-
-		// Calculate intersections
-		result[0] = (-b - sqrt_discriminant) / (2 * a);
-		result[1] = (-b + sqrt_discriminant) / (2 * a);
-
-		return result;
-	}
-	else
-	{
-		return result;
-	}
-}
 
 Intersections intersect(Ray & r, ConstObjectPtr o)
 {

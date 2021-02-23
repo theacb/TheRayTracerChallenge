@@ -37,6 +37,7 @@
     <ClInclude Include="..\Raymond\Color.h" />
     <ClInclude Include="..\Raymond\Matrix.h" />
     <ClInclude Include="..\Raymond\Object.h" />
+    <ClInclude Include="..\Raymond\Primitive.h" />
     <ClInclude Include="..\Raymond\Ray.h" />
     <ClInclude Include="..\Raymond\tuple.h" />
     <ClInclude Include="pch.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="..\Raymond\Color.cpp" />
     <ClCompile Include="..\Raymond\Matrix.cpp" />
     <ClCompile Include="..\Raymond\Object.cpp" />
+    <ClCompile Include="..\Raymond\Primitive.cpp" />
     <ClCompile Include="..\Raymond\Ray.cpp" />
     <ClCompile Include="..\Raymond\tuple.cpp" />
     <ClCompile Include="test.cpp" />

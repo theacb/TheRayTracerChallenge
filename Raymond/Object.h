@@ -74,18 +74,4 @@ private:
 
 };
 
-class Sphere :
-	public ObjectBase
-{
-public:
-	Sphere();
-	~Sphere();
-
-	//properties
-	float radius;
-
-	// Methods
-	std::vector<float> intersect_t(Ray) const;
-};
-
 Intersections intersect(Ray &, ConstObjectPtr);

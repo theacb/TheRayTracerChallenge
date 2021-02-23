@@ -8,6 +8,7 @@
 #include "../Raymond/Matrix.h"
 #include "../Raymond/Ray.h"
 #include "../Raymond/Object.h"
+#include "../Raymond/Primitive.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -1340,4 +1341,79 @@ TEST(Chapter05Tests, IntersectingATranslatedSphereWithARay)
 	Intersections xs = intersect(r, &s);
 
 	ASSERT_EQ(xs.size(), 0);
+}
+
+// ------------------------------------------------------------------------
+// Chapter 06 Light and Shading
+// ------------------------------------------------------------------------
+
+TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheXAxis)
+{
+	Sphere s = Sphere();
+	
+	Tuple n = s.normal_at(Tuple::Point(1.0f, 0.0f, 0.0f));
+
+	ASSERT_EQ(n, Tuple::Vector(1.0f, 0.0f, 0.0f));
+}
+
+TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheYAxis)
+{
+	Sphere s = Sphere();
+
+	Tuple n = s.normal_at(Tuple::Point(0.0f, 1.0f, 0.0f));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0f, 1.0f, 0.0f));
+}
+
+TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheZAxis)
+{
+	Sphere s = Sphere();
+
+	Tuple n = s.normal_at(Tuple::Point(0.0f, 0.0f, 1.0f));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0f, 0.0f, 1.0f));
+}
+
+TEST(Chapter06Tests, TheNormalOnASphereAtANonAxialPoint)
+{
+	Sphere s = Sphere();
+
+	float sq_3 = sqrt(3.0f) / 3.0f;
+
+	Tuple n = s.normal_at(Tuple::Point(sq_3, sq_3, sq_3));
+
+	ASSERT_EQ(n, Tuple::Vector(sq_3, sq_3, sq_3)) << s.get_transform();
+}
+
+TEST(Chapter06Tests, TheNormalIsANormalizedVector)
+{
+	Sphere s = Sphere();
+
+	float sq_3 = sqrt(3.0f) / 3.0f;
+
+	Tuple n = s.normal_at(Tuple::Point(sq_3, sq_3, sq_3));
+
+	ASSERT_EQ(n, n.normalize());
+}
+
+TEST(Chapter06Tests, ComputingTheNormalOnATranslatedSphere)
+{
+	Sphere s = Sphere();
+	s.set_transform(Matrix4::Translation(0.0f, 1.0f, 0.0f));
+
+	Tuple n = s.normal_at(Tuple::Point(0.0f, 1.70711f, -0.70711f));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0f, 0.70711f, -0.70711f));
+}
+
+TEST(Chapter06Tests, ComputingTheNormalOnATransformedSphere)
+{
+	Sphere s = Sphere();
+	Matrix4 m = Matrix4::Scaling(1.0f, 0.5f, 1.0f) * Matrix4::Rotation_Z(M_PI / 5.0f);
+
+	s.set_transform(m);
+
+	Tuple n = s.normal_at(Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0f, 0.97014f, -0.24254f));
 }

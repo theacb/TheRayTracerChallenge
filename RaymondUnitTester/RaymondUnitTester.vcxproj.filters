@@ -21,6 +21,9 @@
     <ClCompile Include="..\Raymond\Object.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\Primitive.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -40,6 +43,9 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\Object.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Primitive.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>
