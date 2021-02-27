@@ -9,36 +9,25 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Color::Color()
+Color::Color() : Tuple()
 {
-	x = 0.0f;
-	y = 0.0f;
-	z = 0.0f;
-	w = 0.0f;
 }
 
-Color::Color(float luminosity)
+Color::Color(float luminosity) : Tuple(luminosity, luminosity, luminosity, 0.0f)
 {
-	x, y, z = luminosity;
-	w = 0.0f;
 }
 
-Color::Color(float red, float green, float blue)
+Color::Color(float red, float green, float blue) : Tuple(red, green, blue, 0.0f)
 {
-	x = red;
-	y = green;
-	z = blue;
-	w = 0.0f;
 }
 
-Color::Color(float red, float green, float blue, float alpha)
+Color::Color(float red, float green, float blue, float alpha) : Tuple(red, green, blue, alpha)
 {
-	x = red;
-	y = green;
-	z = blue;
-	w = alpha;
 }
 
+Color::Color(const Tuple & a) : Tuple(a)
+{
+}
 
 Color::~Color()
 {
@@ -72,6 +61,16 @@ Color Color::convert_srgb_to_linear()
 		srgb_to_linear(x),
 		srgb_to_linear(y),
 		srgb_to_linear(z)
+	);
+}
+
+Tuple Color::operator*(const Color & right_color) const
+{
+	return Tuple(
+		this->x * right_color.x,
+		this->y * right_color.y,
+		this->z * right_color.z,
+		this->w * right_color.w
 	);
 }
 
@@ -123,6 +122,12 @@ std::string Color8Bit::output()
 // ------------------------------------------------------------------------
 // External Overloaded Operators
 // ------------------------------------------------------------------------
+
+std::ostream & operator<<(std::ostream & os, const Color & col)
+{
+	os << "(" << col.x << ", " << col.y << ", " << col.z << ", " << col.w << ")";
+	return os;
+}
 
 bool operator==(const Color8Bit & left_color, const Color8Bit & right_color)
 {

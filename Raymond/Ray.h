@@ -22,4 +22,3 @@ public:
 	// Overloaded Operators
 	friend std::ostream & operator<<(std::ostream &, const Ray &);
 };
-

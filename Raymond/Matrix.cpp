@@ -703,6 +703,11 @@ Matrix4 Matrix4::Translation(float x, float y, float z)
 	return result;
 }
 
+Matrix4 Matrix4::Translation(Tuple p)
+{
+	return Matrix4::Translation(p.x, p.y, p.z);
+}
+
 Matrix4 Matrix4::Scaling(float x, float y, float z)
 {
 	Matrix4 result = Matrix4::Identity();
@@ -710,6 +715,11 @@ Matrix4 Matrix4::Scaling(float x, float y, float z)
 	result[5] = y;
 	result[10] = z;
 	return result;
+}
+
+Matrix4 Matrix4::Scaling(Tuple s)
+{
+	return Matrix4::Scaling(s.x, s.y, s.z);
 }
 
 Matrix4 Matrix4::Rotation_X(float r)
@@ -853,6 +863,27 @@ Matrix4 Matrix4::transpose() const
 // ------------------------------------------------------------------------
 // Overloaded Operators
 // ------------------------------------------------------------------------
+
+Tuple Matrix4::position()
+{
+	return Tuple::Point(
+		this->operator[](3), 
+		this->operator[](7),
+		this->operator[](11)
+	);
+}
+
+Tuple Matrix4::scale()
+{
+	Tuple s0 = (this->get_row_tuple(0));
+	s0.w = 0;
+	Tuple s1 = (this->get_row_tuple(1));
+	s1.w = 0;
+	Tuple s2 = (this->get_row_tuple(2));
+	s2.w = 0;
+
+	return Tuple::Point(s0.magnitude(), s1.magnitude(), s2.magnitude());
+}
 
 Matrix4 Matrix4::operator*(const Matrix4 & right_matrix) const
 {

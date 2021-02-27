@@ -2,14 +2,8 @@
 //
 
 #include "pch.h"
+
 #include <iostream>
-#include "tuple.h"
-#include "canvas.h"
-#include "color.h"
-#include "Matrix.h"
-#include "Ray.h"
-#include "Object.h"
-#include "Primitive.h"
 
 struct Projectile
 {

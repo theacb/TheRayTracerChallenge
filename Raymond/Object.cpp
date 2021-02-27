@@ -175,7 +175,7 @@ std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
 }
 
 // ------------------------------------------------------------------------
-// Intersector
+// Constructors
 // ------------------------------------------------------------------------
 
 Intersections intersect(Ray & r, ConstObjectPtr o)

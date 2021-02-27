@@ -12,6 +12,7 @@
 Primitive::Primitive() : ObjectBase()
 {
 	this->set_name("Default Primitive 000");
+	this->material = Material();
 }
 
 
@@ -37,7 +38,7 @@ Sphere::~Sphere()
 {
 }
 
-std::vector<float> Sphere::intersect_t(Ray r) const
+std::vector<float> Sphere::intersect_t(Ray & r) const
 {
 	std::vector<float> result = std::vector<float>();
 
@@ -70,7 +71,7 @@ std::vector<float> Sphere::intersect_t(Ray r) const
 	}
 }
 
-Tuple Sphere::normal_at(Tuple world_space_point) const
+Tuple Sphere::normal_at(Tuple & world_space_point) const
 {
 	// Calculate inverse of xfrom vector
 	Matrix4 inverted_xform_matrix = (this->get_transform()).inverse();

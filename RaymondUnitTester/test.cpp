@@ -1,14 +1,17 @@
 #include "pch.h"
+
 #include "math.h"
 #include <sstream> 
 
 #include "../Raymond/Tuple.h"
-#include "../Raymond/Color.h"
 #include "../Raymond/Canvas.h"
+#include "../Raymond/Color.h"
 #include "../Raymond/Matrix.h"
 #include "../Raymond/Ray.h"
 #include "../Raymond/Object.h"
 #include "../Raymond/Primitive.h"
+#include "../Raymond/Light.h"
+#include "../Raymond/Material.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -1409,11 +1412,142 @@ TEST(Chapter06Tests, ComputingTheNormalOnATranslatedSphere)
 TEST(Chapter06Tests, ComputingTheNormalOnATransformedSphere)
 {
 	Sphere s = Sphere();
-	Matrix4 m = Matrix4::Scaling(1.0f, 0.5f, 1.0f) * Matrix4::Rotation_Z(M_PI / 5.0f);
+	Matrix4 m = Matrix4::Scaling(1.0f, 0.5f, 1.0f) * Matrix4::Rotation_Z(static_cast<float>(M_PI) / 5.0f);
 
 	s.set_transform(m);
 
 	Tuple n = s.normal_at(Tuple::Point(0.0f, sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f));
 
 	ASSERT_EQ(n, Tuple::Vector(0.0f, 0.97014f, -0.24254f));
+}
+
+TEST(Chapter06Tests, ReflectingAVectorApproachingAt45Degrees)
+{
+	Tuple v = Tuple::Vector(1.0f, -1.0f, 0.0f);
+	Tuple n = Tuple::Vector(0.0f, 1.0f, 0.0f);
+
+	Tuple r = Tuple::reflect(v, n);
+
+	ASSERT_EQ(r, Tuple::Vector(1.0f, 1.0f, 0.0f));
+}
+
+TEST(Chapter06Tests, ReflectingAVectorOffOfASlantedSurface)
+{
+	Tuple v = Tuple::Vector(0.0f, -1.0f, 0.0f);
+	Tuple n = Tuple::Vector(sqrt(2.0f) / 2.0f, sqrt(2.0f) / 2.0f, 0.0f);
+
+	Tuple r = Tuple::reflect(v, n);
+
+	ASSERT_EQ(r, Tuple::Vector(1.0f, 0.0f, 0.0f));
+}
+
+TEST(Chapter06Tests, APointLightHasPositionAndIntensity)
+{
+	Color intensity = Color(1.0f, 1.0f, 1.0f);
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+
+	PointLight light = PointLight(position, intensity);
+
+	ASSERT_EQ(light.position(), position);
+	ASSERT_EQ(light.color, intensity);
+}
+
+TEST(Chapter06Tests, TheDefaultMaterial)
+{
+	Material m = Material();
+	
+	ASSERT_EQ(m.color, Color(1.0f, 1.0f, 1.0f));
+	ASSERT_TRUE(flt_cmp(m.ambient, 0.1f));
+	ASSERT_TRUE(flt_cmp(m.diffuse, 0.9f));
+	ASSERT_TRUE(flt_cmp(m.specular, 0.9f));
+	ASSERT_TRUE(flt_cmp(m.shininess, 200.0f));
+}
+
+TEST(Chapter06Tests, ASphereHasADefaulMaterial)
+{
+	Sphere s = Sphere();
+	Material m = Material();
+
+	ASSERT_EQ(m, s.material);
+}
+
+TEST(Chapter06Tests, ASphereMayBeAssignedAMaterial)
+{
+	Sphere s = Sphere();
+	Material m = Material();
+	m.ambient = 1.0f;
+
+	s.material = m;
+
+	ASSERT_EQ(m, s.material);
+}
+
+TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurface)
+{
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Material m = Material();
+
+	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+
+	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = lighting(m, &light, position, eye_v, normal_v);
+
+	ASSERT_EQ(result, Color(1.9f, 1.9f, 1.9f));
+}
+
+TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurfaceEyeOffset45Degrees)
+{
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Material m = Material();
+
+	Tuple eye_v = Tuple::Vector(0.0f, sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+
+	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = lighting(m, &light, position, eye_v, normal_v);
+
+	ASSERT_EQ(result, Color(1.0f, 1.0f, 1.0f));
+}
+
+TEST(Chapter06Tests, LightingWithEyeOppositeSurfaceLightOffset45Degrees)
+{
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Material m = Material();
+
+	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+
+	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = lighting(m, &light, position, eye_v, normal_v);
+
+	ASSERT_EQ(result, Color(0.7364f, 0.7364f, 0.7364f));
+}
+
+TEST(Chapter06Tests, LightingWithEyeInThePathOfTheReflectionVector)
+{
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Material m = Material();
+
+	Tuple eye_v = Tuple::Vector(0.0f, -sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+
+	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = lighting(m, &light, position, eye_v, normal_v);
+
+	ASSERT_EQ(result, Color(1.63639f, 1.63639f, 1.63639f));
+}
+
+TEST(Chapter06Tests, LightingWithTheLightBehindTheSurface)
+{
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Material m = Material();
+
+	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+
+	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, 10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = lighting(m, &light, position, eye_v, normal_v);
+
+	ASSERT_EQ(result, Color(0.1f, 0.1f, 0.1f));
 }

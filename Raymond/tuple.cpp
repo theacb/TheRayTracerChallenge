@@ -23,6 +23,14 @@ Tuple::Tuple(float x_axis, float y_axis, float z_axis, float w_axis)
 	this->w = w_axis;
 }
 
+Tuple::Tuple(const Tuple & src)
+{
+	this->x = src.x;
+	this->y = src.y;
+	this->z = src.z;
+	this->w = src.w;
+}
+
 Tuple Tuple::Point(float x_axis, float y_axis, float z_axis)
 {
 	return Tuple(x_axis, y_axis, z_axis, 1.0f);
@@ -84,6 +92,32 @@ Tuple Tuple::cross(const Tuple & left_tuple, const Tuple & right_tuple)
 		0.0f
 
 	);
+}
+
+float Tuple::distance(const Tuple & left_tuple, const Tuple & right_tuple)
+{
+	const float power = 2.0f;
+	return sqrt(
+		pow(right_tuple.x - left_tuple.x, power) +
+		pow(right_tuple.y - left_tuple.y, power) +
+		pow(right_tuple.z - left_tuple.z, power) +
+		pow(right_tuple.w - left_tuple.w, power)
+	);
+}
+
+Tuple Tuple::reflect(const Tuple & in, const Tuple & normal)
+{
+	return in - (normal * (2 * Tuple::dot(in, normal)));
+}
+
+Tuple Tuple::entry_wise(const Tuple & left_tuple, const Tuple & right_tuple)
+{
+	return Tuple(
+		left_tuple.x * right_tuple.x,
+		left_tuple.y * right_tuple.y,
+		left_tuple.z * right_tuple.z,
+		left_tuple.w * right_tuple.w
+		);
 }
 
 // ------------------------------------------------------------------------

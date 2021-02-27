@@ -2,9 +2,10 @@
 
 #include <vector>
 #include <algorithm> 
+#include <string>
+
 #include "Ray.h"
 #include "Tuple.h"
-#include <string>
 
 class ObjectBase;
 using ObjectPtr = ObjectBase * ;
@@ -55,7 +56,7 @@ public:
 	~ObjectBase();
 
 	// Methods
-	virtual std::vector<float> intersect_t(Ray) const = 0;
+	virtual std::vector<float> intersect_t(Ray &) const = 0;
 
 	// Accessors
 	void set_name(std::string);

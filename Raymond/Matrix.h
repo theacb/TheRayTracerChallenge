@@ -133,7 +133,9 @@ public:
 
 	// Transformation Matrix Factories
 	static Matrix4 Translation(float, float, float);
+	static Matrix4 Translation(Tuple);
 	static Matrix4 Scaling(float, float, float);
+	static Matrix4 Scaling(Tuple);
 	static Matrix4 Rotation_X(float);
 	static Matrix4 Rotation_Y(float);
 	static Matrix4 Rotation_Z(float);
@@ -152,6 +154,10 @@ public:
 	float determinant() const;
 	Matrix4 inverse() const;
 	Matrix4 transpose() const;
+
+	// Transformation Matrix Getters
+	Tuple position();
+	Tuple scale();
 
 	// Overloaded Operators
 	Matrix4 operator*(const Matrix4 &) const;

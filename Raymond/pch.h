@@ -11,6 +11,14 @@
 
 #define _USE_MATH_DEFINES
 
-// TODO: add headers that you want to pre-compile here
+#include "Tuple.h"
+#include "Canvas.h"
+#include "Color.h"
+#include "Matrix.h"
+#include "Ray.h"
+#include "Object.h"
+#include "Primitive.h"
+#include "Light.h"
+#include "Material.h"
 
 #endif //PCH_H

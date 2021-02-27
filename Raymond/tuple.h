@@ -9,6 +9,7 @@ public:
 	// Constructors
 	Tuple();
 	Tuple(float, float, float, float);
+	Tuple(const Tuple &);
 
 	// Factories
 	static Tuple Point(float, float, float);
@@ -27,6 +28,9 @@ public:
 
 	static float dot(const Tuple &, const Tuple &);
 	static Tuple cross(const Tuple &, const Tuple &);
+	static float distance(const Tuple &, const Tuple &);
+	static Tuple reflect(const Tuple &, const Tuple &);
+	static Tuple entry_wise(const Tuple &, const Tuple &);
 
 	// Overloaded Operators
 	Tuple operator+(const Tuple &) const;

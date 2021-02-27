@@ -35,6 +35,8 @@
   <ItemGroup>
     <ClInclude Include="..\Raymond\Canvas.h" />
     <ClInclude Include="..\Raymond\Color.h" />
+    <ClInclude Include="..\Raymond\Light.h" />
+    <ClInclude Include="..\Raymond\Material.h" />
     <ClInclude Include="..\Raymond\Matrix.h" />
     <ClInclude Include="..\Raymond\Object.h" />
     <ClInclude Include="..\Raymond\Primitive.h" />
@@ -45,6 +47,8 @@
   <ItemGroup>
     <ClCompile Include="..\Raymond\Canvas.cpp" />
     <ClCompile Include="..\Raymond\Color.cpp" />
+    <ClCompile Include="..\Raymond\Light.cpp" />
+    <ClCompile Include="..\Raymond\Material.cpp" />
     <ClCompile Include="..\Raymond\Matrix.cpp" />
     <ClCompile Include="..\Raymond\Object.cpp" />
     <ClCompile Include="..\Raymond\Primitive.cpp" />

@@ -14,6 +14,7 @@ public:
 	Color(float);
 	Color(float, float, float);
 	Color(float, float, float, float);
+	Color(const Tuple&);
 
 	// Destrcutor
 	~Color();
@@ -29,6 +30,8 @@ public:
 	//  - Converters
 	Color convert_linear_to_srgb();
 	Color convert_srgb_to_linear();
+
+	Tuple operator*(const Color &) const;
 };
 
 // 8 Bit Color
@@ -55,6 +58,7 @@ public:
 bool operator==(const Color8Bit &, const Color8Bit &);
 bool operator!=(const Color8Bit &, const Color8Bit &);
 std::ostream & operator<<(std::ostream &, const Color8Bit &);
+std::ostream & operator<<(std::ostream &, const Color &);
 
 // Helper Functions
 float linear_to_srgb(const float);
