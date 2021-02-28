@@ -117,51 +117,78 @@ int render_clock()
 
 int render_sphere()
 {
-	int canvas_width = 400;
-	float ortho_width = 7.0f;
-	float pixel_size = ortho_width / static_cast<float>(canvas_width);
-	float half_ortho_size = ortho_width * 0.5f;
+	int canvas_width = 560;
+	int canvas_height = 315;
+
+	float screen_width = 7.0f * float(canvas_width) / float(canvas_height);
+	float screen_height = screen_width * float(canvas_height) / float(canvas_width);
+
+	float pixel_size = screen_width / float(canvas_width);
+	float half_screen_width = screen_width * 0.5f;
+	float half_screen_height = screen_height * 0.5f;
+
 	float wall_z = 10.0f;
 
-	Canvas c = Canvas(canvas_width, canvas_width);
+	Canvas c = Canvas(canvas_width, canvas_height);
 
-	Color brush_color = Color(0.0f, 0.5f, 1.0f);
-	Color bkg_color = Color(0.5f, 0.5f, 1.0f);
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Sphere s = Sphere();
+	s->set_transform(
+		Matrix4::Rotation_Z(static_cast<float>(M_PI) / 2.0f) *
+		Matrix4::Scaling(0.5f, 1.0f, 1.0f)
+		
+	);
 
-	s.set_transform(Matrix4::Shear(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f) * Matrix4::Scaling(0.5f, 1.0f, 1.0f));
+	auto material = std::dynamic_pointer_cast<PhongMaterial>(s->material);
+	material->color = Color(1.0f, 0.2f, 1.0f);
+
+	PointLight lgt = PointLight(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0f, 1.0f, 1.0f));
 
 	Tuple ray_origin = Tuple::Point(0.0f, 0.0f, -5.0f);
 
 	std::cout << "Tracing...\n";
 
-	for (int y = 0; y < canvas_width; y++)
+	for (int y = 0; y < canvas_height; y++)
 	{
-		float y_pos = half_ortho_size - (static_cast<float>(y) * pixel_size);
+		std::cout << "Scanline: " << y + 1 << "/" << canvas_height << "\n";
+
+		float y_pos = half_screen_height - (float(y) * pixel_size);
 
 		for (int x = 0; x < canvas_width; x++)
 		{
 
-			float x_pos = -half_ortho_size + (static_cast<float>(x) * pixel_size);
+			float x_pos = (-half_screen_width) + (float(x) * pixel_size);
 
-			Tuple ray_target = Tuple::Point(y_pos, x_pos, wall_z);
+			Tuple ray_target = Tuple::Point(x_pos, y_pos, wall_z);
 			
 			Ray r = Ray(ray_origin, (ray_target - ray_origin).normalize());
 
 
-			Intersections xs = intersect(r, &s);
+			Intersections xs = intersect(r, s);
 
 
 			Intersection h = xs.hit();
 
 			if (h.is_valid())
 			{
-				c.write_pixel(x, y, brush_color);
+				auto obj_ptr = std::dynamic_pointer_cast<Primitive>(h.object);
+				Tuple hit_point = r.position(h.t_value);
+
+				Color col = obj_ptr->material->shade(
+					&lgt, 
+					hit_point, 
+					-(r.direction), 
+					obj_ptr->normal_at(hit_point)
+				);
+
+				c.write_pixel(x, y, col);
 			}
 			else
 			{
-				c.write_pixel(x, y, bkg_color);
+				auto r = float(x) / (canvas_width - 1);
+				auto g = float(canvas_height - y) / (canvas_height - 1);
+
+				c.write_pixel(x, y, Color(r, g, 1.0f));
 			}
 
 		}
@@ -169,7 +196,7 @@ int render_sphere()
 
 	std::cout << "Complete\n";
 
-	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\RaySphereIntersect_CH05_06.ppm");
+	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\LightAndShading_CH06_04.ppm", false);
 
 	return 0;
 }

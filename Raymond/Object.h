@@ -7,48 +7,6 @@
 #include "Ray.h"
 #include "Tuple.h"
 
-class ObjectBase;
-using ObjectPtr = ObjectBase * ;
-using ConstObjectPtr = const ObjectBase *;
-
-class Intersection
-{
-public:
-	Intersection();
-	Intersection(float, ConstObjectPtr);
-	~Intersection();
-
-	// Methods
-	bool is_valid() const;
-
-	// Properties
-	float t_value; //Depth
-	ConstObjectPtr object;
-
-	// Overloaded Operators
-	friend std::ostream & operator<<(std::ostream &, const Intersection &);
-
-	friend bool operator==(const Intersection &, const Intersection &);
-	friend bool operator!=(const Intersection &, const Intersection &);
-	friend bool operator<(const Intersection &, const Intersection &);
-
-};
-
-class Intersections :
-	public std::vector<Intersection>
-{
-public:
-	Intersections();
-	Intersections(std::initializer_list<Intersection>);
-	Intersections(std::vector<float>, ConstObjectPtr);
-
-	// Methods
-	Intersection hit() const;
-
-	// Overloaded Operators
-	friend std::ostream & operator<<(std::ostream &, const Intersections &);
-};
-
 class ObjectBase
 {
 public:
@@ -75,4 +33,42 @@ private:
 
 };
 
-Intersections intersect(Ray &, ConstObjectPtr);
+class Intersection
+{
+public:
+	Intersection();
+	Intersection(float, std::shared_ptr<ObjectBase>);
+	~Intersection();
+
+	// Methods
+	bool is_valid() const;
+
+	// Properties
+	float t_value; //Depth
+	std::shared_ptr<ObjectBase> object;
+
+	// Overloaded Operators
+	friend std::ostream & operator<<(std::ostream &, const Intersection &);
+
+	friend bool operator==(const Intersection &, const Intersection &);
+	friend bool operator!=(const Intersection &, const Intersection &);
+	friend bool operator<(const Intersection &, const Intersection &);
+
+};
+
+class Intersections :
+	public std::vector<Intersection>
+{
+public:
+	Intersections();
+	Intersections(std::initializer_list<Intersection>);
+	Intersections(std::vector<float>, std::shared_ptr<ObjectBase>);
+
+	// Methods
+	Intersection hit() const;
+
+	// Overloaded Operators
+	friend std::ostream & operator<<(std::ostream &, const Intersections &);
+};
+
+Intersections intersect(Ray &, std::shared_ptr<ObjectBase>);

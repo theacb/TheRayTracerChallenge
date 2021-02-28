@@ -139,6 +139,11 @@ int Canvas::c_index_from_coordinates_(int x, int y)
 
 void canvas_to_ppm(Canvas canvas, std::string file_path)
 {
+	canvas_to_ppm(canvas, file_path, true);
+}
+
+void canvas_to_ppm(Canvas canvas, std::string file_path, bool convert_to_sRGB)
+{
 	// File stream
 	std::ofstream output_file;
 
@@ -148,10 +153,9 @@ void canvas_to_ppm(Canvas canvas, std::string file_path)
 	// Write header
 	output_file << "P3\n" << canvas.width() << " " << canvas.height() << "\n255\n";
 
-	output_file << canvas.to_ppm_lines(true).rdbuf();
+	output_file << canvas.to_ppm_lines(convert_to_sRGB).rdbuf();
 
 	output_file << "\n";
 
 	output_file.close();
-
 }

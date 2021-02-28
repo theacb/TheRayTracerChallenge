@@ -44,3 +44,4 @@ private:
 
 // File Output
 void canvas_to_ppm(Canvas, std::string);
+void canvas_to_ppm(Canvas, std::string, bool);

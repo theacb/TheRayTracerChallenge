@@ -3,6 +3,50 @@
 
 // ------------------------------------------------------------------------
 //
+// Base Object
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+ObjectBase::ObjectBase()
+{
+	this->transform_ = Matrix4::Identity();
+	this->name_ = "Default Object 000";
+}
+
+
+ObjectBase::~ObjectBase()
+{
+}
+
+void ObjectBase::set_name(std::string new_name)
+{
+	this->name_ = name_;
+}
+
+std::string ObjectBase::get_name() const
+{
+	return this->name_;
+}
+
+void ObjectBase::set_transform(Matrix4 m )
+{
+	this->transform_ = m;
+}
+
+Matrix4 ObjectBase::get_transform() const
+{
+	return this->transform_;
+}
+
+std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
+{
+	return os << "(" << obj.name_ << ", " << obj.transform_ << ")";
+}
+
+// ------------------------------------------------------------------------
+//
 // Intersection
 //
 // ------------------------------------------------------------------------
@@ -13,7 +57,7 @@ Intersection::Intersection() : Intersection(0.0f, nullptr)
 {
 }
 
-Intersection::Intersection(float t, ConstObjectPtr obj)
+Intersection::Intersection(float t, std::shared_ptr<ObjectBase> obj)
 {
 	this->t_value = t;
 	this->object = obj;
@@ -64,13 +108,13 @@ Intersections::Intersections() : std::vector<Intersection>()
 {
 }
 
-Intersections::Intersections(std::initializer_list<Intersection> il) : 
+Intersections::Intersections(std::initializer_list<Intersection> il) :
 	std::vector<Intersection>(il)
 {
 	std::sort(this->begin(), this->end());
 }
 
-Intersections::Intersections(std::vector<float> t_values, ConstObjectPtr o) : 
+Intersections::Intersections(std::vector<float> t_values, std::shared_ptr<ObjectBase> o) :
 	std::vector<Intersection>()
 {
 	for (float t : t_values)
@@ -131,54 +175,10 @@ std::ostream & operator<<(std::ostream & os, const Intersections & ixs)
 }
 
 // ------------------------------------------------------------------------
-//
-// Base Object
-//
-// ------------------------------------------------------------------------
-// Constructors
+// Intersector
 // ------------------------------------------------------------------------
 
-ObjectBase::ObjectBase()
-{
-	this->transform_ = Matrix4::Identity();
-	this->name_ = "Default Object 000";
-}
-
-
-ObjectBase::~ObjectBase()
-{
-}
-
-void ObjectBase::set_name(std::string new_name)
-{
-	this->name_ = name_;
-}
-
-std::string ObjectBase::get_name() const
-{
-	return this->name_;
-}
-
-void ObjectBase::set_transform(Matrix4 m )
-{
-	this->transform_ = m;
-}
-
-Matrix4 ObjectBase::get_transform() const
-{
-	return this->transform_;
-}
-
-std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
-{
-	return os << "(" << obj.name_ << ", " << obj.transform_ << ")";
-}
-
-// ------------------------------------------------------------------------
-// Constructors
-// ------------------------------------------------------------------------
-
-Intersections intersect(Ray & r, ConstObjectPtr o)
+Intersections intersect(Ray & r, std::shared_ptr<ObjectBase> o)
 {
 	// Transform Ray by Inverse of Object transform Matrix
 	Ray transformed_ray = r.transform((o->get_transform()).inverse());

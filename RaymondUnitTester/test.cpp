@@ -1197,20 +1197,20 @@ TEST(Chapter05Tests, ASphereIsBehindARay)
 
 TEST(Chapter05Tests, AnIntersectionEncapsulatesTAndAnObject)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i = Intersection(3.5f, &s);
+	Intersection i = Intersection(3.5f, s);
 
 	ASSERT_TRUE(flt_cmp(i.t_value, 3.5f));
-	ASSERT_EQ(i.object, &s);
+	ASSERT_EQ(i.object, s);
 }
 
 TEST(Chapter05Tests, AggregatingIntersections)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i1 = Intersection(1.0f, &s);
-	Intersection i2 = Intersection(2.0f, &s);
+	Intersection i1 = Intersection(1.0f, s);
+	Intersection i2 = Intersection(2.0f, s);
 
 	Intersections xs = Intersections({ i1, i2 });
 
@@ -1223,21 +1223,21 @@ TEST(Chapter05Tests, IntersectSetsTheObjectOnTheIntersection)
 {
 	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
 
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersections xs = intersect(r, &s);
+	Intersections xs = intersect(r, s);
 
 	ASSERT_EQ(xs.size(), 2) << xs;
-	ASSERT_EQ(xs[0].object, &s);
-	ASSERT_EQ(xs[1].object, &s);
+	ASSERT_EQ(xs[0].object, s);
+	ASSERT_EQ(xs[1].object, s);
 }
 
 TEST(Chapter05Tests, TheHitWhenAllIntersectionsHavePositiveT)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i1 = Intersection(1.0f, &s);
-	Intersection i2 = Intersection(2.0f, &s);
+	Intersection i1 = Intersection(1.0f, s);
+	Intersection i2 = Intersection(2.0f, s);
 
 	Intersections xs = Intersections({ i1, i2 });
 
@@ -1247,10 +1247,10 @@ TEST(Chapter05Tests, TheHitWhenAllIntersectionsHavePositiveT)
 
 TEST(Chapter05Tests, TheHitWhenSomeIntersectionsHaveNegativeT)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i1 = Intersection(-1.0f, &s);
-	Intersection i2 = Intersection(1.0f, &s);
+	Intersection i1 = Intersection(-1.0f, s);
+	Intersection i2 = Intersection(1.0f, s);
 
 	Intersections xs = Intersections({ i1, i2 });
 
@@ -1260,10 +1260,10 @@ TEST(Chapter05Tests, TheHitWhenSomeIntersectionsHaveNegativeT)
 
 TEST(Chapter05Tests, TheHitWhenAllIntersectionsHaveNegativeT)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i1 = Intersection(-2.0f, &s);
-	Intersection i2 = Intersection(-1.0f, &s);
+	Intersection i1 = Intersection(-2.0f, s);
+	Intersection i2 = Intersection(-1.0f, s);
 
 	Intersections xs = Intersections({ i1, i2 });
 
@@ -1273,12 +1273,12 @@ TEST(Chapter05Tests, TheHitWhenAllIntersectionsHaveNegativeT)
 
 TEST(Chapter05Tests, TheHitIsAlwaysTheLowestNonNegativeIntersection)
 {
-	Sphere s = Sphere();
+	auto s = std::make_shared<Sphere>(Sphere());
 
-	Intersection i1 = Intersection(5.0f, &s);
-	Intersection i2 = Intersection(7.0f, &s);
-	Intersection i3 = Intersection(-3.0f, &s);
-	Intersection i4 = Intersection(2.0f, &s);
+	Intersection i1 = Intersection(5.0f, s);
+	Intersection i2 = Intersection(7.0f, s);
+	Intersection i3 = Intersection(-3.0f, s);
+	Intersection i4 = Intersection(2.0f, s);
 
 	Intersections xs = Intersections({ i1, i2, i3, i4 });
 
@@ -1326,9 +1326,9 @@ TEST(Chapter05Tests, ChangingASpheresTransformation)
 TEST(Chapter05Tests, IntersectingAScaledSphereWithARay)
 {
 	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
-	Sphere s = Sphere();
-	s.set_transform(Matrix4::Scaling(2.0f, 2.0f, 2.0f));
-	Intersections xs = intersect(r, &s);
+	auto s = std::make_shared<Sphere>(Sphere());
+	s->set_transform(Matrix4::Scaling(2.0f, 2.0f, 2.0f));
+	Intersections xs = intersect(r, s);
 
 	ASSERT_EQ(xs.size(), 2);
 
@@ -1339,9 +1339,9 @@ TEST(Chapter05Tests, IntersectingAScaledSphereWithARay)
 TEST(Chapter05Tests, IntersectingATranslatedSphereWithARay)
 {
 	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
-	Sphere s = Sphere();
-	s.set_transform(Matrix4::Translation(5.0f, 0.0f, 0.0f));
-	Intersections xs = intersect(r, &s);
+	auto s = std::make_shared<Sphere>(Sphere());
+	s->set_transform(Matrix4::Translation(5.0f, 0.0f, 0.0f));
+	Intersections xs = intersect(r, s);
 
 	ASSERT_EQ(xs.size(), 0);
 }
@@ -1454,7 +1454,7 @@ TEST(Chapter06Tests, APointLightHasPositionAndIntensity)
 
 TEST(Chapter06Tests, TheDefaultMaterial)
 {
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 	
 	ASSERT_EQ(m.color, Color(1.0f, 1.0f, 1.0f));
 	ASSERT_TRUE(flt_cmp(m.ambient, 0.1f));
@@ -1466,32 +1466,36 @@ TEST(Chapter06Tests, TheDefaultMaterial)
 TEST(Chapter06Tests, ASphereHasADefaulMaterial)
 {
 	Sphere s = Sphere();
-	Material m = Material();
+	auto m = std::make_shared<PhongMaterial>();
 
-	ASSERT_EQ(m, s.material);
+	auto sm = std::dynamic_pointer_cast<PhongMaterial>(s.material);
+
+	ASSERT_EQ(*m, *sm);
 }
 
 TEST(Chapter06Tests, ASphereMayBeAssignedAMaterial)
 {
 	Sphere s = Sphere();
-	Material m = Material();
-	m.ambient = 1.0f;
+	auto m = std::make_shared<PhongMaterial>();
+	m->ambient = 1.0f;
 
 	s.material = m;
 
-	ASSERT_EQ(m, s.material);
+	auto sm = std::dynamic_pointer_cast<PhongMaterial>(s.material);
+
+	ASSERT_EQ(*m, *sm);
 }
 
 TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurface)
 {
 	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
 	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = lighting(m, &light, position, eye_v, normal_v);
+	Color result = m.shade(&light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.9f, 1.9f, 1.9f));
 }
@@ -1499,13 +1503,13 @@ TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurface)
 TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurfaceEyeOffset45Degrees)
 {
 	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 
 	Tuple eye_v = Tuple::Vector(0.0f, sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
 	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = lighting(m, &light, position, eye_v, normal_v);
+	Color result = m.shade(&light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.0f, 1.0f, 1.0f));
 }
@@ -1513,13 +1517,13 @@ TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurfaceEyeOffset45De
 TEST(Chapter06Tests, LightingWithEyeOppositeSurfaceLightOffset45Degrees)
 {
 	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
 	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = lighting(m, &light, position, eye_v, normal_v);
+	Color result = m.shade(&light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(0.7364f, 0.7364f, 0.7364f));
 }
@@ -1527,13 +1531,13 @@ TEST(Chapter06Tests, LightingWithEyeOppositeSurfaceLightOffset45Degrees)
 TEST(Chapter06Tests, LightingWithEyeInThePathOfTheReflectionVector)
 {
 	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 
 	Tuple eye_v = Tuple::Vector(0.0f, -sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
 	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = lighting(m, &light, position, eye_v, normal_v);
+	Color result = m.shade(&light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.63639f, 1.63639f, 1.63639f));
 }
@@ -1541,13 +1545,13 @@ TEST(Chapter06Tests, LightingWithEyeInThePathOfTheReflectionVector)
 TEST(Chapter06Tests, LightingWithTheLightBehindTheSurface)
 {
 	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
-	Material m = Material();
+	PhongMaterial m = PhongMaterial();
 
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
 	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, 10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = lighting(m, &light, position, eye_v, normal_v);
+	Color result = m.shade(&light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(0.1f, 0.1f, 0.1f));
 }

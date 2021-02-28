@@ -12,7 +12,7 @@
 Primitive::Primitive() : ObjectBase()
 {
 	this->set_name("Default Primitive 000");
-	this->material = Material();
+	this->material = std::make_shared<PhongMaterial>();
 }
 
 
@@ -73,7 +73,7 @@ std::vector<float> Sphere::intersect_t(Ray & r) const
 
 Tuple Sphere::normal_at(Tuple & world_space_point) const
 {
-	// Calculate inverse of xfrom vector
+	// Calculate inverse of xform vector
 	Matrix4 inverted_xform_matrix = (this->get_transform()).inverse();
 
 	// Multiply point by inverse xform matrix to bring into object space
