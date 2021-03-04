@@ -12,6 +12,10 @@
 #include "../Raymond/Primitive.h"
 #include "../Raymond/Light.h"
 #include "../Raymond/Material.h"
+#include "../Raymond/World.h"
+#include "../Raymond/IxComps.h"
+#include "../Raymond/Background.h"
+#include "../Raymond/Camera.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -1494,8 +1498,8 @@ TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurface)
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
-	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = m.shade(&light, position, eye_v, normal_v);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = m.lighting(light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.9f, 1.9f, 1.9f));
 }
@@ -1508,8 +1512,8 @@ TEST(Chapter06Tests, LightingWithTheEyeBewteenTheLightAndTheSurfaceEyeOffset45De
 	Tuple eye_v = Tuple::Vector(0.0f, sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
-	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = m.shade(&light, position, eye_v, normal_v);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = m.lighting(light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.0f, 1.0f, 1.0f));
 }
@@ -1522,8 +1526,8 @@ TEST(Chapter06Tests, LightingWithEyeOppositeSurfaceLightOffset45Degrees)
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
-	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = m.shade(&light, position, eye_v, normal_v);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = m.lighting(light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(0.7364f, 0.7364f, 0.7364f));
 }
@@ -1536,8 +1540,8 @@ TEST(Chapter06Tests, LightingWithEyeInThePathOfTheReflectionVector)
 	Tuple eye_v = Tuple::Vector(0.0f, -sqrt(2.0f) / 2.0f, -sqrt(2.0f) / 2.0f);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
-	PointLight light = PointLight(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = m.shade(&light, position, eye_v, normal_v);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 10.0f, -10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = m.lighting(light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(1.63639f, 1.63639f, 1.63639f));
 }
@@ -1550,8 +1554,291 @@ TEST(Chapter06Tests, LightingWithTheLightBehindTheSurface)
 	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0);
 	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
 
-	PointLight light = PointLight(Tuple::Point(0.0f, 0.0f, 10.0f), Color(1.0f, 1.0f, 1.0f));
-	Color result = m.shade(&light, position, eye_v, normal_v);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 0.0f, 10.0f), Color(1.0f, 1.0f, 1.0f));
+	Color result = m.lighting(light, position, eye_v, normal_v);
 
 	ASSERT_EQ(result, Color(0.1f, 0.1f, 0.1f));
+}
+
+// ------------------------------------------------------------------------
+// Chapter 07 Making a Scene
+// ------------------------------------------------------------------------
+
+TEST(Chapter07Tests, CreatingAWorld)
+{
+	World w = World();
+
+	ASSERT_EQ(w.get_lights().size(), 0);
+	ASSERT_EQ(w.get_primitives().size(), 0);
+}
+
+TEST(Chapter07Tests, TheDefaulWorld)
+{
+	World w = World::Default();
+
+	PointLight light = PointLight(Tuple::Point(-10.0f, 10.0f, -10.0f), Color(1.0f));
+
+	Sphere s1 = Sphere();
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(s1.material);
+	ms1->color = Color(0.8f, 1.0f, 0.6f);
+	ms1->diffuse = 0.7f;
+	ms1->specular = 0.2f;
+
+	Sphere s2 = Sphere();
+	s2.set_transform(Matrix4::Scaling(0.5f, 0.5f, 0.5f));
+
+	ASSERT_EQ(*std::dynamic_pointer_cast<PointLight>(w.get_lights()[0]), light);
+	ASSERT_EQ(
+		*std::dynamic_pointer_cast<PhongMaterial>((w.get_primitives()[0])->material), 
+		*std::dynamic_pointer_cast<PhongMaterial>(s1.material)
+	);
+	ASSERT_EQ((w.get_primitives()[1])->get_transform(), s2.get_transform());
+}
+
+TEST(Chapter07Tests, IntersectAWorldWithARay)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Intersections xs = w.intersect_world(r);
+
+	ASSERT_EQ(xs.size(), 4);
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 4.0f));
+	ASSERT_TRUE(flt_cmp(xs[1].t_value, 4.5f));
+	ASSERT_TRUE(flt_cmp(xs[2].t_value, 5.5f));
+	ASSERT_TRUE(flt_cmp(xs[3].t_value, 6.0f));
+}
+
+TEST(Chapter07Tests, PrecomputingTheStateOfAnIntersection)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	auto s = std::make_shared<Sphere>();
+	Intersection i = Intersection(4.0f, s);
+
+	IxComps comps = IxComps(i, r);
+
+	ASSERT_EQ(comps.object, s);
+	ASSERT_TRUE(flt_cmp(comps.t_value, i.t_value));
+	ASSERT_EQ(comps.point, Tuple::Point(0.0f, 0.0f, -1.0f));
+	ASSERT_EQ(comps.eye_v, Tuple::Vector(0.0f, 0.0f, -1.0f));
+	ASSERT_EQ(comps.normal_v, Tuple::Vector(0.0f, 0.0f, -1.0f));
+}
+
+TEST(Chapter07Tests, TheHitWhenAnIntersectionOccursOnTheOutside)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	auto s = std::make_shared<Sphere>();
+	Intersection i = Intersection(4.0f, s);
+
+	IxComps comps = IxComps(i, r);
+
+	ASSERT_FALSE(comps.inside);
+}
+
+TEST(Chapter07Tests, TheHitWhenAnIntersectionOccursOnTheInside)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 0.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	auto s = std::make_shared<Sphere>();
+	Intersection i = Intersection(1.0f, s);
+
+	IxComps comps = IxComps(i, r);
+
+	ASSERT_EQ(comps.point, Tuple::Point(0.0f, 0.0f, 1.0f));
+	ASSERT_EQ(comps.eye_v, Tuple::Vector(0.0f, 0.0f, -1.0f));
+	ASSERT_TRUE(comps.inside);
+	ASSERT_EQ(comps.normal_v, Tuple::Vector(0.0f, 0.0f, -1.0f));
+}
+
+TEST(Chapter07Tests, ShadingAnIntersection)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	std::shared_ptr<Primitive> s = w.get_primitives()[0];
+	Intersection i = Intersection(4.0f, s);
+
+	IxComps comps = IxComps(i, r);
+	Color sample = w.shade(comps);
+
+	ASSERT_EQ(sample, Color(0.38066f, 0.47583f, 0.2855f));
+}
+
+TEST(Chapter07Tests, ShadingAnIntersectionFromTheInside)
+{
+	World w = World::Default();
+
+	w.add_object(std::make_shared<PointLight>(Tuple::Point(0.0f, 0.25f, 0.0f), Color(1.0f, 1.0f, 1.0f)));
+
+	w.remove_light(0);
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 0.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	std::shared_ptr<Primitive> s = w.get_primitives()[1];
+	Intersection i = Intersection(0.5f, s);
+
+	IxComps comps = IxComps(i, r);
+	Color sample = w.shade(comps);
+
+	ASSERT_EQ(sample, Color(0.90498f, 0.90498f, 0.90498f));
+}
+
+TEST(Chapter07Tests, TheColorWhenARayMisses)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 1.0f, 0.0f));
+
+	Color sample = w.color_at(r);
+
+	ASSERT_EQ(sample, Color(0.0f, 0.0f, 0.0f));
+}
+
+TEST(Chapter07Tests, TheColorWhenARayHits)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	Color sample = w.color_at(r);
+
+	ASSERT_EQ(sample, Color(0.38066f, 0.47583f, 0.2855f));
+}
+
+TEST(Chapter07Tests, TheColorWithAnIntersectionBehindTheRay)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 0.75f), Tuple::Vector(0.0f, 0.0f, -1.0f));
+
+	std::shared_ptr<Primitive> outer = w.get_primitives()[0];
+	auto outer_mat = std::dynamic_pointer_cast<PhongMaterial>(outer->material);
+	outer_mat->ambient = 1.0f;
+
+	std::shared_ptr<Primitive> inner = w.get_primitives()[1];
+	auto inner_mat = std::dynamic_pointer_cast<PhongMaterial>(inner->material);
+	inner_mat->ambient = 1.0f;
+
+	Color sample = w.color_at(r);
+
+	ASSERT_EQ(sample, inner_mat->color);
+}
+
+TEST(Chapter07Tests, TheTransformationMatrixForTheDefaultOrientation)
+{
+	Tuple from = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Tuple to = Tuple::Point(0.0f, 0.0f, -1.0f);
+	Tuple up = Tuple::Vector(0.0f, 1.0f, 0.0f);
+
+	Matrix4 vt = Matrix4::ViewTransform(from, to, up);
+
+	ASSERT_EQ(vt, Matrix4::Identity());
+}
+
+TEST(Chapter07Tests, AViewTransformMatrixLookingInPositiveZDirection)
+{
+	Tuple from = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Tuple to = Tuple::Point(0.0f, 0.0f, 1.0f);
+	Tuple up = Tuple::Vector(0.0f, 1.0f, 0.0f);
+
+	Matrix4 vt = Matrix4::ViewTransform(from, to, up);
+
+	ASSERT_EQ(vt, Matrix4::Scaling(-1.0f, 1.0f, -1.0f));
+}
+
+TEST(Chapter07Tests, TheViewTransformMovesTheWorld)
+{
+	Tuple from = Tuple::Point(0.0f, 0.0f, 8.0f);
+	Tuple to = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Tuple up = Tuple::Vector(0.0f, 1.0f, 0.0f);
+
+	Matrix4 vt = Matrix4::ViewTransform(from, to, up);
+
+	ASSERT_EQ(vt, Matrix4::Translation(0.0f, 0.0f, -8.0f)) << vt << Matrix4::Translation(0.0f, 0.0f, -8.0f);
+}
+
+TEST(Chapter07Tests, AnArbitraryViewTransform)
+{
+	Tuple from = Tuple::Point(1.0f, 3.0f, 2.0f);
+	Tuple to = Tuple::Point(4.0f, -2.0f, 8.0f);
+	Tuple up = Tuple::Vector(1.0f, 1.0f, 0.0f);
+
+	Matrix4 vt = Matrix4::ViewTransform(from, to, up);
+
+	Matrix4 expected_result = Matrix4({
+		-0.50709f, 0.50709f, 0.67612f, -2.36643f,
+		0.76772f, 0.60609f, 0.12122f, -2.82843f,
+		-0.35857f, 0.59761f, -0.71714f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+		});
+
+	ASSERT_EQ(vt, expected_result);
+}
+
+TEST(Chapter07Tests, ConstructingACamera)
+{
+	int h_size = 160;
+	int v_size = 120;
+	float fov = float(M_PI) / 2.0f;
+
+	Camera c = Camera(h_size, v_size, fov);
+
+	ASSERT_EQ(c.get_horizontal_size(), h_size);
+	ASSERT_EQ(c.get_vertical_size(), v_size);
+	ASSERT_EQ(c.get_fov(), fov);
+	ASSERT_EQ(c.get_transform(), Matrix4::Identity());
+}
+
+TEST(Chapter07Tests, ThePixelSizeForAHorizontalCanvas)
+{
+	Camera c = Camera(200, 125, float(M_PI) / 2.0f);
+
+	ASSERT_EQ(c.get_pixel_size(), 0.01f);
+}
+
+TEST(Chapter07Tests, ThePixelSizeForAVerticalCanvas)
+{
+	Camera c = Camera(125, 200, float(M_PI) / 2.0f);
+
+	ASSERT_EQ(c.get_pixel_size(), 0.01f);
+}
+
+TEST(Chapter07Tests, ConstructingARayThroughTheCenterOfTheCanvas)
+{
+	Camera c = Camera(201, 101, float(M_PI) / 2.0f);
+
+	Ray r = c.ray_from_pixel(100, 50);
+
+	ASSERT_EQ(r.origin, Tuple::Point(0.0f, 0.0f, 0.0f));
+	ASSERT_EQ(r.direction, Tuple::Vector(0.0f, 0.0f, -1.0f));
+}
+
+TEST(Chapter07Tests, ConstructingARayThroughACornerOfTheCanvas)
+{
+	Camera c = Camera(201, 101, float(M_PI) / 2.0f);
+
+	Ray r = c.ray_from_pixel(0, 0);
+
+	ASSERT_EQ(r.origin, Tuple::Point(0.0f, 0.0f, 0.0f));
+	ASSERT_EQ(r.direction, Tuple::Vector(0.66519f, 0.33259f, -0.66851f));
+}
+
+TEST(Chapter07Tests, ConstructingARayWhenTheCameraIsTransformed)
+{
+	Camera c = Camera(201, 101, float(M_PI) / 2.0f);
+	c.set_transform(
+		Matrix4::Rotation_Y(float(M_PI) / 4.0f) *
+		Matrix4::Translation(0.0f, -2.0f, 5.0f)
+	);
+
+	Ray r = c.ray_from_pixel(100, 50);
+
+	float angle = sqrt(2.0f) / 2.0f;
+
+	ASSERT_EQ(r.origin, Tuple::Point(0.0f, 2.0f, -5.0f));
+	ASSERT_EQ(r.direction, Tuple::Vector(angle, 0.0f, -angle));
 }

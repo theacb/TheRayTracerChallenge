@@ -33,8 +33,11 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="..\Raymond\Background.h" />
+    <ClInclude Include="..\Raymond\Camera.h" />
     <ClInclude Include="..\Raymond\Canvas.h" />
     <ClInclude Include="..\Raymond\Color.h" />
+    <ClInclude Include="..\Raymond\IxComps.h" />
     <ClInclude Include="..\Raymond\Light.h" />
     <ClInclude Include="..\Raymond\Material.h" />
     <ClInclude Include="..\Raymond\Matrix.h" />
@@ -42,11 +45,15 @@
     <ClInclude Include="..\Raymond\Primitive.h" />
     <ClInclude Include="..\Raymond\Ray.h" />
     <ClInclude Include="..\Raymond\tuple.h" />
+    <ClInclude Include="..\Raymond\World.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Raymond\Background.cpp" />
+    <ClCompile Include="..\Raymond\Camera.cpp" />
     <ClCompile Include="..\Raymond\Canvas.cpp" />
     <ClCompile Include="..\Raymond\Color.cpp" />
+    <ClCompile Include="..\Raymond\IxComps.cpp" />
     <ClCompile Include="..\Raymond\Light.cpp" />
     <ClCompile Include="..\Raymond\Material.cpp" />
     <ClCompile Include="..\Raymond\Matrix.cpp" />
@@ -54,6 +61,7 @@
     <ClCompile Include="..\Raymond\Primitive.cpp" />
     <ClCompile Include="..\Raymond\Ray.cpp" />
     <ClCompile Include="..\Raymond\tuple.cpp" />
+    <ClCompile Include="..\Raymond\World.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

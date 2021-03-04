@@ -764,6 +764,22 @@ Matrix4 Matrix4::Shear(float xy, float xz, float yx, float yz, float zx, float z
 	return result;
 }
 
+Matrix4 Matrix4::ViewTransform(Tuple from, Tuple to, Tuple up)
+{
+	Tuple forward = (to - from).normalize();
+	Tuple left = Tuple::cross(forward, up.normalize());
+	Tuple true_up = Tuple::cross(left, forward);
+
+	Matrix4 orientation = Matrix4({
+		left.x, left.y, left.z, 0.0f,
+		true_up.x, true_up.y, true_up.z, 0.0f,
+		-forward.x, -forward.y, -forward.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+		});
+
+	return orientation * Matrix4::Translation(-from.x, -from.y, -from.z);
+}
+
 // ------------------------------------------------------------------------
 // Methods
 // ------------------------------------------------------------------------

@@ -140,6 +140,7 @@ public:
 	static Matrix4 Rotation_Y(float);
 	static Matrix4 Rotation_Z(float);
 	static Matrix4 Shear(float, float, float, float, float, float);
+	static Matrix4 ViewTransform(Tuple, Tuple, Tuple);
 
 	// Methods
 	std::vector<float> get_row(int) const;

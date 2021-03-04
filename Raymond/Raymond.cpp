@@ -142,7 +142,7 @@ int render_sphere()
 	auto material = std::dynamic_pointer_cast<PhongMaterial>(s->material);
 	material->color = Color(1.0f, 0.2f, 1.0f);
 
-	PointLight lgt = PointLight(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0f, 1.0f, 1.0f));
+	auto lgt = std::make_shared<PointLight>(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0f, 1.0f, 1.0f));
 
 	Tuple ray_origin = Tuple::Point(0.0f, 0.0f, -5.0f);
 
@@ -174,8 +174,10 @@ int render_sphere()
 				auto obj_ptr = std::dynamic_pointer_cast<Primitive>(h.object);
 				Tuple hit_point = r.position(h.t_value);
 
-				Color col = obj_ptr->material->shade(
-					&lgt, 
+				auto mat_ptr = std::dynamic_pointer_cast<PhongMaterial>(obj_ptr->material);
+
+				Color col = mat_ptr->lighting(
+					lgt, 
 					hit_point, 
 					-(r.direction), 
 					obj_ptr->normal_at(hit_point)

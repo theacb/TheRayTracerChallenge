@@ -20,5 +20,9 @@
 #include "Primitive.h"
 #include "Light.h"
 #include "Material.h"
+#include "World.h"
+#include "IxComps.h"
+#include "Background.h"
+#include "Camera.h"
 
 #endif //PCH_H

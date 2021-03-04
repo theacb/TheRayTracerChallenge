@@ -36,11 +36,11 @@ NormalsMaterial::~NormalsMaterial()
 {
 }
 
-Color NormalsMaterial::shade(const Light * lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const
+Color NormalsMaterial::lighting(std::shared_ptr<Light>, IxComps & comps) const
 {
 	// returns the normal as a color, mapping from (-1.0, 1.0) to (0.0, 1.0)
 	// Assumes a normalized vector
-	Tuple n = normal_v - Tuple::Vector(0.0f, 0.0f, -1.0f);
+	Tuple n = comps.normal_v - Tuple::Vector(0.0f, 0.0f, -1.0f);
 	return Color(n.x + 1.0f, n.y + 1.0f, n.z + 1.0f) * 0.5f;
 }
 
@@ -73,7 +73,7 @@ PhongMaterial::~PhongMaterial()
 // Methods
 // ------------------------------------------------------------------------
 
-Color PhongMaterial::shade(const Light * lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const
+Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, IxComps & comps) const
 {
 	Color effective_col, ambient_col, diffuse_col, specular_col;
 	Tuple light_v, reflect_v;
@@ -87,12 +87,12 @@ Color PhongMaterial::shade(const Light * lgt, const Tuple & point, const Tuple &
 	ambient_col = effective_col * this->ambient;
 
 	// Find the Direction to the light source
-	light_v = (lgt->position() - point).normalize();
+	light_v = (lgt->position() - comps.point).normalize();
 
 	// light_dot_normal represents the cosine of the angle 
 	// between the light vector and the normal vector. A negative number means 
 	// the light is on the other side of the surface.
-	light_dot_normal = Tuple::dot(light_v, normal_v);
+	light_dot_normal = Tuple::dot(light_v, comps.normal_v);
 
 	if (light_dot_normal < 0.0f)
 	{
@@ -102,9 +102,9 @@ Color PhongMaterial::shade(const Light * lgt, const Tuple & point, const Tuple &
 	else
 	{
 		diffuse_col = effective_col * this->diffuse * light_dot_normal;
-		reflect_v = Tuple::reflect(-light_v, normal_v);
+		reflect_v = Tuple::reflect(-light_v, comps.normal_v);
 
-		reflect_dot_eye = Tuple::dot(reflect_v, eye_v);
+		reflect_dot_eye = Tuple::dot(reflect_v, comps.eye_v);
 
 		if (reflect_dot_eye <= 0.0f)
 		{
@@ -119,6 +119,16 @@ Color PhongMaterial::shade(const Light * lgt, const Tuple & point, const Tuple &
 
 
 	return ambient_col + diffuse_col + specular_col;
+}
+
+Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const
+{
+	IxComps comps = IxComps();
+	comps.point = point;
+	comps.eye_v = eye_v;
+	comps.normal_v = normal_v;
+
+	return this->lighting(lgt, comps);
 }
 
 // ------------------------------------------------------------------------

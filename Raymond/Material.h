@@ -6,6 +6,7 @@
 #include "Tuple.h"
 #include "Color.h"
 #include "Light.h"
+#include "IxComps.h"
 
 class BaseMaterial;
 using MatPtr = BaseMaterial * ;
@@ -18,7 +19,7 @@ public:
 	~BaseMaterial();
 
 	// Methods
-	virtual Color shade(const Light *, const Tuple &, const Tuple &, const Tuple &) const = 0;
+	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const = 0;
 	
 	// Properties
 	std::string name;
@@ -32,7 +33,7 @@ public:
 	NormalsMaterial();
 	~NormalsMaterial();
 
-	virtual Color shade(const Light *, const Tuple &, const Tuple &, const Tuple &) const override;
+	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const override;
 };
 
 class PhongMaterial :
@@ -42,7 +43,8 @@ public:
 	PhongMaterial();
 	~PhongMaterial();
 
-	virtual Color shade(const Light *, const Tuple &, const Tuple &, const Tuple &) const override;
+	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const override;
+	Color lighting(std::shared_ptr<Light>, const Tuple &, const Tuple &, const Tuple &) const;
 
 	// Properties
 	Color color;

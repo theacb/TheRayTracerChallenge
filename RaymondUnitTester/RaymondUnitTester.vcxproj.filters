@@ -30,6 +30,18 @@
     <ClCompile Include="..\Raymond\Material.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\World.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\IxComps.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\Background.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\Camera.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -58,6 +70,18 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\Material.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\World.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\IxComps.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Background.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Camera.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>

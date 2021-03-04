@@ -13,6 +13,7 @@ public:
 	~Light();
 
 	virtual std::vector<float> intersect_t(Ray &) const = 0;
+	virtual Tuple normal_at(Tuple &) const = 0;
 
 	//properties
 	Color color;
@@ -30,6 +31,11 @@ public:
 	~PointLight();
 
 	// Methods
-	virtual std::vector<float> intersect_t(Ray &) const;
+	virtual std::vector<float> intersect_t(Ray &) const override;
+	virtual Tuple normal_at(Tuple &) const override;
 };
+
+//Overloaded Operators
+bool operator==(const PointLight &, const PointLight &);
+bool operator!=(const PointLight &, const PointLight &);
 

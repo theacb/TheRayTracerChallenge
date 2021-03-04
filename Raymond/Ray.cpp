@@ -13,6 +13,10 @@ Ray::Ray():Ray(Tuple::Point(0.0f, 0.0f, 0.0f), Tuple::Vector(0.0f, 1.0f, 0.0f))
 {
 }
 
+Ray::Ray(const Ray & src) : Ray(src.origin, src.direction)
+{
+}
+
 Ray::Ray(Tuple origin, Tuple direction)
 {
 	this->origin = origin;

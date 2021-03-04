@@ -60,5 +60,22 @@ std::vector<float> PointLight::intersect_t(Ray & r) const
 	{
 		return std::vector<float>();
 	}
-	 
+}
+
+Tuple PointLight::normal_at(Tuple &) const
+{
+	return Tuple::Vector(0.0f, 1.0f, 0.0f);
+}
+
+bool operator==(const PointLight & left_light, const PointLight & right_light)
+{
+	return (
+		left_light.color == right_light.color &&
+		left_light.position() == right_light.position()
+		);
+}
+
+bool operator!=(const PointLight & left_light, const PointLight & right_light)
+{
+	return !(left_light == right_light);
 }

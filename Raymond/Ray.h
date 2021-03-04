@@ -7,6 +7,7 @@ class Ray
 {
 public:
 	Ray();
+	Ray(const Ray &);
 	Ray(Tuple, Tuple);
 	~Ray();
 
