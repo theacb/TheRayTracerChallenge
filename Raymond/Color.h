@@ -1,7 +1,11 @@
 #pragma once
-#include "Tuple.h"
+
 #include <algorithm>
 #include <string>
+
+#include "Tuple.h"
+
+class Color8Bit;
 
 // Float Color
 
@@ -14,7 +18,8 @@ public:
 	Color(float);
 	Color(float, float, float);
 	Color(float, float, float, float);
-	Color(const Tuple&);
+	Color(const Tuple &);
+	Color(const Color8Bit &);
 
 	// Destrcutor
 	~Color();
@@ -42,7 +47,7 @@ public:
 	// Constructors
 	Color8Bit();
 	Color8Bit(int, int, int);
-	Color8Bit(const Color);
+	Color8Bit(const Color&);
 
 	~Color8Bit();
 

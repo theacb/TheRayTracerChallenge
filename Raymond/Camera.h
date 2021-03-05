@@ -3,6 +3,8 @@
 #include "Tuple.h"
 #include "Object.h"
 #include "Ray.h"
+#include "World.h"
+#include "Canvas.h"
 
 class Camera :
 	public ObjectBase
@@ -19,6 +21,9 @@ public:
 
 	// Rays
 	Ray ray_from_pixel(int, int);
+
+	// Render
+	Canvas render(World &);
 
 	// Accessors
 	int get_horizontal_size() const;

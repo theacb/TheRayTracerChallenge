@@ -13,9 +13,14 @@ Light::Light() : Light(Color(1.0f, 1.0f, 1.0f))
 {
 }
 
-Light::Light(Color color) : ObjectBase()
+Light::Light(Color color) : Light(color, 1.0f)
+{
+}
+
+Light::Light(Color color, float multiplier) : ObjectBase()
 {
 	this->color = color;
+	this->multiplier = multiplier;
 }
 
 Light::~Light()
@@ -39,7 +44,11 @@ PointLight::PointLight() : Light()
 {
 }
 
-PointLight::PointLight(Tuple position, Color color) : Light (color)
+PointLight::PointLight(Tuple position, Color color) : PointLight(position, color, 1.0f)
+{
+}
+
+PointLight::PointLight(Tuple position, Color color, float multiplier) : Light(color, multiplier)
 {
 	this->set_transform(Matrix4::Translation(position));
 }

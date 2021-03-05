@@ -34,6 +34,12 @@ Sphere::Sphere() : Primitive()
 	this->set_name("Default Sphere 000");
 }
 
+Sphere::Sphere(std::string name)
+{
+	this->radius = 1.0f;
+	this->set_name(name);
+}
+
 Sphere::~Sphere()
 {
 }

@@ -22,7 +22,7 @@ ObjectBase::~ObjectBase()
 
 void ObjectBase::set_name(std::string new_name)
 {
-	this->name_ = name_;
+	this->name_ = new_name;
 }
 
 std::string ObjectBase::get_name() const
@@ -66,6 +66,10 @@ Intersection::Intersection(float t, std::shared_ptr<ObjectBase> obj)
 Intersection::~Intersection()
 {
 }
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
 
 bool Intersection::is_valid() const
 {
@@ -124,6 +128,10 @@ Intersections::Intersections(std::vector<float> t_values, std::shared_ptr<Object
 
 	std::sort(this->begin(), this->end());
 }
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
 
 Intersection Intersections::hit() const
 {

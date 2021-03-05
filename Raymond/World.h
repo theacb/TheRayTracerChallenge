@@ -9,8 +9,9 @@
 #include "Color.h"
 #include "Background.h"
 
-//float LIGHT_CUTOFF = 0.001f;
-//bool FALLOFF = false;
+
+static const float LIGHT_CUTOFF = 0.001f;
+static const bool FALLOFF = true;
 
 class World
 {

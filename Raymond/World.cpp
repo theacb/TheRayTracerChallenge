@@ -11,6 +11,7 @@
 
 World::World()
 {
+	this->background = std::make_shared<Background>();
 }
 
 World::~World()
@@ -40,8 +41,6 @@ World World::Default()
 
 	def.add_object(s2);
 
-	def.background = std::make_shared<Background>();
-
 	return def;
 }
 
@@ -63,7 +62,14 @@ Intersections World::intersect_world(Ray & r) const
 		Intersections obj_xs = intersect(r, obj);
 
 		// Then concatenates them into a single vector
-		result.insert(result.end(), obj_xs.begin(), obj_xs.end());
+		for (Intersection& ix : obj_xs)
+		{
+			// Filter bad values
+			if (ix.is_valid() && ix.t_value > -0.0f)
+			{
+				result.push_back(ix);
+			}
+		}
 	}
 
 	std::sort(result.begin(), result.end());
@@ -81,26 +87,28 @@ Color World::shade(IxComps & comps) const
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
+		auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
+
 		// Possible Future Feature 
-		/*if (FALLOFF)
+		if (FALLOFF)
 		{
 			// Calculate quadratic intensity using formula I = 1/d^2
-			float distance = Tuple::distance(lgt->position, comps.point);
+			float distance = Tuple::distance(lgt->position(), comps.point);
 			float quad_multiplier = 1.0f / (distance * distance);
 			float intensity = lgt->color.magnitude() * quad_multiplier;
 			
 			// If value is less than cutoff value, do not calculate sample
 			if (intensity > LIGHT_CUTOFF)
 			{
-				sample = sample + (std::dynamic_pointer_cast<Primitive>(comps.object)->material->lighting(lgt, comps) * intensity);
+				sample = sample + (obj_prim->material->lighting(lgt, comps) * intensity * lgt->multiplier);
 			}
 		}
 		else
 		{
-			sample = sample + std::dynamic_pointer_cast<Primitive>(comps.object)->material->lighting(lgt, comps);
-		}*/
+			sample = sample + obj_prim->material->lighting(lgt, comps);
+		}
 
-		sample = sample + std::dynamic_pointer_cast<Primitive>(comps.object)->material->lighting(lgt, comps);
+		//sample = sample + std::dynamic_pointer_cast<Primitive>(comps.object)->material->lighting(lgt, comps);
 	}
 	return sample;
 }

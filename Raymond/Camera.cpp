@@ -77,6 +77,29 @@ Ray Camera::ray_from_pixel(int x, int y)
 }
 
 // ------------------------------------------------------------------------
+// Render
+// ------------------------------------------------------------------------
+
+Canvas Camera::render(World & w)
+{
+	Canvas image = Canvas(this->c_h_size_, this->c_v_size_);
+
+	for (int y = 0; y < this->c_v_size_; y++)
+	{
+		std::cout << "Scanline: " << y + 1 << "/" << this->c_v_size_ << "\n";
+
+		for (int x = 0; x < this->c_h_size_; x++)
+		{
+			Ray r = this->ray_from_pixel(x, y);
+			Color color = w.color_at(r);
+			image.write_pixel(x, y, color);
+		}
+	}
+
+	return image;
+}
+
+// ------------------------------------------------------------------------
 // Acssesors
 // ------------------------------------------------------------------------
 

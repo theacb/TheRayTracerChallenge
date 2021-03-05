@@ -1842,3 +1842,19 @@ TEST(Chapter07Tests, ConstructingARayWhenTheCameraIsTransformed)
 	ASSERT_EQ(r.origin, Tuple::Point(0.0f, 2.0f, -5.0f));
 	ASSERT_EQ(r.direction, Tuple::Vector(angle, 0.0f, -angle));
 }
+
+TEST(Chapter07Tests, RenderingAWorldWithACamera)
+{
+	World w = World::Default();
+	Camera c = Camera(11, 11, float(M_PI) / 2.0f);
+
+	Tuple from = Tuple::Point(0.0f, 0.0f, -5.0f);
+	Tuple to = Tuple::Point(0.0f, 0.0f, 0.0f);
+	Tuple up = Tuple::Vector(0.0f, 1.0f, 0.0f);
+
+	c.set_transform(Matrix4::ViewTransform(from, to, up));
+
+	Canvas image = c.render(w);
+
+	ASSERT_EQ(image.pixel_at(5, 5), Color(0.38066f, 0.47583, 0.2855));
+}

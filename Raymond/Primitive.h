@@ -28,6 +28,7 @@ class Sphere :
 {
 public:
 	Sphere();
+	Sphere(std::string);
 	~Sphere();
 
 	//properties

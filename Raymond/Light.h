@@ -10,6 +10,7 @@ class Light :
 public:
 	Light();
 	Light(Color);
+	Light(Color, float);
 	~Light();
 
 	virtual std::vector<float> intersect_t(Ray &) const = 0;
@@ -17,6 +18,7 @@ public:
 
 	//properties
 	Color color;
+	float multiplier;
 
 	// Methods
 	Tuple position() const;
@@ -28,6 +30,7 @@ class PointLight :
 public:
 	PointLight();
 	PointLight(Tuple, Color);
+	PointLight(Tuple, Color, float);
 	~PointLight();
 
 	// Methods

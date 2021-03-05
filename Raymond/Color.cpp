@@ -29,6 +29,10 @@ Color::Color(const Tuple & a) : Tuple(a)
 {
 }
 
+Color::Color(const Color8Bit & col) : Color(float(col.r) / 255.0f, float(col.g) / 255.0f, float(col.b) / 255.0f)
+{
+}
+
 Color::~Color()
 {
 }
@@ -96,7 +100,7 @@ Color8Bit::Color8Bit(int red, int green, int blue)
 	b = clip<int>(blue, 0, 255);
 }
 
-Color8Bit::Color8Bit(const Color source_color)
+Color8Bit::Color8Bit(const Color & source_color)
 {
 	// Casts the float to an integer after clipping it to the 0.0 to 1.0 range 
 	// and multiplying it by 255
