@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_RAY
+#define H_RAYMOND_RAY
 
 #include "Tuple.h"
 #include "Matrix.h"
@@ -23,3 +24,5 @@ public:
 	// Overloaded Operators
 	friend std::ostream & operator<<(std::ostream &, const Ray &);
 };
+
+#endif

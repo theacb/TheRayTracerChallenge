@@ -1,4 +1,8 @@
-#pragma once
+#ifndef H_RAYMOND_CAMERA
+#define H_RAYMOND_CAMERA
+
+#include <thread>
+#include <future>
 
 #include "Tuple.h"
 #include "Object.h"
@@ -16,14 +20,16 @@ public:
 
 	// Methods
 	// Virtual
-	virtual std::vector<float> intersect_t(Ray &) const override;
-	virtual Tuple normal_at(Tuple &) const override;
+	virtual std::vector<float> local_intersect_t(const Ray & r) const override;
+	virtual Tuple normal_at(const Tuple & p) const override;
 
 	// Rays
-	Ray ray_from_pixel(int, int);
+	Ray ray_from_pixel(int, int) const;
 
 	// Render
-	Canvas render(World &);
+	Canvas render(const World & w) const;
+	Canvas threaded_render(const World & w) const;
+	Canvas render_scanline(const World & w, int line) const;
 
 	// Accessors
 	int get_horizontal_size() const;
@@ -39,3 +45,4 @@ private:
 	void pixel_size_();
 };
 
+#endif

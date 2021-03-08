@@ -18,8 +18,8 @@ public:
 	std::shared_ptr<BaseMaterial> material;
 
 	// Methods
-	virtual std::vector<float> intersect_t(Ray &) const = 0;
-	virtual Tuple normal_at(Tuple &) const = 0;
+	virtual std::vector<float> local_intersect_t(const Ray &) const = 0;
+	virtual Tuple normal_at(const Tuple &) const = 0;
 
 };
 
@@ -35,6 +35,6 @@ public:
 	float radius;
 
 	// Methods
-	virtual std::vector<float> intersect_t(Ray &) const override;
-	virtual Tuple normal_at(Tuple &) const override;
+	virtual std::vector<float> local_intersect_t(const Ray &) const override;
+	virtual Tuple normal_at(const Tuple &) const override;
 };

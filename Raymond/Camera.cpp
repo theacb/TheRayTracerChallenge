@@ -29,7 +29,7 @@ Camera::~Camera()
 // Virtual
 // ------------------------------------------------------------------------
 
-std::vector<float> Camera::intersect_t(Ray & r) const
+std::vector<float> Camera::local_intersect_t(const Ray & r) const
 {
 	Tuple position = (this->get_transform()).position();
 	Tuple ix_vector = position - r.origin;
@@ -43,7 +43,7 @@ std::vector<float> Camera::intersect_t(Ray & r) const
 	}
 }
 
-Tuple Camera::normal_at(Tuple & p) const
+Tuple Camera::normal_at(const Tuple & p) const
 {
 	return Tuple::Vector(0.0f, 1.0f, 0.0f);
 }
@@ -52,7 +52,7 @@ Tuple Camera::normal_at(Tuple & p) const
 // Rays
 // ------------------------------------------------------------------------
 
-Ray Camera::ray_from_pixel(int x, int y)
+Ray Camera::ray_from_pixel(int x, int y) const
 {
 	// Offset from the edge of the canvas to the pixel's ceneter
 	float x_offset = (float(x) + 0.5f) * this->c_pixel_size_;
@@ -80,7 +80,7 @@ Ray Camera::ray_from_pixel(int x, int y)
 // Render
 // ------------------------------------------------------------------------
 
-Canvas Camera::render(World & w)
+Canvas Camera::render(const World & w) const
 {
 	Canvas image = Canvas(this->c_h_size_, this->c_v_size_);
 
@@ -90,6 +90,7 @@ Canvas Camera::render(World & w)
 
 		for (int x = 0; x < this->c_h_size_; x++)
 		{
+			// std::cout << "Pixel: (" << x << ", " << y << ")\n";
 			Ray r = this->ray_from_pixel(x, y);
 			Color color = w.color_at(r);
 			image.write_pixel(x, y, color);
@@ -97,6 +98,47 @@ Canvas Camera::render(World & w)
 	}
 
 	return image;
+}
+
+Canvas Camera::threaded_render(const World & w) const
+{
+	Canvas image = Canvas(this->c_h_size_, this->c_v_size_);
+	unsigned int c = std::thread::hardware_concurrency();
+
+	auto line_results = std::vector<std::future<Canvas>>();
+
+	auto f = [](const Camera * camera, const World & w, int line) {
+		return camera->render_scanline(w, line);
+	};
+
+	for (int y = 0; y < this->c_v_size_; y++)
+	{
+		line_results.push_back(std::async(f, this, w, y));
+	}
+
+	for (size_t i = 0; i < line_results.size(); i++)
+	{
+		image.write_canvas_as_line(i, line_results[i].get());
+	}
+
+	return image;
+}
+
+Canvas Camera::render_scanline(const World & w, int line) const
+{
+	Canvas image_line = Canvas(this->c_h_size_, 1);
+
+	std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << "\n";
+
+	for (int x = 0; x < this->c_h_size_; x++)
+	{
+		// std::cout << "Pixel: (" << x << ", " << y << ")\n";
+		Ray r = this->ray_from_pixel(x, line);
+		Color color = w.color_at(r);
+		image_line.write_pixel(x, 1, color);
+	}
+
+	return image_line;
 }
 
 // ------------------------------------------------------------------------

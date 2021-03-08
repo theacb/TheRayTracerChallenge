@@ -37,6 +37,7 @@
     <ClInclude Include="..\Raymond\Camera.h" />
     <ClInclude Include="..\Raymond\Canvas.h" />
     <ClInclude Include="..\Raymond\Color.h" />
+    <ClInclude Include="..\Raymond\Constants.h" />
     <ClInclude Include="..\Raymond\IxComps.h" />
     <ClInclude Include="..\Raymond\Light.h" />
     <ClInclude Include="..\Raymond\Material.h" />

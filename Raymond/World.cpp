@@ -48,7 +48,7 @@ World World::Default()
 // Intersector
 // ------------------------------------------------------------------------
 
-Intersections World::intersect_world(Ray & r) const
+Intersections World::intersect_world(Ray & ray) const
 {
 	Intersections result;
 
@@ -59,7 +59,7 @@ Intersections World::intersect_world(Ray & r) const
 	for (std::shared_ptr<Primitive> obj: this->w_primitives_)
 	{
 		// generates an intersection for each object in the scene
-		Intersections obj_xs = intersect(r, obj);
+		Intersections obj_xs = intersect(ray, obj);
 
 		// Then concatenates them into a single vector
 		for (Intersection& ix : obj_xs)
@@ -83,52 +83,72 @@ Intersections World::intersect_world(Ray & r) const
 
 Color World::shade(IxComps & comps) const
 {
-	Color sample;
+	Color sample = Color(0.0f);
+	
+	// std::cout << "Shading " << comps.object->get_name() << " at ";
+	// std::cout << comps.point << ", Normal: " << comps.normal_v << ", Offset Point: " << comps.over_point << "\n";
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
 		auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
 
-		// Possible Future Feature 
-		if (FALLOFF)
+		bool shd = this->is_shadowed(lgt, comps.over_point);
+
+		comps.shadow_multiplier = shd ? 0.0f : 1.0f;
+
+		if (lgt->falloff)
 		{
 			// Calculate quadratic intensity using formula I = 1/d^2
 			float distance = Tuple::distance(lgt->position(), comps.point);
 			float quad_multiplier = 1.0f / (distance * distance);
-			float intensity = lgt->color.magnitude() * quad_multiplier;
+			float intensity = lgt->color.magnitude() * quad_multiplier * lgt->multiplier;
 			
 			// If value is less than cutoff value, do not calculate sample
-			if (intensity > LIGHT_CUTOFF)
+			if (intensity > lgt->cutoff)
 			{
-				sample = sample + (obj_prim->material->lighting(lgt, comps) * intensity * lgt->multiplier);
+				sample = sample + (obj_prim->material->lighting(lgt, comps) * intensity);
 			}
 		}
 		else
 		{
 			sample = sample + obj_prim->material->lighting(lgt, comps);
 		}
-
-		//sample = sample + std::dynamic_pointer_cast<Primitive>(comps.object)->material->lighting(lgt, comps);
 	}
 	return sample;
 }
 
-Color World::color_at(Ray & r) const
+Color World::color_at(Ray & ray) const
 {
-	Intersections ix = this->intersect_world(r);
+	Intersections ix = this->intersect_world(ray);
 	if (ix.size() > 0)
 	{
 		Intersection hit = ix.hit();
-		IxComps comps = IxComps(hit, r);
+		IxComps comps = IxComps(hit, ray);
 
 		return this->shade(comps);
 	}
 	else
 	{
-		IxComps comps = IxComps::Background(r);
+		IxComps comps = IxComps::Background(ray);
 
 		return this->background->shade(comps);
 	}
+}
+
+bool World::is_shadowed(std::shared_ptr<Light> light, Tuple & point) const
+{
+	Tuple v = light->position() - point;
+	float distance = v.magnitude();
+	Tuple direction = v.normalize();
+
+	Ray r = Ray(point, direction);
+	Intersections ix = intersect_world(r);
+
+	Intersection h = ix.hit();
+
+	// std::cout << "Shadow Ray - Intersecting: " << h.object->get_name() << " at " << h.t_value << "\n";
+
+	return (h.is_valid() && h.t_value < distance);
 }
 
 // ------------------------------------------------------------------------

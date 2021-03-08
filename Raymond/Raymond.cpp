@@ -4,6 +4,79 @@
 #include "pch.h"
 
 #include <iostream>
+#include <string>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
+
+float deg_to_rad(float degrees)
+{
+	return (degrees * float(M_PI)) / 180.0f;
+}
+
+float rad_to_deg(float radians)
+{
+	return (radians * 180.0f) / float(M_PI);
+}
+
+std::string pad_num(int num, int pad)
+{
+	std::string ts = std::to_string(num);
+	return std::string(pad - ts.length(), '0') + ts;
+}
+
+std::string generate_name(std::string name, std::string folder, int version)
+{
+	time_t rawtime = time(0);
+	struct tm ltm;
+	localtime_s(&ltm, &rawtime);
+
+	std::string date_time_string = (
+		pad_num(1900 + ltm.tm_year - 2000, 2) +
+		pad_num(1 + ltm.tm_mon, 2) +
+		pad_num(ltm.tm_mday, 2) +
+		"-" +
+		pad_num(ltm.tm_hour, 2) +
+		pad_num(ltm.tm_min, 2) +
+		pad_num(ltm.tm_sec, 2)
+		);
+
+	return (
+		folder +
+		"\\" +
+		name +
+		"_" +
+		pad_num(version, 2) +
+		"_" +
+		date_time_string +
+		".ppm"
+		);
+}
+
+// Based on an answer on Stack Overflow by Howard Hinnant
+// https://stackoverflow.com/a/22593250/15062519
+std::ostream& clock_display(std::ostream& os, std::chrono::duration<double, std::nano> dur)
+{
+	char fill = os.fill();
+	os.fill('0');
+
+	auto h = std::chrono::duration_cast<std::chrono::hours>(dur);
+	dur -= h;
+	auto m = std::chrono::duration_cast<std::chrono::minutes>(dur);
+	dur -= m;
+	auto s = std::chrono::duration_cast<std::chrono::seconds>(dur);
+	dur -= s;
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
+
+	os  << std::setw(2) << h.count() << "h:"
+		<< std::setw(2) << m.count() << "m:"
+		<< std::setw(2) << s.count() << "s:";
+	os.fill(fill);
+
+	os << ms.count() << "ms";
+
+	return os;
+}
 
 
 struct Projectile
@@ -204,18 +277,20 @@ int render_sphere()
 	return 0;
 }
 
-int render_ch07_world()
+Canvas render_ch08_world(int width, int height, float fov)
 {
 	World w = World();
 
 	// Lights
 
-	auto light_000 = std::make_shared<PointLight>(Tuple::Point(-10.0f, 10.0f, -10.0f), Color(1.0f), 50.0f);
-
+	auto light_000 = std::make_shared<PointLight>(Tuple::Point(-9.0f, 9.0f, -9.0f), Color(1.0f), 50.0f);
+	light_000->falloff = true;
+	light_000->set_name("light 000");
 	w.add_object(light_000);
 
-	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0f, 12.0f, 5.0f), Color(1.0f, 0.0f, 0.0f), 50.0f);
-
+	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0f, 6.0f, 5.0f), Color(1.0f, 0.0f, 0.0f), 50.0f);
+	light_001->falloff = true;
+	light_001->set_name("light 001");
 	w.add_object(light_001);
 
 	// Materials
@@ -282,19 +357,25 @@ int render_ch07_world()
 	yellow_sphere_001->set_transform(Matrix4::Translation(2.0f, 0.5f, -0.5f) * Matrix4::Scaling(0.5f, 0.5f, 0.5f));
 	w.add_object(yellow_sphere_001);
 
-	for (size_t i = 0; i < 7; i++)
+	int num_blue_sphs = 7;
+
+	for (int i = 0; i < num_blue_sphs; i++)
 	{
+		float sx = float(num_blue_sphs - 1);
+
 		auto blue_sphere_inst = std::make_shared<Sphere>("yellow sphere 001");
 		blue_sphere_inst->material = matte_blue_mtl;
+
 		blue_sphere_inst->set_transform(
-			Matrix4::Translation((i * 2.0f) - 6.0f, 2.0f, 2.0f) * 
-			Matrix4::Rotation_Z((((float(M_PI) / 2.0f) / 7.0f) * i) - (float(M_PI) / 4.0f)) *
+			Matrix4::Translation((i * 2.0f) - sx, 2.0f, 2.0f) * 
+			Matrix4::Rotation_Z((((float(M_PI) / 2.0f) / sx) * (num_blue_sphs - i)) - (float(M_PI) / 4.0f)) *
 			Matrix4::Scaling(0.25f, 2.0f, 0.25f)
 		);
+
 		w.add_object(blue_sphere_inst);
 	}
 
-	Camera c = Camera(560, 315, float(M_PI) / 2.0f);
+	Camera c = Camera(width, height, deg_to_rad(fov));
 
 	Tuple from = Tuple::Point(0.0f, 1.0f, -5.0f);
 	Tuple to = Tuple::Point(0.0f, 1.0f, 0.0f);
@@ -304,16 +385,48 @@ int render_ch07_world()
 
 	std::cout << "Tracing...\n";
 
+	// Canvas image = c.render_scanline(w, 0);
 	Canvas image = c.render(w);
 
 	std::cout << "Complete\n";
 
-	canvas_to_ppm(image, "E:\\dump\\projects\\Raymond\\frames\\MakingAScene_CH07_05.ppm");
-
-	return 0;
+	return image;
 }
 
 int main()
 {
-	render_ch07_world();
+	std::string chapter = "Shadows_CH08";
+	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
+	int version = 6;
+
+	int width = 10;
+	int height = 5;
+	float fov = 45.0;
+
+	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
+
+	// Start time
+	auto start = std::chrono::steady_clock::now();
+
+	// Execution
+	Canvas image = render_ch08_world(width, height, fov);
+
+	// End time
+	auto end = std::chrono::steady_clock::now();
+
+	auto diff = end - start;
+
+	std::cout << std::endl << "Time: ";
+	clock_display(std::cout, diff);
+	std::cout << std::endl << std::endl;
+
+	// File Name
+	std::string file_path = generate_name(chapter, folder, version);
+
+	std::cout << "Writing file: " << file_path << std::endl;
+
+	canvas_to_ppm(image, file_path);
+	std::cout << "Complete" << std::endl;
+
+	return 0;
 }

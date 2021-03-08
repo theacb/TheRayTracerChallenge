@@ -9,7 +9,7 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Light::Light() : Light(Color(1.0f, 1.0f, 1.0f))
+Light::Light() : Light(Color(1.0f, 1.0f, 1.0f), 1.0f)
 {
 }
 
@@ -21,6 +21,9 @@ Light::Light(Color color, float multiplier) : ObjectBase()
 {
 	this->color = color;
 	this->multiplier = multiplier;
+
+	this->falloff = false;
+	this->cutoff = 0.0001f;
 }
 
 Light::~Light()
@@ -40,7 +43,7 @@ Tuple Light::position() const
 // Constructors
 // ------------------------------------------------------------------------
 
-PointLight::PointLight() : Light()
+PointLight::PointLight() : PointLight(Tuple::Point(0.0f, 0.0f, 0.0f), Color(1.0f), 1.0f)
 {
 }
 
@@ -57,13 +60,13 @@ PointLight::~PointLight()
 {
 }
 
-std::vector<float> PointLight::intersect_t(Ray & r) const
+std::vector<float> PointLight::local_intersect_t(const Ray & ray) const
 {
 	Tuple position = this->position();
-	Tuple ix_vector = position - r.origin;
-	if (ix_vector.normalize() == r.direction.normalize())
+	Tuple ix_vector = position - ray.origin;
+	if (ix_vector.normalize() == ray.direction.normalize())
 	{
-		return std::vector<float>({ Tuple::distance(position, r.origin) });
+		return std::vector<float>({ Tuple::distance(position, ray.origin) });
 	}
 	else
 	{
@@ -71,7 +74,7 @@ std::vector<float> PointLight::intersect_t(Ray & r) const
 	}
 }
 
-Tuple PointLight::normal_at(Tuple &) const
+Tuple PointLight::normal_at(const Tuple & point) const
 {
 	return Tuple::Vector(0.0f, 1.0f, 0.0f);
 }

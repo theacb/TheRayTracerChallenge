@@ -190,7 +190,7 @@ Intersections intersect(Ray & r, std::shared_ptr<ObjectBase> o)
 {
 	// Transform Ray by Inverse of Object transform Matrix
 	Ray transformed_ray = Ray(r).transform((o->get_transform()).inverse());
-	std::vector<float> t_values = o->intersect_t(transformed_ray);
+	std::vector<float> t_values = o->local_intersect_t(transformed_ray);
 
 	return Intersections(t_values, o);
 }

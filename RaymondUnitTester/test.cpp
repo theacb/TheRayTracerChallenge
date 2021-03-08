@@ -16,6 +16,7 @@
 #include "../Raymond/IxComps.h"
 #include "../Raymond/Background.h"
 #include "../Raymond/Camera.h"
+#include "../Raymond/Constants.h"
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -1856,5 +1857,93 @@ TEST(Chapter07Tests, RenderingAWorldWithACamera)
 
 	Canvas image = c.render(w);
 
-	ASSERT_EQ(image.pixel_at(5, 5), Color(0.38066f, 0.47583, 0.2855));
+	ASSERT_EQ(image.pixel_at(5, 5), Color(0.38066f, 0.47583f, 0.2855f));
+}
+
+// ------------------------------------------------------------------------
+// Chapter 08 Shadows
+// ------------------------------------------------------------------------
+
+TEST(Chapter08Tests, LightingWithTheSurfaceInShadow)
+{
+	Tuple eye_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+	Tuple normal_v = Tuple::Vector(0.0f, 0.0f, -1.0f);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f));
+	bool is_shadowed = true;
+
+	PhongMaterial m = PhongMaterial();
+	Tuple position = Tuple::Point(0.0f, 0.0f, 0.0f);
+
+	Color result = m.lighting(light, position, eye_v, normal_v, is_shadowed);
+
+	ASSERT_EQ(result, Color(0.1f));
+}
+
+TEST(Chapter08Tests, ThereIsNoShadowWhenNothingIsCollinearWithPointAndLight)
+{
+	World w = World::Default();
+	Tuple p = Tuple::Point(0.0f, 10.0f, 10.0f);
+
+	ASSERT_FALSE(w.is_shadowed(w.get_lights()[0], p));
+}
+
+TEST(Chapter08Tests, TheShadowWhenTheObjectIsBetweenThePointAndTheLight)
+{
+	World w = World::Default();
+	Tuple p = Tuple::Point(10.0f, -10.0f, 10.0f);
+
+	ASSERT_TRUE(w.is_shadowed(w.get_lights()[0], p));
+}
+
+TEST(Chapter08Tests, ThereIsNoShadowWhenTheObjectIsBehindTheLight)
+{
+	World w = World::Default();
+	Tuple p = Tuple::Point(-20.0f, 20.0f, -20.0f);
+
+	ASSERT_FALSE(w.is_shadowed(w.get_lights()[0], p));
+}
+
+TEST(Chapter08Tests, ThereIsNoShadowWhenTheObjectIsBehindThePoint)
+{
+	World w = World::Default();
+	Tuple p = Tuple::Point(-2.0f, 2.0f, 2.0f);
+
+	ASSERT_FALSE(w.is_shadowed(w.get_lights()[0], p));
+}
+
+TEST(Chapter08Tests, ShadeIsGivenAnIntersectionInShadow)
+{
+	World w = World();
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0f, 0.0f, -10.0f), Color(1.0f));
+	w.add_object(light);
+
+	auto s1 = std::make_shared<Sphere>();
+	w.add_object(s1);
+	auto s2 = std::make_shared<Sphere>();
+	w.add_object(s2);
+	s2->set_transform(Matrix4::Translation(0.0f, 0.0f, 10.0f));
+
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, 5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+	Intersection i = Intersection(4.0f, s2);
+
+	IxComps comps = IxComps(i, r);
+
+	Color c = w.shade(comps);
+
+	ASSERT_EQ(c, Color(0.1f));
+}
+
+TEST(Chapter08Tests, TheHitShouldOffsetThePoint)
+{
+	Ray r = Ray(Tuple::Point(0.0f, 0.0f, -5.0f), Tuple::Vector(0.0f, 0.0f, 1.0f));
+
+	auto shape = std::make_shared<Sphere>();
+	shape->set_transform(Matrix4::Translation(0.0f, 0.0f, 1.0f));
+
+	Intersection i = Intersection(5.0f, shape);
+
+	IxComps comps = IxComps(i, r);
+
+	ASSERT_LT(comps.over_point.z, -EPSILON/2);
+	ASSERT_GT(comps.point.z, comps.over_point.z)
 }

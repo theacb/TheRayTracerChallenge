@@ -84,6 +84,7 @@
     <ClInclude Include="..\Raymond\Camera.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
+    <ClInclude Include="..\Raymond\Constants.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="files_to_test">

@@ -5,13 +5,26 @@
 // Constructors
 // ------------------------------------------------------------------------
 
+Canvas::Canvas()
+{
+}
+
+Canvas::Canvas(const Canvas & src)
+{
+	this->c_width_ = src.width();
+	this->c_height_ = src.height();
+
+	this->c_total_size_ = this->c_width_ * this->c_height_;
+	this->c_pixels_ = src.get_pixels();
+}
+
 Canvas::Canvas(int canvas_width, int canvas_height)
 {
-	c_width_ = canvas_width;
-	c_height_ = canvas_height;
-	c_total_size_ = canvas_width * canvas_height;
+	this->c_width_ = canvas_width;
+	this->c_height_ = canvas_height;
+	this->c_total_size_ = canvas_width * canvas_height;
 
-	c_pixels_ = std::vector<Color>(c_total_size_);
+	this->c_pixels_ = std::vector<Color>(this->c_total_size_);
 }
 
 // Destructor
@@ -29,6 +42,26 @@ void Canvas::write_pixel(int x, int y, Color color)
 	// Out of bounds is ignored
 	if (x >= 0 && x < c_width_ && y >= 0 && y < c_height_)
 		c_set_element_(x, y, color);
+}
+
+void Canvas::write_canvas_as_line(int y, const Canvas & canvas)
+{
+	if (y < this->c_height_)
+	{
+		int start_index = (y * c_width_);
+		std::vector<Color> pixels = canvas.get_pixels();
+
+		std::copy(pixels.begin(), pixels.end(), this->c_pixels_.begin() + start_index);
+
+	}
+	else
+	{
+		throw std::out_of_range(
+			"The requested line, (" +
+			std::to_string(y) +
+			"), is not within the bounds of the canvas."
+		);
+	}
 }
 
 Color Canvas::pixel_at(int x, int y)
@@ -86,16 +119,21 @@ std::stringstream Canvas::to_ppm_lines(const bool convert_toSRGB)
 	return ss;
 }
 
+std::vector<Color> Canvas::get_pixels() const
+{
+	return this->c_pixels_;
+}
+
 // ------------------------------------------------------------------------
 // Accessors
 // ------------------------------------------------------------------------
 
-int Canvas::width()
+int Canvas::width() const
 {
 	return c_width_;
 }
 
-int Canvas::height()
+int Canvas::height() const
 {
 	return c_height_;
 }

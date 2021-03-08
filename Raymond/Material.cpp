@@ -94,14 +94,14 @@ Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, IxComps & comps) const
 	// the light is on the other side of the surface.
 	light_dot_normal = Tuple::dot(light_v, comps.normal_v);
 
-	if (light_dot_normal < 0.0f)
+	if (light_dot_normal < 0.0f || comps.shadow_multiplier < lgt->cutoff)
 	{
 		diffuse_col = black;
 		specular_col = black;
 	}
 	else
 	{
-		diffuse_col = effective_col * this->diffuse * light_dot_normal;
+		diffuse_col = effective_col * this->diffuse * light_dot_normal * comps.shadow_multiplier;
 		reflect_v = Tuple::reflect(-light_v, comps.normal_v);
 
 		reflect_dot_eye = Tuple::dot(reflect_v, comps.eye_v);
@@ -121,12 +121,35 @@ Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, IxComps & comps) const
 	return ambient_col + diffuse_col + specular_col;
 }
 
-Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const
+Color PhongMaterial::lighting(
+	std::shared_ptr<Light> lgt, 
+	const Tuple & point, 
+	const Tuple & eye_v, 
+	const Tuple & normal_v
+) const
+{
+	return lighting(
+		lgt,
+		point,
+		eye_v,
+		normal_v,
+		false
+	);
+}
+
+Color PhongMaterial::lighting(
+	std::shared_ptr<Light> lgt, 
+	const Tuple & point, 
+	const Tuple & eye_v, 
+	const Tuple & normal_v, 
+	bool shadowed
+) const
 {
 	IxComps comps = IxComps();
 	comps.point = point;
 	comps.eye_v = eye_v;
 	comps.normal_v = normal_v;
+	comps.shadow_multiplier = shadowed ? 0.0f : 1.0f;
 
 	return this->lighting(lgt, comps);
 }

@@ -722,33 +722,33 @@ Matrix4 Matrix4::Scaling(Tuple s)
 	return Matrix4::Scaling(s.x, s.y, s.z);
 }
 
-Matrix4 Matrix4::Rotation_X(float r)
+Matrix4 Matrix4::Rotation_X(float radians)
 {
 	Matrix4 result = Matrix4::Identity();
-	result[5] = cos(r);
-	result[6] = -(sin(r));
-	result[9] = sin(r);
-	result[10] = cos(r);
+	result[5] = cos(radians);
+	result[6] = -(sin(radians));
+	result[9] = sin(radians);
+	result[10] = cos(radians);
 	return result;
 }
 
-Matrix4 Matrix4::Rotation_Y(float r)
+Matrix4 Matrix4::Rotation_Y(float radians)
 {
 	Matrix4 result = Matrix4::Identity();
-	result[0] = cos(r);
-	result[2] = sin(r);
-	result[8] = -(sin(r));
-	result[10] = cos(r);
+	result[0] = cos(radians);
+	result[2] = sin(radians);
+	result[8] = -(sin(radians));
+	result[10] = cos(radians);
 	return result;
 }
 
-Matrix4 Matrix4::Rotation_Z(float r)
+Matrix4 Matrix4::Rotation_Z(float radians)
 {
 	Matrix4 result = Matrix4::Identity();
-	result[0] = cos(r);
-	result[1] = -(sin(r));
-	result[4] = sin(r);
-	result[5] = cos(r);
+	result[0] = cos(radians);
+	result[1] = -(sin(radians));
+	result[4] = sin(radians);
+	result[5] = cos(radians);
 	return result;
 }
 
@@ -876,14 +876,10 @@ Matrix4 Matrix4::transpose() const
 	return Matrix4(this->transpose_vector());
 }
 
-// ------------------------------------------------------------------------
-// Overloaded Operators
-// ------------------------------------------------------------------------
-
 Tuple Matrix4::position()
 {
 	return Tuple::Point(
-		this->operator[](3), 
+		this->operator[](3),
 		this->operator[](7),
 		this->operator[](11)
 	);
@@ -900,6 +896,10 @@ Tuple Matrix4::scale()
 
 	return Tuple::Point(s0.magnitude(), s1.magnitude(), s2.magnitude());
 }
+
+// ------------------------------------------------------------------------
+// Overloaded Operators
+// ------------------------------------------------------------------------
 
 Matrix4 Matrix4::operator*(const Matrix4 & right_matrix) const
 {

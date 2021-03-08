@@ -45,6 +45,7 @@ public:
 
 	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const override;
 	Color lighting(std::shared_ptr<Light>, const Tuple &, const Tuple &, const Tuple &) const;
+	Color lighting(std::shared_ptr<Light>, const Tuple &, const Tuple &, const Tuple &, bool) const;
 
 	// Properties
 	Color color;
