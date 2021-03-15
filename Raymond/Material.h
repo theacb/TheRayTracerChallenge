@@ -49,10 +49,10 @@ public:
 
 	// Properties
 	Color color;
-	float ambient;
-	float diffuse;
-	float specular;
-	float shininess;
+	double ambient;
+	double diffuse;
+	double specular;
+	double shininess;
 };
 
 //Overloaded Operators

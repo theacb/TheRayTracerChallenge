@@ -24,20 +24,20 @@ World World::Default()
 {
 	World def = World();
 
-	auto light = std::make_shared<PointLight>(Tuple::Point(-10.0f, 10.0f, -10.0f), Color(1.0f));
+	auto light = std::make_shared<PointLight>(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0));
 
 	def.add_object(light);
 
 	auto s1 = std::make_shared<Sphere>();
 	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(s1->material);
-	ms1->color = Color(0.8f, 1.0f, 0.6f);
-	ms1->diffuse = 0.7f;
-	ms1->specular = 0.2f;
+	ms1->color = Color(0.8, 1.0, 0.6);
+	ms1->diffuse = 0.7;
+	ms1->specular = 0.2;
 
 	def.add_object(s1);
 
 	auto s2 = std::make_shared<Sphere>();
-	s2->set_transform(Matrix4::Scaling(0.5f, 0.5f, 0.5f));
+	s2->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
 
 	def.add_object(s2);
 
@@ -65,7 +65,7 @@ Intersections World::intersect_world(Ray & ray) const
 		for (Intersection& ix : obj_xs)
 		{
 			// Filter bad values
-			if (ix.is_valid() && ix.t_value > -0.0f)
+			if (ix.is_valid() && ix.t_value > -0.0)
 			{
 				result.push_back(ix);
 			}
@@ -83,7 +83,7 @@ Intersections World::intersect_world(Ray & ray) const
 
 Color World::shade(IxComps & comps) const
 {
-	Color sample = Color(0.0f);
+	Color sample = Color(0.0);
 	
 	// std::cout << "Shading " << comps.object->get_name() << " at ";
 	// std::cout << comps.point << ", Normal: " << comps.normal_v << ", Offset Point: " << comps.over_point << "\n";
@@ -94,14 +94,14 @@ Color World::shade(IxComps & comps) const
 
 		bool shd = this->is_shadowed(lgt, comps.over_point);
 
-		comps.shadow_multiplier = shd ? 0.0f : 1.0f;
+		comps.shadow_multiplier = shd ? 0.0 : 1.0;
 
 		if (lgt->falloff)
 		{
 			// Calculate quadratic intensity using formula I = 1/d^2
-			float distance = Tuple::distance(lgt->position(), comps.point);
-			float quad_multiplier = 1.0f / (distance * distance);
-			float intensity = lgt->color.magnitude() * quad_multiplier * lgt->multiplier;
+			double distance = Tuple::distance(lgt->position(), comps.point);
+			double quad_multiplier = 1.0 / (distance * distance);
+			double intensity = lgt->color.magnitude() * quad_multiplier * lgt->multiplier;
 			
 			// If value is less than cutoff value, do not calculate sample
 			if (intensity > lgt->cutoff)
@@ -138,7 +138,7 @@ Color World::color_at(Ray & ray) const
 bool World::is_shadowed(std::shared_ptr<Light> light, Tuple & point) const
 {
 	Tuple v = light->position() - point;
-	float distance = v.magnitude();
+	double distance = v.magnitude();
 	Tuple direction = v.normalize();
 
 	Ray r = Ray(point, direction);

@@ -18,8 +18,8 @@ public:
 	std::shared_ptr<BaseMaterial> material;
 
 	// Methods
-	virtual std::vector<float> local_intersect_t(const Ray &) const = 0;
-	virtual Tuple normal_at(const Tuple &) const = 0;
+	virtual std::vector<double> local_intersect_t(const Ray &) const = 0;
+	virtual Tuple local_normal_at(const Tuple &) const = 0;
 
 };
 
@@ -32,9 +32,25 @@ public:
 	~Sphere();
 
 	//properties
-	float radius;
+	double radius;
 
 	// Methods
-	virtual std::vector<float> local_intersect_t(const Ray &) const override;
-	virtual Tuple normal_at(const Tuple &) const override;
+	virtual std::vector<double> local_intersect_t(const Ray &) const override;
+	virtual Tuple local_normal_at(const Tuple &) const override;
+};
+
+class TestShape :
+	public Primitive
+{
+public:
+	TestShape();
+	TestShape(std::string);
+	~TestShape();
+
+	//properties
+	double radius;
+
+	// Methods
+	virtual std::vector<double> local_intersect_t(const Ray &) const override;
+	virtual Tuple local_normal_at(const Tuple &) const override;
 };

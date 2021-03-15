@@ -7,7 +7,7 @@
 
 class Color8Bit;
 
-// Float Color
+// double Color
 
 class Color :
 	public Tuple
@@ -15,9 +15,9 @@ class Color :
 public:
 	// Constructors
 	Color();
-	Color(float);
-	Color(float, float, float);
-	Color(float, float, float, float);
+	Color(double);
+	Color(double, double, double);
+	Color(double, double, double, double);
 	Color(const Tuple &);
 	Color(const Color8Bit &);
 
@@ -25,10 +25,10 @@ public:
 	~Color();
 
 	// Properties
-	float& r() { return this->x; }
-	float& g() { return this->y; }
-	float& b() { return this->z; }
-	float& a() { return this->w; }
+	double& r() { return this->x; }
+	double& g() { return this->y; }
+	double& b() { return this->z; }
+	double& a() { return this->w; }
 
 	// Methods
 	Color multiply(const Color &);
@@ -66,8 +66,8 @@ std::ostream & operator<<(std::ostream &, const Color8Bit &);
 std::ostream & operator<<(std::ostream &, const Color &);
 
 // Helper Functions
-float linear_to_srgb(const float);
-float srgb_to_linear(const float);
+double linear_to_srgb(const double);
+double srgb_to_linear(const double);
 
 template<typename T>
 inline T clip(const T & n, const T & lower, const T & upper)

@@ -3,7 +3,7 @@
 
 // ------------------------------------------------------------------------
 //
-// Color Float
+// Color double
 //
 // ------------------------------------------------------------------------
 // Constructors
@@ -13,15 +13,15 @@ Color::Color() : Tuple()
 {
 }
 
-Color::Color(float luminosity) : Tuple(luminosity, luminosity, luminosity, 0.0f)
+Color::Color(double luminosity) : Tuple(luminosity, luminosity, luminosity, 0.0)
 {
 }
 
-Color::Color(float red, float green, float blue) : Tuple(red, green, blue, 0.0f)
+Color::Color(double red, double green, double blue) : Tuple(red, green, blue, 0.0)
 {
 }
 
-Color::Color(float red, float green, float blue, float alpha) : Tuple(red, green, blue, alpha)
+Color::Color(double red, double green, double blue, double alpha) : Tuple(red, green, blue, alpha)
 {
 }
 
@@ -29,7 +29,7 @@ Color::Color(const Tuple & a) : Tuple(a)
 {
 }
 
-Color::Color(const Color8Bit & col) : Color(float(col.r) / 255.0f, float(col.g) / 255.0f, float(col.b) / 255.0f)
+Color::Color(const Color8Bit & col) : Color(double(col.r) / 255.0, double(col.g) / 255.0, double(col.b) / 255.0)
 {
 }
 
@@ -102,11 +102,11 @@ Color8Bit::Color8Bit(int red, int green, int blue)
 
 Color8Bit::Color8Bit(const Color & source_color)
 {
-	// Casts the float to an integer after clipping it to the 0.0 to 1.0 range 
+	// Casts the double to an integer after clipping it to the 0.0 to 1.0 range 
 	// and multiplying it by 255
-	r = static_cast<int>(clip<float>(source_color.x, 0.0f, 1.0f) * 255);
-	g = static_cast<int>(clip<float>(source_color.y, 0.0f, 1.0f) * 255);
-	b = static_cast<int>(clip<float>(source_color.z, 0.0f, 1.0f) * 255);
+	r = static_cast<int>(clip<double>(source_color.x, 0.0, 1.0) * 255);
+	g = static_cast<int>(clip<double>(source_color.y, 0.0, 1.0) * 255);
+	b = static_cast<int>(clip<double>(source_color.z, 0.0, 1.0) * 255);
 }
 
 Color8Bit::~Color8Bit()
@@ -158,14 +158,14 @@ std::ostream & operator<< (std::ostream & os, const Color8Bit & color)
 // Helper Functions
 // ------------------------------------------------------------------------
 
-float linear_to_srgb(const float x)
+double linear_to_srgb(const double x)
 {
 	// Converts the channel from linear values to the sRGB color curve
-	return (x >= 0.0031308f) ? (1.055f * (pow(x, (1.0f / 2.4f)))) - 0.055f : 12.92f * x;
+	return (x >= 0.0031308) ? (1.055 * (pow(x, (1.0 / 2.4)))) - 0.055 : 12.92 * x;
 }
 
-float srgb_to_linear(const float x)
+double srgb_to_linear(const double x)
 {
 	// Converts the channel from the sRGB color curve to linear values
-	return (x >= 0.04045f) ? pow((x +0.055f)/1.055f, 2.4f) : x / 12.92f;
+	return (x >= 0.04045) ? pow((x +0.055)/1.055, 2.4) : x / 12.92;
 }

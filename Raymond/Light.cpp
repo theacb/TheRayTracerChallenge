@@ -9,21 +9,21 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Light::Light() : Light(Color(1.0f, 1.0f, 1.0f), 1.0f)
+Light::Light() : Light(Color(1.0, 1.0, 1.0), 1.0)
 {
 }
 
-Light::Light(Color color) : Light(color, 1.0f)
+Light::Light(Color color) : Light(color, 1.0)
 {
 }
 
-Light::Light(Color color, float multiplier) : ObjectBase()
+Light::Light(Color color, double multiplier) : ObjectBase()
 {
 	this->color = color;
 	this->multiplier = multiplier;
 
 	this->falloff = false;
-	this->cutoff = 0.0001f;
+	this->cutoff = 0.0001;
 }
 
 Light::~Light()
@@ -43,15 +43,15 @@ Tuple Light::position() const
 // Constructors
 // ------------------------------------------------------------------------
 
-PointLight::PointLight() : PointLight(Tuple::Point(0.0f, 0.0f, 0.0f), Color(1.0f), 1.0f)
+PointLight::PointLight() : PointLight(Tuple::Point(0.0, 0.0, 0.0), Color(1.0), 1.0)
 {
 }
 
-PointLight::PointLight(Tuple position, Color color) : PointLight(position, color, 1.0f)
+PointLight::PointLight(Tuple position, Color color) : PointLight(position, color, 1.0)
 {
 }
 
-PointLight::PointLight(Tuple position, Color color, float multiplier) : Light(color, multiplier)
+PointLight::PointLight(Tuple position, Color color, double multiplier) : Light(color, multiplier)
 {
 	this->set_transform(Matrix4::Translation(position));
 }
@@ -60,23 +60,23 @@ PointLight::~PointLight()
 {
 }
 
-std::vector<float> PointLight::local_intersect_t(const Ray & ray) const
+std::vector<double> PointLight::local_intersect_t(const Ray & ray) const
 {
 	Tuple position = this->position();
 	Tuple ix_vector = position - ray.origin;
 	if (ix_vector.normalize() == ray.direction.normalize())
 	{
-		return std::vector<float>({ Tuple::distance(position, ray.origin) });
+		return std::vector<double>({ Tuple::distance(position, ray.origin) });
 	}
 	else
 	{
-		return std::vector<float>();
+		return std::vector<double>();
 	}
 }
 
-Tuple PointLight::normal_at(const Tuple & point) const
+Tuple PointLight::local_normal_at(const Tuple & point) const
 {
-	return Tuple::Vector(0.0f, 1.0f, 0.0f);
+	return Tuple::Vector(0.0, 1.0, 0.0);
 }
 
 bool operator==(const PointLight & left_light, const PointLight & right_light)

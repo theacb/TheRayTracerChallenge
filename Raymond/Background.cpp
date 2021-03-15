@@ -23,7 +23,7 @@ Background::~Background()
 
 Color Background::shade(IxComps &) const
 {
-	return Color(0.0f, 0.0f, 0.0f);
+	return Color(0.0, 0.0, 0.0);
 }
 
 // ------------------------------------------------------------------------
@@ -48,5 +48,5 @@ NormalGradientBackground::~NormalGradientBackground()
 
 Color NormalGradientBackground::shade(IxComps &) const
 {
-	return Color(0.0f, 0.0f, 0.0f);
+	return Color(0.0, 0.0, 0.0);
 }

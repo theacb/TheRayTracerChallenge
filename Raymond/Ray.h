@@ -13,7 +13,7 @@ public:
 	~Ray();
 
 	// Methods
-	Tuple position(float) const;
+	Tuple position(double) const;
 
 	Ray transform(Matrix4) const;
 

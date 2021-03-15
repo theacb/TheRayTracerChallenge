@@ -28,8 +28,8 @@ public:
 	Tuple eye_v;
 	Tuple normal_v;
 	bool inside;
-	float t_value;
-	float shadow_multiplier;
+	double t_value;
+	double shadow_multiplier;
 };
 
 #endif

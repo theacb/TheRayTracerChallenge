@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <math.h>
+#include "math.h"
 
 #include "Constants.h"
 
@@ -10,27 +10,27 @@ class Tuple
 public:
 	// Constructors
 	Tuple();
-	Tuple(float, float, float, float);
+	Tuple(double, double, double, double);
 	Tuple(const Tuple &);
 
 	// Factories
-	static Tuple Point(float, float, float);
+	static Tuple Point(double, double, double);
 	static Tuple Origin();
-	static Tuple Vector(float, float, float);
+	static Tuple Vector(double, double, double);
 
 	// Destructor
 	~Tuple();
 
 	// Properties
-	float x, y, z, w;
+	double x, y, z, w;
 
 	// Methods
-	float magnitude() const;
+	double magnitude() const;
 	Tuple normalize() const;
 
-	static float dot(const Tuple &, const Tuple &);
+	static double dot(const Tuple &, const Tuple &);
 	static Tuple cross(const Tuple &, const Tuple &);
-	static float distance(const Tuple &, const Tuple &);
+	static double distance(const Tuple &, const Tuple &);
 	static Tuple reflect(const Tuple &, const Tuple &);
 	static Tuple entry_wise(const Tuple &, const Tuple &);
 
@@ -38,8 +38,8 @@ public:
 	Tuple operator+(const Tuple &) const;
 	Tuple operator-();
 	Tuple operator-(const Tuple &) const;
-	Tuple operator*(const float &) const;
-	Tuple operator/(const float &) const;
+	Tuple operator*(const double &) const;
+	Tuple operator/(const double &) const;
  
 };
 
@@ -49,4 +49,4 @@ bool operator==(const Tuple &, const Tuple &);
 bool operator!=(const Tuple &, const Tuple &);
 
 // Helper Functions
-bool flt_cmp(const float &, const float &);
+bool flt_cmp(const double &, const double &);

@@ -24,5 +24,6 @@
 #include "IxComps.h"
 #include "Background.h"
 #include "Camera.h"
+#include "Utilities.h"
 
 #endif //PCH_H

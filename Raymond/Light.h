@@ -13,18 +13,18 @@ class Light :
 public:
 	Light();
 	Light(Color color);
-	Light(Color color, float multiplier);
+	Light(Color color, double multiplier);
 	~Light();
 
-	virtual std::vector<float> local_intersect_t(const Ray &) const = 0;
-	virtual Tuple normal_at(const Tuple &) const = 0;
+	virtual std::vector<double> local_intersect_t(const Ray &) const = 0;
+	virtual Tuple local_normal_at(const Tuple &) const = 0;
 
 	//properties
 	Color color;
-	float multiplier;
+	double multiplier;
 
 	bool falloff;
-	float cutoff;
+	double cutoff;
 
 	// Methods
 	Tuple position() const;
@@ -36,12 +36,12 @@ class PointLight :
 public:
 	PointLight();
 	PointLight(Tuple position, Color color);
-	PointLight(Tuple position, Color color, float multiplier);
+	PointLight(Tuple position, Color color, double multiplier);
 	~PointLight();
 
 	// Methods
-	virtual std::vector<float> local_intersect_t(const Ray & ray) const override;
-	virtual Tuple normal_at(const Tuple & point) const override;
+	virtual std::vector<double> local_intersect_t(const Ray & ray) const override;
+	virtual Tuple local_normal_at(const Tuple & point) const override;
 };
 
 //Overloaded Operators

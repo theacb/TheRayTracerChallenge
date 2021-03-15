@@ -9,7 +9,7 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Ray::Ray():Ray(Tuple::Point(0.0f, 0.0f, 0.0f), Tuple::Vector(0.0f, 1.0f, 0.0f))
+Ray::Ray():Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0))
 {
 }
 
@@ -32,7 +32,7 @@ Ray::~Ray()
 // Methods
 // ------------------------------------------------------------------------
 
-Tuple Ray::position(float t) const
+Tuple Ray::position(double t) const
 {
 	return this->origin + (this->direction * t);
 }

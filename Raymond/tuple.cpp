@@ -7,13 +7,13 @@
 
 Tuple::Tuple()
 {
-	this->x = 0.0f;
-	this->y = 0.0f;
-	this->z = 0.0f;
-	this->w = 0.0f;
+	this->x = 0.0;
+	this->y = 0.0;
+	this->z = 0.0;
+	this->w = 0.0;
 }
 
-Tuple::Tuple(float x_axis, float y_axis, float z_axis, float w_axis)
+Tuple::Tuple(double x_axis, double y_axis, double z_axis, double w_axis)
 {
 	this->x = x_axis;
 	this->y = y_axis;
@@ -29,19 +29,19 @@ Tuple::Tuple(const Tuple & src)
 	this->w = src.w;
 }
 
-Tuple Tuple::Point(float x_axis, float y_axis, float z_axis)
+Tuple Tuple::Point(double x_axis, double y_axis, double z_axis)
 {
-	return Tuple(x_axis, y_axis, z_axis, 1.0f);
+	return Tuple(x_axis, y_axis, z_axis, 1.0);
 }
 
 Tuple Tuple::Origin()
 {
-	return Tuple::Point(0.0f, 0.0f, 0.0f);
+	return Tuple::Point(0.0, 0.0, 0.0);
 }
 
-Tuple Tuple::Vector(float x_axis, float y_axis, float z_axis)
+Tuple Tuple::Vector(double x_axis, double y_axis, double z_axis)
 {
-	return Tuple(x_axis, y_axis, z_axis, 0.0f);
+	return Tuple(x_axis, y_axis, z_axis, 0.0);
 }
 
 // Destructor
@@ -55,23 +55,23 @@ Tuple::~Tuple()
 // ------------------------------------------------------------------------
 
 // Magnitude
-float Tuple::magnitude() const
+double Tuple::magnitude() const
 {
 	// Computes magnitude using Pythagorean theorem
 	// sqrt(x^2 + y^2 + z^2 + w^2)
-	const float power = 2.0f;
+	const double power = 2.0;
 	return sqrt(pow(this->x, power) + pow(this->y, power) + pow(this->z, power) + pow(this->w, power));
 }
 
 // Normalize
 Tuple Tuple::normalize() const
 {
-	float mag = this->magnitude();
+	double mag = this->magnitude();
 	return Tuple(this->x / mag, this->y / mag, this->z / mag, this->w / mag);
 }
 
 // Dot product
-float Tuple::dot(const Tuple & left_tuple, const Tuple & right_tuple)
+double Tuple::dot(const Tuple & left_tuple, const Tuple & right_tuple)
 {
 	return (
 		(left_tuple.x * right_tuple.x) + 
@@ -87,14 +87,14 @@ Tuple Tuple::cross(const Tuple & left_tuple, const Tuple & right_tuple)
 		(left_tuple.y * right_tuple.z) - (left_tuple.z * right_tuple.y),
 		(left_tuple.z * right_tuple.x) - (left_tuple.x * right_tuple.z),
 		(left_tuple.x * right_tuple.y) - (left_tuple.y * right_tuple.x),
-		0.0f
+		0.0
 
 	);
 }
 
-float Tuple::distance(const Tuple & left_tuple, const Tuple & right_tuple)
+double Tuple::distance(const Tuple & left_tuple, const Tuple & right_tuple)
 {
-	const float power = 2.0f;
+	const double power = 2.0;
 	return sqrt(
 		pow(right_tuple.x - left_tuple.x, power) +
 		pow(right_tuple.y - left_tuple.y, power) +
@@ -144,7 +144,7 @@ Tuple Tuple::operator-(const Tuple & right_tuple) const
 }
 
 // Scalar Multiplication
-Tuple Tuple::operator*(const float & scalar) const
+Tuple Tuple::operator*(const double & scalar) const
 {
 	return Tuple(
 		this->x * scalar,
@@ -155,7 +155,7 @@ Tuple Tuple::operator*(const float & scalar) const
 }
 
 // Scalar Division
-Tuple Tuple::operator/(const float & scalar) const
+Tuple Tuple::operator/(const double & scalar) const
 {
 	return Tuple(
 		this->x / scalar,
@@ -207,8 +207,8 @@ bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple)
 // Helpfer Functions
 // ------------------------------------------------------------------------
 
-// Float Comparison
-bool flt_cmp(const float & left_float, const float & right_float)
+// double Comparison
+bool flt_cmp(const double & left_double, const double & right_double)
 {
-	return fabs(left_float - right_float) < EPSILON;
+	return fabs(left_double - right_double) < EPSILON;
 }

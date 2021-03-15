@@ -40,6 +40,39 @@ Matrix4 ObjectBase::get_transform() const
 	return this->transform_;
 }
 
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+Ray ObjectBase::ray_to_object_space(const Ray & r) const
+{
+	return Ray();
+}
+
+Ray ObjectBase::ray_to_world_space(const Ray & r) const
+{
+	return Ray();
+}
+
+Tuple ObjectBase::point_to_object_space(const Tuple & p) const
+{
+	return Tuple();
+}
+
+Tuple ObjectBase::point_to_world_space(const Tuple & p) const
+{
+	return Tuple();
+}
+
+Tuple ObjectBase::normal_vector_to_world_space(const Tuple & v) const
+{
+	return Tuple();
+}
+
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
 std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
 {
 	return os << "(" << obj.name_ << ", " << obj.transform_ << ")";
@@ -53,11 +86,11 @@ std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
 // Constructors
 // ------------------------------------------------------------------------
 
-Intersection::Intersection() : Intersection(0.0f, nullptr)
+Intersection::Intersection() : Intersection(0.0, nullptr)
 {
 }
 
-Intersection::Intersection(float t, std::shared_ptr<ObjectBase> obj)
+Intersection::Intersection(double t, std::shared_ptr<ObjectBase> obj)
 {
 	this->t_value = t;
 	this->object = obj;
@@ -118,10 +151,10 @@ Intersections::Intersections(std::initializer_list<Intersection> il) :
 	std::sort(this->begin(), this->end());
 }
 
-Intersections::Intersections(std::vector<float> t_values, std::shared_ptr<ObjectBase> o) :
+Intersections::Intersections(std::vector<double> t_values, std::shared_ptr<ObjectBase> o) :
 	std::vector<Intersection>()
 {
-	for (float t : t_values)
+	for (double t : t_values)
 	{
 		this->push_back(Intersection(t, o));
 	}
@@ -147,13 +180,13 @@ Intersection Intersections::hit() const
 		std::vector<Intersection>::const_iterator result = std::find_if(
 			this->cbegin(),
 			this->cend() - 1,
-			[](const Intersection & ix) -> bool { return ix.t_value > 0.0f; }
+			[](const Intersection & ix) -> bool { return ix.t_value > 0.0; }
 		);
 
 
 		// If find_if returns an intersection with a positive t value, dereference the 
 		// iterator and return the result
-		if ((*result).t_value > 0.0f)
+		if ((*result).t_value > 0.0)
 		{
 			return *result;
 		}
@@ -190,7 +223,7 @@ Intersections intersect(Ray & r, std::shared_ptr<ObjectBase> o)
 {
 	// Transform Ray by Inverse of Object transform Matrix
 	Ray transformed_ray = Ray(r).transform((o->get_transform()).inverse());
-	std::vector<float> t_values = o->local_intersect_t(transformed_ray);
+	std::vector<double> t_values = o->local_intersect_t(transformed_ray);
 
 	return Intersections(t_values, o);
 }

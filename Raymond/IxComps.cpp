@@ -14,12 +14,12 @@ IxComps::IxComps()
 	this->t_value = 0.0;
 	this->object = nullptr;
 
-	this->point = Tuple::Point(0.0f, 0.0f, 0.0f);
-	this->eye_v = Tuple::Vector(0.0f, 1.0f, 0.0f);
-	this->normal_v = Tuple::Vector(0.0f, 1.0f, 0.0f);
-	this->over_point = this->point + (this->normal_v * EPSILON * 100.0f);
+	this->point = Tuple::Point(0.0, 0.0, 0.0);
+	this->eye_v = Tuple::Vector(0.0, 1.0, 0.0);
+	this->normal_v = Tuple::Vector(0.0, 1.0, 0.0);
+	this->over_point = this->point + (this->normal_v * EPSILON);
 
-	this->shadow_multiplier = 1.0f;
+	this->shadow_multiplier = 1.0;
 
 	this->inside = false;
 }
@@ -31,11 +31,11 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray)
 
 	this->point = ray.position(this->t_value);
 	this->eye_v = -(Tuple(ray.direction));
-	this->normal_v = this->object->normal_at(this->point);
+	this->normal_v = this->object->local_normal_at(this->point);
 
 	this->shadow_multiplier = 1.0;
 
-	if (Tuple::dot(this->normal_v, this->eye_v) < 0.0f)
+	if (Tuple::dot(this->normal_v, this->eye_v) < 0.0)
 	{
 		this->inside = true;
 		this->normal_v = -(this->normal_v);
@@ -45,7 +45,7 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray)
 		this->inside = false;
 	}
 
-	this->over_point = this->point + (this->normal_v * EPSILON * 100.0f);
+	this->over_point = this->point + (this->normal_v * EPSILON);
 }
 
 IxComps::IxComps(const IxComps & src)
@@ -74,10 +74,10 @@ IxComps::~IxComps()
 IxComps IxComps::Background(const Ray & r)
 {
 	IxComps comp = IxComps();
-	comp.t_value = std::numeric_limits<float>::infinity();
+	comp.t_value = std::numeric_limits<double>::infinity();
 	comp.object = nullptr;
 
-	comp.point = Tuple::Point(0.0f, 0.0f, 0.0f);
+	comp.point = Tuple::Point(0.0, 0.0, 0.0);
 	comp.eye_v = -(Tuple(r.direction));
 	comp.normal_v = comp.eye_v;
 

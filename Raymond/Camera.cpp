@@ -9,11 +9,11 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Camera::Camera() : Camera(560, 315, float(M_PI) / 2.0f)
+Camera::Camera() : Camera(560, 315, M_PI / 4.0)
 {
 }
 
-Camera::Camera(int width, int height, float fov)
+Camera::Camera(int width, int height, double fov)
 {
 	this->c_h_size_ = width;
 	this->c_v_size_ = height;
@@ -29,23 +29,23 @@ Camera::~Camera()
 // Virtual
 // ------------------------------------------------------------------------
 
-std::vector<float> Camera::local_intersect_t(const Ray & r) const
+std::vector<double> Camera::local_intersect_t(const Ray & r) const
 {
 	Tuple position = (this->get_transform()).position();
 	Tuple ix_vector = position - r.origin;
 	if (ix_vector.normalize() == r.direction.normalize())
 	{
-		return std::vector<float>({ Tuple::distance(position, r.origin) });
+		return std::vector<double>({ Tuple::distance(position, r.origin) });
 	}
 	else
 	{
-		return std::vector<float>();
+		return std::vector<double>();
 	}
 }
 
-Tuple Camera::normal_at(const Tuple & p) const
+Tuple Camera::local_normal_at(const Tuple & p) const
 {
-	return Tuple::Vector(0.0f, 1.0f, 0.0f);
+	return Tuple::Vector(0.0, 1.0, 0.0);
 }
 
 // ------------------------------------------------------------------------
@@ -55,22 +55,22 @@ Tuple Camera::normal_at(const Tuple & p) const
 Ray Camera::ray_from_pixel(int x, int y) const
 {
 	// Offset from the edge of the canvas to the pixel's ceneter
-	float x_offset = (float(x) + 0.5f) * this->c_pixel_size_;
-	float y_offset = (float(y) + 0.5f) * this->c_pixel_size_;
+	double x_offset = (double(x) + 0.5) * this->c_pixel_size_;
+	double y_offset = (double(y) + 0.5) * this->c_pixel_size_;
 
 	// The untransformed coordinates of the pixel in world space
 	// Camera looks towards -z, so +x is to the left
-	float world_x = this->c_half_width_ - x_offset;
-	float world_y = this->c_half_height_ - y_offset;
+	double world_x = this->c_half_width_ - x_offset;
+	double world_y = this->c_half_height_ - y_offset;
 
 	// Pre invert matrix so this is only done once
 	Matrix4 inv_x_form = this->get_transform().inverse();
 
 	// Using the camera's matrix, transform the canvas point and the origin 
 	// and then compute the ray's direction vector
-	// The camera is at z=-1.0f
-	Tuple pixel = inv_x_form * Tuple::Point(world_x, world_y, -1.0f);
-	Tuple origin = inv_x_form * Tuple::Point(0.0f, 0.0f, 0.0f);
+	// The camera is at z=-1.0
+	Tuple pixel = inv_x_form * Tuple::Point(world_x, world_y, -1.0);
+	Tuple origin = inv_x_form * Tuple::Point(0.0, 0.0, 0.0);
 	Tuple direction = (pixel - origin).normalize();
 
 	return Ray(origin, direction);
@@ -116,7 +116,7 @@ Canvas Camera::threaded_render(const World & w) const
 		line_results.push_back(std::async(f, this, w, y));
 	}
 
-	for (size_t i = 0; i < line_results.size(); i++)
+	for (int i = 0; i < line_results.size(); i++)
 	{
 		image.write_canvas_as_line(i, line_results[i].get());
 	}
@@ -155,12 +155,12 @@ int Camera::get_vertical_size() const
 	return this->c_v_size_;
 }
 
-float Camera::get_fov() const
+double Camera::get_fov() const
 {
 	return this->c_fov_;
 }
 
-float Camera::get_pixel_size() const
+double Camera::get_pixel_size() const
 {
 	return this->c_pixel_size_;
 }
@@ -171,8 +171,8 @@ float Camera::get_pixel_size() const
 
 void Camera::pixel_size_()
 {
-	float half_view = tan(this->c_fov_ / 2.0f);
-	float aspect_ratio = float(this->c_h_size_) / float(this->c_v_size_);
+	double half_view = tan(this->c_fov_ / 2.0);
+	double aspect_ratio = double(this->c_h_size_) / double(this->c_v_size_);
 
 	if (aspect_ratio >= 1.0)
 	{
@@ -185,5 +185,5 @@ void Camera::pixel_size_()
 		this->c_half_height_ = half_view;
 	}
 
-	this->c_pixel_size_ = (this->c_half_width_ * 2.0f) / float(this->c_h_size_);
+	this->c_pixel_size_ = (this->c_half_width_ * 2.0) / double(this->c_h_size_);
 }
