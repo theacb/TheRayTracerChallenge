@@ -31,7 +31,7 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray)
 
 	this->point = ray.position(this->t_value);
 	this->eye_v = -(Tuple(ray.direction));
-	this->normal_v = this->object->local_normal_at(this->point);
+	this->normal_v = this->object->normal_at(this->point);
 
 	this->shadow_multiplier = 1.0;
 

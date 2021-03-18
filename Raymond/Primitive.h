@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_PRIMITIVE
+#define H_RAYMOND_PRIMITIVE
 
 #include <memory> // Shared Pointers
 
@@ -18,8 +19,8 @@ public:
 	std::shared_ptr<BaseMaterial> material;
 
 	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray &) const = 0;
-	virtual Tuple local_normal_at(const Tuple &) const = 0;
+	virtual std::vector<double> local_intersect_t(const Ray & r) const = 0;
+	virtual Tuple local_normal_at(const Tuple & object_space_point) const = 0;
 
 };
 
@@ -28,15 +29,31 @@ class Sphere :
 {
 public:
 	Sphere();
-	Sphere(std::string);
+	Sphere(std::string name);
 	~Sphere();
 
-	//properties
+	// Properties
 	double radius;
 
 	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray &) const override;
-	virtual Tuple local_normal_at(const Tuple &) const override;
+	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
+	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+};
+
+class InfinitePlane :
+	public Primitive
+{
+public:
+	InfinitePlane();
+	InfinitePlane(std::string name);
+	~InfinitePlane();
+
+	// Properties
+	Ray ray;
+
+	// Methods
+	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
+	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 };
 
 class TestShape :
@@ -44,13 +61,15 @@ class TestShape :
 {
 public:
 	TestShape();
-	TestShape(std::string);
+	TestShape(std::string name);
 	~TestShape();
 
-	//properties
-	double radius;
+	// Properties
+	Ray ray;
 
 	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray &) const override;
-	virtual Tuple local_normal_at(const Tuple &) const override;
+	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
+	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 };
+
+#endif

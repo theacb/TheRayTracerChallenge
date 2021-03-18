@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_COLOR
+#define H_RAYMOND_COLOR
 
 #include <algorithm>
 #include <string>
@@ -15,11 +16,11 @@ class Color :
 public:
 	// Constructors
 	Color();
-	Color(double);
-	Color(double, double, double);
-	Color(double, double, double, double);
-	Color(const Tuple &);
-	Color(const Color8Bit &);
+	Color(double luminosity);
+	Color(double red, double green, double blue);
+	Color(double red, double green, double blue, double alpha);
+	Color(const Tuple & a);
+	Color(const Color8Bit & col);
 
 	// Destrcutor
 	~Color();
@@ -31,12 +32,12 @@ public:
 	double& a() { return this->w; }
 
 	// Methods
-	Color multiply(const Color &);
+	Color multiply(const Color & right_color);
 	//  - Converters
 	Color convert_linear_to_srgb();
 	Color convert_srgb_to_linear();
 
-	Tuple operator*(const Color &) const;
+	Tuple operator*(const Color & right_color) const;
 };
 
 // 8 Bit Color
@@ -46,8 +47,8 @@ class Color8Bit
 public:
 	// Constructors
 	Color8Bit();
-	Color8Bit(int, int, int);
-	Color8Bit(const Color&);
+	Color8Bit(int red, int green, int blue);
+	Color8Bit(const Color& source_color);
 
 	~Color8Bit();
 
@@ -62,15 +63,17 @@ public:
 // Overloaded Operators
 bool operator==(const Color8Bit &, const Color8Bit &);
 bool operator!=(const Color8Bit &, const Color8Bit &);
-std::ostream & operator<<(std::ostream &, const Color8Bit &);
-std::ostream & operator<<(std::ostream &, const Color &);
+std::ostream & operator<<(std::ostream & os, const Color8Bit & col);
+std::ostream & operator<<(std::ostream & os, const Color & col);
 
 // Helper Functions
-double linear_to_srgb(const double);
-double srgb_to_linear(const double);
+double linear_to_srgb(const double x);
+double srgb_to_linear(const double x);
 
 template<typename T>
 inline T clip(const T & n, const T & lower, const T & upper)
 {
 	return std::max(lower, std::min(n, upper));
 }
+
+#endif

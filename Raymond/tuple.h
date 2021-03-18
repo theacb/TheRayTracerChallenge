@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_TUPLE
+#define H_RAYMOND_TUPLE
 
 #include <iostream>
 #include "math.h"
@@ -10,13 +11,13 @@ class Tuple
 public:
 	// Constructors
 	Tuple();
-	Tuple(double, double, double, double);
-	Tuple(const Tuple &);
+	Tuple(double x_axis, double y_axis, double z_axis, double w_axis);
+	Tuple(const Tuple & src);
 
 	// Factories
-	static Tuple Point(double, double, double);
+	static Tuple Point(double x_axis, double y_axis, double z_axis);
 	static Tuple Origin();
-	static Tuple Vector(double, double, double);
+	static Tuple Vector(double x_axis, double y_axis, double z_axis);
 
 	// Destructor
 	~Tuple();
@@ -28,25 +29,27 @@ public:
 	double magnitude() const;
 	Tuple normalize() const;
 
-	static double dot(const Tuple &, const Tuple &);
-	static Tuple cross(const Tuple &, const Tuple &);
-	static double distance(const Tuple &, const Tuple &);
-	static Tuple reflect(const Tuple &, const Tuple &);
-	static Tuple entry_wise(const Tuple &, const Tuple &);
+	static double dot(const Tuple & left_tuple, const Tuple & right_tuple);
+	static Tuple cross(const Tuple & left_tuple, const Tuple & right_tuple);
+	static double distance(const Tuple & left_tuple, const Tuple & right_tuple);
+	static Tuple reflect(const Tuple & in, const Tuple & normal);
+	static Tuple entry_wise(const Tuple & left_tuple, const Tuple & right_tuple);
 
 	// Overloaded Operators
-	Tuple operator+(const Tuple &) const;
+	Tuple operator+(const Tuple & right_tuple) const;
 	Tuple operator-();
-	Tuple operator-(const Tuple &) const;
-	Tuple operator*(const double &) const;
-	Tuple operator/(const double &) const;
+	Tuple operator-(const Tuple & right_tuple) const;
+	Tuple operator*(const double & scalar) const;
+	Tuple operator/(const double & scalar) const;
  
 };
 
 // Overloaded Operators
-std::ostream & operator<<(std::ostream &, const Tuple &);
-bool operator==(const Tuple &, const Tuple &);
-bool operator!=(const Tuple &, const Tuple &);
+std::ostream & operator<<(std::ostream & os, const Tuple & tuple);
+bool operator==(const Tuple & left_tuple, const Tuple & right_tuple);
+bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple);
 
 // Helper Functions
-bool flt_cmp(const double &, const double &);
+bool flt_cmp(const double & left_double, const double & right_double);
+
+#endif

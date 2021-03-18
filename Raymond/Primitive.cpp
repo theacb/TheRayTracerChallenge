@@ -77,25 +77,52 @@ std::vector<double> Sphere::local_intersect_t(const Ray & r) const
 	}
 }
 
-Tuple Sphere::local_normal_at(const Tuple & world_space_point) const
+Tuple Sphere::local_normal_at(const Tuple & object_space_point) const
 {
-	// Calculate inverse of xform vector
-	Matrix4 inverted_xform_matrix = (this->get_transform()).inverse();
-
-	// Multiply point by inverse xform matrix to bring into object space
-	Tuple object_space_point = inverted_xform_matrix * world_space_point;
-
 	// Calculate surface normal
-	Tuple object_normal_vector = object_space_point - Tuple::Origin();
+	return object_space_point - Tuple::Origin();
+}
 
-	// Multiply object space normal by transpose of the inverted x form matrix
-	Tuple world_normal_vector = inverted_xform_matrix.transpose() * object_normal_vector;
+// ------------------------------------------------------------------------
+//
+// Infinite Plane
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
 
-	// Enforce behavior as a vector by setting w to 0
-	world_normal_vector.w = 0.0;
+InfinitePlane::InfinitePlane()
+{
+	this->set_name("Default Sphere 000");
+}
 
-	// Normalize vector
-	return world_normal_vector.normalize();
+InfinitePlane::InfinitePlane(std::string name)
+{
+	this->set_name(name);
+}
+
+InfinitePlane::~InfinitePlane()
+{
+}
+
+std::vector<double> InfinitePlane::local_intersect_t(const Ray & r) const
+{
+	// Parallel or coplanar rays return empty vector
+	if (abs(r.direction.y) < EPSILON)
+	{
+		return std::vector<double>();
+	}
+	// Assumes that the object space plane is on the X and Z axis
+	else
+	{
+		return std::vector<double>({ (-r.origin.y) / r.direction.y });
+	}
+}
+
+Tuple InfinitePlane::local_normal_at(const Tuple & object_space_point) const
+{
+	// Assumes that the object space plane is on the X and Z axis, pointing in the positive y direction
+	return Tuple::Vector(0.0, 1.0, 0.0);
 }
 
 // ------------------------------------------------------------------------
@@ -122,12 +149,14 @@ TestShape::~TestShape()
 // Methods
 // ------------------------------------------------------------------------
 
-std::vector<double> TestShape::local_intersect_t(const Ray &) const
+std::vector<double> TestShape::local_intersect_t(const Ray & r) const
 {
 	return std::vector<double>();
 }
 
-Tuple TestShape::local_normal_at(const Tuple &) const
+Tuple TestShape::local_normal_at(const Tuple & object_space_point) const
 {
-	return Tuple();
+	return Tuple::Vector(object_space_point.x, object_space_point.y, object_space_point.z);
 }
+
+

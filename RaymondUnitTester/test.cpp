@@ -1360,7 +1360,7 @@ TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheXAxis)
 {
 	Sphere s = Sphere();
 	
-	Tuple n = s.local_normal_at(Tuple::Point(1.0, 0.0, 0.0));
+	Tuple n = s.normal_at(Tuple::Point(1.0, 0.0, 0.0));
 
 	ASSERT_EQ(n, Tuple::Vector(1.0, 0.0, 0.0));
 }
@@ -1369,7 +1369,7 @@ TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheYAxis)
 {
 	Sphere s = Sphere();
 
-	Tuple n = s.local_normal_at(Tuple::Point(0.0, 1.0, 0.0));
+	Tuple n = s.normal_at(Tuple::Point(0.0, 1.0, 0.0));
 
 	ASSERT_EQ(n, Tuple::Vector(0.0, 1.0, 0.0));
 }
@@ -1378,7 +1378,7 @@ TEST(Chapter06Tests, TheNormalOnASphereAtAPointOnTheZAxis)
 {
 	Sphere s = Sphere();
 
-	Tuple n = s.local_normal_at(Tuple::Point(0.0, 0.0, 1.0));
+	Tuple n = s.normal_at(Tuple::Point(0.0, 0.0, 1.0));
 
 	ASSERT_EQ(n, Tuple::Vector(0.0, 0.0, 1.0));
 }
@@ -1389,7 +1389,7 @@ TEST(Chapter06Tests, TheNormalOnASphereAtANonAxialPoint)
 
 	double sq_3 = sqrt(3.0) / 3.0;
 
-	Tuple n = s.local_normal_at(Tuple::Point(sq_3, sq_3, sq_3));
+	Tuple n = s.normal_at(Tuple::Point(sq_3, sq_3, sq_3));
 
 	ASSERT_EQ(n, Tuple::Vector(sq_3, sq_3, sq_3)) << s.get_transform();
 }
@@ -1400,7 +1400,7 @@ TEST(Chapter06Tests, TheNormalIsANormalizedVector)
 
 	double sq_3 = sqrt(3.0) / 3.0;
 
-	Tuple n = s.local_normal_at(Tuple::Point(sq_3, sq_3, sq_3));
+	Tuple n = s.normal_at(Tuple::Point(sq_3, sq_3, sq_3));
 
 	ASSERT_EQ(n, n.normalize());
 }
@@ -1410,7 +1410,7 @@ TEST(Chapter06Tests, ComputingTheNormalOnATranslatedSphere)
 	Sphere s = Sphere();
 	s.set_transform(Matrix4::Translation(0.0, 1.0, 0.0));
 
-	Tuple n = s.local_normal_at(Tuple::Point(0.0, 1.70711, -0.70711));
+	Tuple n = s.normal_at(Tuple::Point(0.0, 1.70711, -0.70711));
 
 	ASSERT_EQ(n, Tuple::Vector(0.0, 0.70711, -0.70711));
 }
@@ -1422,7 +1422,7 @@ TEST(Chapter06Tests, ComputingTheNormalOnATransformedSphere)
 
 	s.set_transform(m);
 
-	Tuple n = s.local_normal_at(Tuple::Point(0.0, sqrt(2.0) / 2.0, -sqrt(2.0) / 2.0));
+	Tuple n = s.normal_at(Tuple::Point(0.0, sqrt(2.0) / 2.0, -sqrt(2.0) / 2.0));
 
 	ASSERT_EQ(n, Tuple::Vector(0.0, 0.97014, -0.24254));
 }
@@ -1955,7 +1955,7 @@ TEST(Chapter08Tests, TheHitShouldOffsetThePoint)
 
 	IxComps comps = IxComps(i, r);
 
-	ASSERT_LT(comps.over_point.z, -EPSILON/2);
+	ASSERT_LT(comps.over_point.z, -(EPSILON / 2.0)) << comps.normal_v;
 	ASSERT_GT(comps.point.z, comps.over_point.z);
 }
 
@@ -2001,4 +2001,119 @@ TEST(Chapter09Tests, AssigningAMaterial)
 	auto sm = std::dynamic_pointer_cast<PhongMaterial>(s.material);
 
 	ASSERT_EQ(*m, *sm);
+}
+
+TEST(Chapter09Tests, IntersectingAScaledShapeWithAnArray)
+{
+	TestShape s = TestShape();
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	s.set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	Ray xr = s.ray_to_object_space(r);
+
+	ASSERT_EQ(xr.origin, Tuple::Point(0.0, 0.0, -2.5));
+	ASSERT_EQ(xr.direction, Tuple::Vector(0.0, 0.0, 0.5));
+}
+
+TEST(Chapter09Tests, IntersectingATranslatedShapeWithARay)
+{
+	TestShape s = TestShape();
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	s.set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	Ray xr = s.ray_to_object_space(r);
+
+	ASSERT_EQ(xr.origin, Tuple::Point(-5.0, 0.0, -5.0));
+	ASSERT_EQ(xr.direction, Tuple::Vector(0.0, 0.0, 1.0));
+}
+
+TEST(Chapter09Tests, ComputingTheNormalOnATranslatedShape)
+{
+	TestShape s = TestShape();
+
+	s.set_transform(Matrix4::Translation(0.0, 1.0, 0.0));
+
+	Tuple n = s.normal_at(Tuple::Point(0, 1.70711, -0.70711));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0, 0.70711, -0.70711));
+}
+
+TEST(Chapter09Tests, ComputingTheNormalOnATransformedShape)
+{
+	TestShape s = TestShape();
+
+	Matrix4 m = Matrix4::Scaling(1.0, 0.5, 1.0) * Matrix4::Rotation_Z(M_PI / 5.0);
+
+	s.set_transform(m);
+
+	double sq_2 = sqrt(2.0) / 2;
+
+	Tuple n = s.normal_at(Tuple::Point(0, sq_2, -sq_2));
+
+	ASSERT_EQ(n, Tuple::Vector(0.0, 0.97014, -0.24254));
+}
+
+TEST(Chapter09Tests, TheNormalOfAPlaneIsConstantEverywhere)
+{
+	auto p = InfinitePlane();
+
+	Tuple n1 = p.local_normal_at(Tuple::Point(0.0, 0.0, 0.0));
+	Tuple n2 = p.local_normal_at(Tuple::Point(10.0, 0.0, -10.0));
+	Tuple n3 = p.local_normal_at(Tuple::Point(-50.0, 0.0, 150.0));
+
+	Tuple expected_result = Tuple::Vector(0.0, 1.0, 0.0);
+
+	ASSERT_EQ(n1, expected_result);
+	ASSERT_EQ(n2, expected_result);
+	ASSERT_EQ(n3, expected_result);
+}
+
+TEST(Chapter09Tests, IntersectWithARayParallelToThePlane)
+{
+	auto p = std::make_shared<InfinitePlane>();
+
+	Ray r = Ray(Tuple::Point(0.0, 10.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = intersect(r, p);
+
+	ASSERT_EQ(xs.size(), 0);
+}
+
+TEST(Chapter09Tests, IntersectWithACoplanarRay)
+{
+	auto p = std::make_shared<InfinitePlane>();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = intersect(r, p);
+
+	ASSERT_EQ(xs.size(), 0);
+}
+
+TEST(Chapter09Tests, ARayIntersectingAPlaneFromAbove)
+{
+	auto p = std::make_shared<InfinitePlane>();
+
+	Ray r = Ray(Tuple::Point(0.0, 1.0, 0.0), Tuple::Vector(0.0, -1.0, 0.0));
+
+	Intersections xs = intersect(r, p);
+
+	ASSERT_EQ(xs.size(), 1);
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 1.0));
+	ASSERT_EQ(xs[0].object, p);
+}
+
+TEST(Chapter09Tests, ARayIntersectingAPlaneFromBelow)
+{
+	auto p = std::make_shared<InfinitePlane>();
+
+	Ray r = Ray(Tuple::Point(0.0, -1.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0));
+
+	Intersections xs = intersect(r, p);
+
+	ASSERT_EQ(xs.size(), 1);
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 1.0));
+	ASSERT_EQ(xs[0].object, p);
 }

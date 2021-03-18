@@ -148,9 +148,9 @@ bool operator!=(const Color8Bit & left_color, const Color8Bit & right_color)
 }
 
 // Representation with std::cout
-std::ostream & operator<< (std::ostream & os, const Color8Bit & color)
+std::ostream & operator<< (std::ostream & os, const Color8Bit & col)
 {
-	os << "(" << color.r << ", " << color.g << ", " << color.b << ", " << ")";
+	os << "(" << col.r << ", " << col.g << ", " << col.b << ", " << ")";
 	return os;
 }
 

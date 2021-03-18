@@ -107,15 +107,18 @@ Canvas Camera::threaded_render(const World & w) const
 
 	auto line_results = std::vector<std::future<Canvas>>();
 
+	// lambda to execute rendering of the line
 	auto f = [](const Camera * camera, const World & w, int line) {
 		return camera->render_scanline(w, line);
 	};
 
+	// Queue up all of the lines
 	for (int y = 0; y < this->c_v_size_; y++)
 	{
 		line_results.push_back(std::async(f, this, w, y));
 	}
 
+	// stitch them back together
 	for (int i = 0; i < line_results.size(); i++)
 	{
 		image.write_canvas_as_line(i, line_results[i].get());
@@ -126,16 +129,18 @@ Canvas Camera::threaded_render(const World & w) const
 
 Canvas Camera::render_scanline(const World & w, int line) const
 {
+	// Create a canvas with the full image width but only 1 height
 	Canvas image_line = Canvas(this->c_h_size_, 1);
 
-	std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << "\n";
+	std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << std::endl;
 
 	for (int x = 0; x < this->c_h_size_; x++)
 	{
-		// std::cout << "Pixel: (" << x << ", " << y << ")\n";
+		// Cast Rays
 		Ray r = this->ray_from_pixel(x, line);
 		Color color = w.color_at(r);
-		image_line.write_pixel(x, 1, color);
+		// Always write to the first line (index 0)
+		image_line.write_pixel(x, 0, color);
 	}
 
 	return image_line;

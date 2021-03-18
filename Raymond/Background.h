@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_BACKGROUND
+#define H_RAYMOND_BACKGROUND
 
 #include "IxComps.h"
 #include "Color.h"
@@ -10,7 +11,7 @@ public:
 	~Background();
 
 	// Methods
-	virtual Color shade(IxComps &) const;
+	virtual Color shade(IxComps & comps) const;
 };
 
 class NormalGradientBackground :
@@ -21,6 +22,22 @@ public:
 	~NormalGradientBackground();
 
 	// Methods
-	virtual Color shade(IxComps &) const override;
+	virtual Color shade(IxComps & comps) const override;
 };
 
+class HosekWilkietBackground :
+	public Background
+{
+public:
+	HosekWilkietBackground(const Tuple & sun_vector);
+	~HosekWilkietBackground();
+
+	// Methods
+	virtual Color shade(IxComps & comps) const override;
+
+private:
+	// Properties
+	Tuple sun_vector_;
+};
+
+#endif

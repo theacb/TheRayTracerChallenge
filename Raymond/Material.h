@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_RAYMOND_MATERIAL
+#define H_RAYMOND_MATERIAL
 
 #include "string.h" // Material Names
 #include <memory> // Shared Pointers
@@ -33,7 +34,7 @@ public:
 	NormalsMaterial();
 	~NormalsMaterial();
 
-	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const override;
+	virtual Color lighting(std::shared_ptr<Light>, IxComps & comps) const override;
 };
 
 class PhongMaterial :
@@ -43,9 +44,9 @@ public:
 	PhongMaterial();
 	~PhongMaterial();
 
-	virtual Color lighting(std::shared_ptr<Light>, IxComps &) const override;
-	Color lighting(std::shared_ptr<Light>, const Tuple &, const Tuple &, const Tuple &) const;
-	Color lighting(std::shared_ptr<Light>, const Tuple &, const Tuple &, const Tuple &, bool) const;
+	virtual Color lighting(std::shared_ptr<Light>, IxComps & comps) const override;
+	Color lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const;
+	Color lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v, bool shadowed) const;
 
 	// Properties
 	Color color;
@@ -56,5 +57,7 @@ public:
 };
 
 //Overloaded Operators
-bool operator==(const PhongMaterial &, const PhongMaterial &);
-bool operator!=(const PhongMaterial &, const PhongMaterial &);
+bool operator==(const PhongMaterial & left_mat, const PhongMaterial & right_mat);
+bool operator!=(const PhongMaterial & left_mat, const PhongMaterial & right_mat);
+
+#endif

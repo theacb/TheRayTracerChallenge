@@ -146,8 +146,6 @@ bool World::is_shadowed(std::shared_ptr<Light> light, Tuple & point) const
 
 	Intersection h = ix.hit();
 
-	// std::cout << "Shadow Ray - Intersecting: " << h.object->get_name() << " at " << h.t_value << "\n";
-
 	return (h.is_valid() && h.t_value < distance);
 }
 
