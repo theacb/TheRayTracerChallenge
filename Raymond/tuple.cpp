@@ -203,6 +203,11 @@ bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple)
 	return !(left_tuple == right_tuple);
 }
 
+Tuple operator*(const double & scalar, const Tuple & right_tuple)
+{
+	return right_tuple * scalar;
+}
+
 // ------------------------------------------------------------------------
 // Helpfer Functions
 // ------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 #include "Color.h"
 #include "Light.h"
 #include "IxComps.h"
+#include "Texmap.h"
 
 class BaseMaterial;
 using MatPtr = BaseMaterial * ;
@@ -44,7 +45,7 @@ public:
 	PhongMaterial();
 	~PhongMaterial();
 
-	virtual Color lighting(std::shared_ptr<Light>, IxComps & comps) const override;
+	virtual Color lighting(std::shared_ptr<Light> lgt, IxComps & comps) const override;
 	Color lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v) const;
 	Color lighting(std::shared_ptr<Light> lgt, const Tuple & point, const Tuple & eye_v, const Tuple & normal_v, bool shadowed) const;
 
@@ -54,6 +55,7 @@ public:
 	double diffuse;
 	double specular;
 	double shininess;
+	std::shared_ptr<TexMap> color_tex;
 };
 
 //Overloaded Operators

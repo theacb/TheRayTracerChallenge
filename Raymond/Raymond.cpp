@@ -443,9 +443,125 @@ Canvas render_ch09_world(int width, int height, double fov)
 	return image;
 }
 
+Canvas render_ch10_world(int width, int height, double fov)
+{
+	World w = World();
+
+	w.background = std::make_shared<NormalGradientBackground>();
+
+	// Lights
+
+	auto light_000 = std::make_shared<PointLight>(Tuple::Point(-9.0, 9.0, -9.0), Color(1.0), 50.0);
+	light_000->falloff = true;
+	light_000->set_name("light 000");
+	w.add_object(light_000);
+
+	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0, 6.0, 5.0), Color(1.0, 0.0, 0.0), 50.0);
+	light_001->falloff = true;
+	light_001->set_name("light 001");
+	w.add_object(light_001);
+
+	// Materials
+
+	auto matte_gray_mtl = std::make_shared<PhongMaterial>();
+	matte_gray_mtl->color = Color(0.18);
+	matte_gray_mtl->specular = 0.0;
+	matte_gray_mtl->ambient = 0.01;
+
+	auto gray_checkers_tex = std::make_shared<CheckerMap>(Color(0.18), Color(0.36));
+	auto gray_ring_tex = std::make_shared<RingMap>(Color(0.18), Color(0.36));
+	auto gray_gradient_tex = std::make_shared<GradientMap>(Color(0.18), Color(0.36));
+	auto gray_stripe_tex = std::make_shared<StripeMap>(Color(0.18), Color(0.36));
+
+	auto stripe1 = std::make_shared<StripeMap>(Color(1.0, 0.0, 0.0), Color(0.5, 0.0, 0.0));
+	stripe1->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5) * Matrix4::Rotation_Y(deg_to_rad(90)));
+	auto stripe2 = std::make_shared<StripeMap>(Color(0.0, 1.0, 0.0), Color(0.0, 0.5, 0.0));
+	stripe2->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+
+	auto c_map_1 = std::make_shared <CompositeMap>(stripe1, stripe2, CompAdd, 1.0);
+
+	matte_gray_mtl->color_tex = c_map_1;
+
+	auto shiny_green_mtl = std::make_shared<PhongMaterial>();
+	Color green = Color(Color8Bit(54, 163, 83)).convert_srgb_to_linear();
+	shiny_green_mtl->color = green;
+	shiny_green_mtl->specular = 0.9;
+	shiny_green_mtl->ambient = 0.01;
+	auto green_stripe_tex = std::make_shared<StripeMap>(green, green * 1.2);
+	green_stripe_tex->set_mapping_space(ObjectSpace);
+	green_stripe_tex->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
+	shiny_green_mtl->color_tex = green_stripe_tex;
+
+	auto shiny_yellow_mtl = std::make_shared<PhongMaterial>();
+	shiny_yellow_mtl->color = Color(Color8Bit(245, 209, 66)).convert_srgb_to_linear();
+	shiny_yellow_mtl->specular = 0.9;
+	shiny_yellow_mtl->ambient = 0.01;
+
+	auto matte_blue_mtl = std::make_shared<PhongMaterial>();
+	matte_blue_mtl->color = Color(Color8Bit(21, 80, 117)).convert_srgb_to_linear();
+	matte_blue_mtl->specular = 0.0;
+	matte_blue_mtl->ambient = 0.01;
+
+	// Objects
+
+	auto floor_000 = std::make_shared<InfinitePlane>("floor 000");
+	floor_000->material = matte_gray_mtl;
+	w.add_object(floor_000);
+
+	auto green_sphere = std::make_shared<Sphere>("green sphere");
+	green_sphere->material = shiny_green_mtl;
+	green_sphere->set_transform(Matrix4::Translation(0.0, 1.0, 0.0) * Matrix4::Rotation_Z(deg_to_rad(45.0)));
+	w.add_object(green_sphere);
+
+	auto yellow_sphere_000 = std::make_shared<Sphere>("yellow sphere 000");
+	yellow_sphere_000->material = shiny_yellow_mtl;
+	yellow_sphere_000->set_transform(Matrix4::Translation(-1.5, 0.5, -0.0) * Matrix4::Scaling(0.5, 0.5, 0.5));
+	w.add_object(yellow_sphere_000);
+
+	auto yellow_sphere_001 = std::make_shared<Sphere>("yellow sphere 001");
+	yellow_sphere_001->material = shiny_yellow_mtl;
+	yellow_sphere_001->set_transform(Matrix4::Translation(2.0, 0.5, -0.5) * Matrix4::Scaling(0.5, 0.5, 0.5));
+	w.add_object(yellow_sphere_001);
+
+	int num_blue_sphs = 7;
+
+	for (int i = 0; i < num_blue_sphs; i++)
+	{
+		double sx = double(num_blue_sphs - 1);
+
+		auto blue_sphere_inst = std::make_shared<Sphere>("yellow sphere 001");
+		blue_sphere_inst->material = matte_blue_mtl;
+
+		blue_sphere_inst->set_transform(
+			Matrix4::Translation((i * 2.0) - sx, 0.0, 2.0) *
+			Matrix4::Rotation_Z((((M_PI / 2.0) / sx) * (num_blue_sphs - i)) - (M_PI / 4.0)) *
+			Matrix4::Scaling(0.25, 2.0, 0.25)
+		);
+
+		w.add_object(blue_sphere_inst);
+	}
+
+	Camera c = Camera(width, height, deg_to_rad(fov));
+
+	Tuple from = Tuple::Point(0.0, 0.8, -5.0);
+	Tuple to = Tuple::Point(0.0, 1.0, 0.0);
+	Tuple up = Tuple::Vector(0.0, 1.0, 0.0);
+
+	c.set_transform(Matrix4::ViewTransform(from, to, up));
+
+	std::cout << "Tracing...\n";
+
+	Canvas image = c.threaded_render(w);
+	// Canvas image = c.render(w);
+
+	std::cout << "Complete\n";
+
+	return image;
+}
+
 int main()
 {
-	std::string chapter = "Planes_CH09";
+	std::string chapter = "Patterns_CH10";
 	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
 	int version = 2;
 
@@ -459,7 +575,7 @@ int main()
 	auto start = std::chrono::steady_clock::now();
 
 	// Execution
-	Canvas image = render_ch09_world(width, height, fov);
+	Canvas image = render_ch10_world(width, height, fov);
 
 	// End time
 	auto end = std::chrono::steady_clock::now();

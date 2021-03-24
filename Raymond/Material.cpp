@@ -63,6 +63,7 @@ PhongMaterial::PhongMaterial() : BaseMaterial()
 	this->diffuse = 0.9;
 	this->specular = 0.9;
 	this->shininess = 200.0;
+	this->color_tex = nullptr;
 }
 
 PhongMaterial::~PhongMaterial()
@@ -75,14 +76,16 @@ PhongMaterial::~PhongMaterial()
 
 Color PhongMaterial::lighting(std::shared_ptr<Light> lgt, IxComps & comps) const
 {
-	Color effective_col, ambient_col, diffuse_col, specular_col;
+	Color texmap_col, effective_col, ambient_col, diffuse_col, specular_col;
 	Tuple light_v, reflect_v;
 	double light_dot_normal, reflect_dot_eye, factor;
 
 	Color black = Color(0.0, 0.0, 0.0);
 
+	texmap_col = (this->color_tex != nullptr) ? this->color_tex->sample_at(comps) : this->color;
+
 	// Combine the surface color with the light's color and intensity
-	effective_col = this->color * lgt->color;
+	effective_col = texmap_col * lgt->color;
 	// Compute ambient contribution
 	ambient_col = effective_col * this->ambient;
 

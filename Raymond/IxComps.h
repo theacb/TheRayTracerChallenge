@@ -24,6 +24,7 @@ public:
 	// Properties
 	std::shared_ptr<ObjectBase> object;
 	Tuple point;
+	Tuple texmap_point;
 	Tuple over_point;
 	Tuple eye_v;
 	Tuple normal_v;

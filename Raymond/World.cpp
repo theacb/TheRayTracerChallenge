@@ -131,7 +131,7 @@ Color World::color_at(Ray & ray) const
 	{
 		IxComps comps = IxComps::Background(ray);
 
-		return this->background->shade(comps);
+		return this->background->sample_at(comps);
 	}
 }
 

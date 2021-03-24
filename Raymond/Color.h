@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Tuple.h"
+#include "Utilities.h"
 
 class Color8Bit;
 
@@ -31,13 +32,20 @@ public:
 	double& b() { return this->z; }
 	double& a() { return this->w; }
 
-	// Methods
-	Color multiply(const Color & right_color);
+	// Blend Modes
+	Color multiply(const Color & top_layer, const double & alpha);
+	Color divide(const Color & top_layer, const double & alpha);
+	Color add(const Color & top_layer, const double & alpha);
+	Color subtract(const Color & top_layer, const double & alpha);
+	Color overlay(const Color & top_layer, const double & alpha);
+	Color screen(const Color & top_layer, const double & alpha);
+
 	//  - Converters
 	Color convert_linear_to_srgb();
 	Color convert_srgb_to_linear();
 
 	Tuple operator*(const Color & right_color) const;
+	Tuple operator/(const Color & right_color) const;
 };
 
 // 8 Bit Color
@@ -69,11 +77,8 @@ std::ostream & operator<<(std::ostream & os, const Color & col);
 // Helper Functions
 double linear_to_srgb(const double x);
 double srgb_to_linear(const double x);
-
-template<typename T>
-inline T clip(const T & n, const T & lower, const T & upper)
-{
-	return std::max(lower, std::min(n, upper));
-}
+double safe_divide(const double a, const double b);
+double overlay_channel(const double a, const double b);
+double screen_channel(const double a, const double b);
 
 #endif

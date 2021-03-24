@@ -18,10 +18,10 @@ Background::~Background()
 }
 
 // ------------------------------------------------------------------------
-// shade
+// sample_at
 // ------------------------------------------------------------------------
 
-Color Background::shade(IxComps & comps) const
+Color Background::sample_at(IxComps & comps) const
 {
 	return Color(0.0, 0.0, 0.0);
 }
@@ -43,10 +43,10 @@ NormalGradientBackground::~NormalGradientBackground()
 }
 
 // ------------------------------------------------------------------------
-// shade
+// sample_at
 // ------------------------------------------------------------------------
 
-Color NormalGradientBackground::shade(IxComps & comps) const
+Color NormalGradientBackground::sample_at(IxComps & comps) const
 {
 	Tuple n = comps.normal_v - Tuple::Vector(0.0, 0.0, -1.0);
 	return Color(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
@@ -69,7 +69,7 @@ HosekWilkietBackground::~HosekWilkietBackground()
 {
 }
 
-Color HosekWilkietBackground::shade(IxComps & comps) const
+Color HosekWilkietBackground::sample_at(IxComps & comps) const
 {
 	// TODO: Implement this maybe someday lol
 	return Color(1.0);

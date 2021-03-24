@@ -11,7 +11,7 @@ public:
 	~Background();
 
 	// Methods
-	virtual Color shade(IxComps & comps) const;
+	virtual Color sample_at(IxComps & comps) const;
 };
 
 class NormalGradientBackground :
@@ -22,7 +22,7 @@ public:
 	~NormalGradientBackground();
 
 	// Methods
-	virtual Color shade(IxComps & comps) const override;
+	virtual Color sample_at(IxComps & comps) const override;
 };
 
 class HosekWilkietBackground :
@@ -33,7 +33,7 @@ public:
 	~HosekWilkietBackground();
 
 	// Methods
-	virtual Color shade(IxComps & comps) const override;
+	virtual Color sample_at(IxComps & comps) const override;
 
 private:
 	// Properties

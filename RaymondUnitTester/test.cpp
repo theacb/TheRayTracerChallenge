@@ -18,6 +18,14 @@
 #include "../Raymond/Camera.h"
 #include "../Raymond/Constants.h"
 #include "../Raymond/Utilities.h"
+#include "../Raymond/Texmap.h"
+
+// ------------------------------------------------------------------------
+// Constants
+// ------------------------------------------------------------------------
+
+static const Color BLACK = Color(0.0, 0.0, 0.0);
+static const Color WHITE = Color(1.0, 1.0, 1.0);
 
 // ------------------------------------------------------------------------
 // Chapter 01 Tuples, Points, and Vectors
@@ -264,7 +272,7 @@ TEST(Chapter02Tests, MultiplyingColors)
 	Color c1 = Color(1.0, 0.2, 0.4);
 	Color c2 = Color(0.9, 1.0, 0.1);
 
-	ASSERT_EQ(c1.multiply(c2), Color(0.9, 0.2, 0.04));
+	ASSERT_EQ(c1 * c2, Color(0.9, 0.2, 0.04));
 }
 
 TEST(Chapter02Tests, ConvertingColorToInteger) 
@@ -2116,4 +2124,351 @@ TEST(Chapter09Tests, ARayIntersectingAPlaneFromBelow)
 	ASSERT_EQ(xs.size(), 1);
 	ASSERT_TRUE(flt_cmp(xs[0].t_value, 1.0));
 	ASSERT_EQ(xs[0].object, p);
+}
+
+// ------------------------------------------------------------------------
+// Chapter 10 Patterns
+// ------------------------------------------------------------------------
+
+TEST(Chapter10Tests, CreatingAStripePattern)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+
+	auto a = std::dynamic_pointer_cast<SolidColorMap>(pattern.a);
+	auto b = std::dynamic_pointer_cast<SolidColorMap>(pattern.b);
+
+	ASSERT_EQ(a->col, WHITE);
+	ASSERT_EQ(b->col, BLACK);
+}
+
+TEST(Chapter10Tests, AStripePatternIsConstantInY)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 1.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 2.0, 0.0)), WHITE);
+}
+
+TEST(Chapter10Tests, AStripePatternIsConstantInZ)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 1.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 2.0)), WHITE);
+}
+
+TEST(Chapter10Tests, AStripePatternAlternatesInX)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.9, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(1.0, 0.0, 0.0)), BLACK);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(-0.1, 0.0, 0.0)), BLACK);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(-1.0, 0.0, 0.0)), BLACK);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(-1.1, 0.0, 0.0)), WHITE);
+}
+
+TEST(Chapter10Tests, LightingWithAPatternApplied)
+{
+	auto pattern = std::make_shared<StripeMap>(WHITE, BLACK);
+	auto light = std::make_shared<PointLight>(Tuple::Point(0.0, 0.0, -10), Color(1.0));
+
+	PhongMaterial m = PhongMaterial();
+	m.color_tex = pattern;
+	m.ambient = 1.0;
+	m.diffuse = 0.0;
+	m.specular = 0.0;
+
+	Tuple eye_v = Tuple::Vector(0.0, 0.0, -1.0);
+	Tuple normal_v = Tuple::Vector(0.0, 0.0, -1.0);
+
+	Color c1 = m.lighting(light, Tuple::Point(0.9, 0.0, 0.0), eye_v, normal_v);
+	Color c2 = m.lighting(light, Tuple::Point(1.1, 0.0, 0.0), eye_v, normal_v);
+
+	ASSERT_EQ(c1, WHITE);
+	ASSERT_EQ(c2, BLACK);
+}
+
+TEST(Chapter10Tests, StripesWithAnObjectTransformation)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+	pattern.set_mapping_space(ObjectSpace);
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(1.5, 0.0, 0.0);
+	comps.object = s;
+
+	ASSERT_EQ(pattern.sample_at(comps), WHITE);
+}
+
+TEST(Chapter10Tests, StripesWithAPatternTransformation)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+	pattern.set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	auto s = std::make_shared<Sphere>();
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(1.5, 0.0, 0.0);
+	comps.object = s;
+
+	ASSERT_EQ(pattern.sample_at(comps), WHITE);
+}
+
+TEST(Chapter10Tests, StripesWithAnObjectAndAPatternTransformation)
+{
+	StripeMap pattern = StripeMap(WHITE, BLACK);
+	pattern.set_mapping_space(ObjectSpace);
+	pattern.set_transform(Matrix4::Translation(0.5, 0.0, 0.0));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(2.5, 0.0, 0.0);
+	comps.object = s;
+
+	ASSERT_EQ(pattern.sample_at(comps), WHITE);
+}
+
+TEST(Chapter10Tests, TheDefaultPatternTransformation)
+{
+	TestMap pattern = TestMap();
+
+	ASSERT_EQ(pattern.get_transform(), Matrix4::Identity());
+}
+
+TEST(Chapter10Tests, AssigningATransformation)
+{
+	TestMap pattern = TestMap();
+	pattern.set_transform(Matrix4::Translation(1.0, 2.0, 3.0));
+
+	ASSERT_EQ(pattern.get_transform(), Matrix4::Translation(1.0, 2.0, 3.0));
+}
+
+TEST(Chapter10Tests, APatternWithAnObjectTransformation)
+{
+	TestMap pattern = TestMap();
+	pattern.set_mapping_space(ObjectSpace);
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(2.0, 3.0, 4.0);
+	comps.object = s;
+
+	Color result = pattern.sample_at(comps);
+	result.w = 0.0;
+
+	ASSERT_EQ(result, Color(1.0, 1.5, 2.0));
+}
+
+TEST(Chapter10Tests, APatternWithAPatternTransformation)
+{
+	TestMap pattern = TestMap();
+	pattern.set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	auto s = std::make_shared<Sphere>();
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(2.0, 3.0, 4.0);
+	comps.object = s;
+
+	Color result = pattern.sample_at(comps);
+	result.w = 0.0;
+
+	ASSERT_EQ(result, Color(1.0, 1.5, 2.0));
+}
+
+TEST(Chapter10Tests, APatternWithAnObjectAndAPatternTransformation)
+{
+	TestMap pattern = TestMap();
+	pattern.set_mapping_space(ObjectSpace);
+	pattern.set_transform(Matrix4::Translation(0.5, 1.0, 1.5));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	IxComps comps = IxComps();
+	comps.point = Tuple::Point(2.5, 3.0, 3.5);
+	comps.object = s;
+
+	Color result = pattern.sample_at(comps);
+	result.w = 0.0;
+
+	ASSERT_EQ(result, Color(0.75, 0.5, 0.25));
+}
+
+TEST(Chapter10Tests, AGradientInterpolatesBetweenColors)
+{
+	GradientMap pattern = GradientMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.25, 0.0, 0.0)), Color(0.75));
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.5, 0.0, 0.0)), Color(0.5));
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.75, 0.0, 0.0)), Color(0.25));
+}
+
+TEST(Chapter10Tests, ARingShouldExtendInBothXAndZ)
+{
+	RingMap pattern = RingMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(1, 0.0, 0.0)), BLACK);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0, 0.0, 1.0)), BLACK);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.708, 0.0, 0.708)), BLACK);
+}
+
+TEST(Chapter10Tests, CheckersShouldRepeatInX)
+{
+	CheckerMap pattern = CheckerMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.99, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(1.01, 0.0, 0.0)), BLACK);
+}
+
+TEST(Chapter10Tests, CheckersShouldRepeatInY)
+{
+	CheckerMap pattern = CheckerMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.99, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 1.01, 0.0)), BLACK);
+}
+
+TEST(Chapter10Tests, CheckersShouldRepeatInZ)
+{
+	CheckerMap pattern = CheckerMap(WHITE, BLACK);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.99)), WHITE);
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 1.01)), BLACK);
+}
+
+TEST(Chapter10Tests, OverlayBlendModeSingleChannel)
+{
+	Color base1 = Color(0.5, 0.0, 0.0);
+	Color c1 = Color(0.5);
+	Color c2 = Color(0.25);
+	Color c3 = Color(0.0);
+	Color c4 = Color(0.75);
+	Color c5 = Color(1.0);
+
+	ASSERT_EQ(base1.overlay(c1, 1.0), base1);
+	ASSERT_EQ(base1.overlay(c1, 0.5), base1);
+	ASSERT_EQ(base1.overlay(c2, 1.0), Color(0.25, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c2, 0.5), Color(0.375, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c3, 1.0), Color(0.0, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c3, 0.5), Color(0.25, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c4, 1.0), Color(0.75, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c4, 0.5), Color(0.625, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c5, 1.0), Color(1.0, 0.0, 0.0));
+	ASSERT_EQ(base1.overlay(c5, 0.5), Color(0.75, 0.0, 0.0));
+}
+
+TEST(Chapter10Tests, OverlayBlendModeLuminosity)
+{
+	Color base1 = Color(0.5);
+	Color c1 = Color(0.5);
+	Color c2 = Color(0.25);
+	Color c3 = Color(0.0);
+	Color c4 = Color(0.75);
+	Color c5 = Color(1.0);
+
+	ASSERT_EQ(base1.overlay(c1, 1.0), base1);
+	ASSERT_EQ(base1.overlay(c1, 0.5), base1);
+	ASSERT_EQ(base1.overlay(c2, 1.0), Color(0.25));
+	ASSERT_EQ(base1.overlay(c2, 0.5), Color(0.375));
+	ASSERT_EQ(base1.overlay(c3, 1.0), Color(0.0));
+	ASSERT_EQ(base1.overlay(c3, 0.5), Color(0.25));
+	ASSERT_EQ(base1.overlay(c4, 1.0), Color(0.75));
+	ASSERT_EQ(base1.overlay(c4, 0.5), Color(0.625));
+	ASSERT_EQ(base1.overlay(c5, 1.0), Color(1.0));
+	ASSERT_EQ(base1.overlay(c5, 0.5), Color(0.75));
+}
+
+TEST(Chapter10Tests, OverlayBlendModeChroma)
+{
+	Color base1 = Color(0.5, 0.5, 1.0);
+	Color c1 = Color(0.5, 0.25, 0.0);
+	Color c2 = Color(0.75, 1.0, 0,25);
+
+	ASSERT_EQ(base1.overlay(c1, 1.0), Color(0.5, 0.25, 1.0));
+	ASSERT_EQ(base1.overlay(c1, 0.5), Color(0.5, 0.375, 1.0));
+	ASSERT_EQ(base1.overlay(c2, 1.0), Color(0.75, 1.0, 1.0));
+	ASSERT_EQ(base1.overlay(c2, 0.5), Color(0.625, 0.75, 1.0));
+}
+
+TEST(Chapter10Tests, NestedPatterns)
+{
+	auto stripe1 = std::make_shared<StripeMap>(Color(1.0, 0.0, 0.0), Color(0.5, 0.0, 0.0));
+	stripe1->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+	auto stripe2 = std::make_shared<StripeMap>(Color(0.0, 1.0, 0.0), Color(0.0, 0.5, 0.0));
+	stripe2->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+	CheckerMap pattern = CheckerMap(stripe1, stripe2);
+
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.0, 0.0, 0.0)), Color(1.0, 0.0, 0.0));
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(0.99, 0.0, 0.0)), Color(0.5, 0.0, 0.0));
+	ASSERT_EQ(pattern.sample_at_point(Tuple::Point(1.01, 0.0, 0.0)), Color(0.0, 1.0, 0.0));
+}
+
+TEST(Chapter10Tests, LerpInterpolatesDoubles)
+{
+	double a = 14.0;
+	double b = -12.0;
+
+	ASSERT_TRUE(flt_cmp(lerp(0.0, a, b), 14.0));
+	ASSERT_TRUE(flt_cmp(lerp(0.1, a, b), 11.4));
+	ASSERT_TRUE(flt_cmp(lerp(0.5, a, b), 1.0));
+	ASSERT_TRUE(flt_cmp(lerp(0.9, a, b), -9.4));
+	ASSERT_TRUE(flt_cmp(lerp(1.0, a, b), -12.0));
+}
+
+TEST(Chapter10Tests, LerpInterpolatesTuples)
+{
+	Tuple a = Tuple::Point(-10.0, 40.0, -10.0);
+	Tuple b = Tuple::Point(40.0, -10.0, 40.0);
+
+	ASSERT_EQ(lerp(0.0, a, b), Tuple::Point(-10.0, 40.0, -10.0));
+	ASSERT_EQ(lerp(0.1, a, b), Tuple::Point(-5.0, 35.0, -5.0));
+	ASSERT_EQ(lerp(0.5, a, b), Tuple::Point(15.0, 15.0, 15.0));
+	ASSERT_EQ(lerp(0.9, a, b), Tuple::Point(35.0, -5.0, 35.0));
+	ASSERT_EQ(lerp(1.0, a, b), Tuple::Point(40.0, -10.0, 40.0));
+
+}
+
+TEST(Chapter10Tests, CompositeMapAddMode)
+{
+	// [1.0, 1.0][0.5, 1.0]
+	// [1.0, 0.5][0.5, 0.5]
+	auto stripe1 = std::make_shared<StripeMap>(Color(1.0, 0.0, 0.0), Color(0.5, 0.0, 0.0));
+	stripe1->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5) * Matrix4::Rotation_Y(deg_to_rad(90.0)));
+	auto stripe2 = std::make_shared<StripeMap>(Color(0.0, 1.0, 0.0), Color(0.0, 0.5, 0.0));
+	stripe2->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+
+	CompositeMap c_map_1 = CompositeMap(stripe1, stripe2, CompAdd, 1.0);
+
+	ASSERT_EQ(c_map_1.sample_at_point(Tuple::Point(0.25, 0.0, 0.25)), Color(0.5, 1.0, 0.0));
+	ASSERT_EQ(c_map_1.sample_at_point(Tuple::Point(0.75, 0.0, 0.25)), Color(0.5, 0.5, 0.0));
+	ASSERT_EQ(c_map_1.sample_at_point(Tuple::Point(0.75, 0.0, 0.75)), Color(1.0, 0.5, 0.0));
+
+	CompositeMap c_map_2 = CompositeMap(stripe1, stripe2, CompAdd, 0.5);
+
+	ASSERT_EQ(c_map_2.sample_at_point(Tuple::Point(0.25, 0.0, 0.25)), Color(0.5, 0.5, 0.0));
+	ASSERT_EQ(c_map_2.sample_at_point(Tuple::Point(0.75, 0.0, 0.25)), Color(0.5, 0.25, 0.0));
+	ASSERT_EQ(c_map_2.sample_at_point(Tuple::Point(0.75, 0.0, 0.75)), Color(1.0, 0.25, 0.0));
+
+	CompositeMap c_map_3 = CompositeMap(stripe1, stripe2, CompAdd, 0.0);
+
+	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.25, 0.0, 0.25)), Color(0.5, 0.0, 0.0));
+	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.75, 0.0, 0.25)), Color(0.5, 0.0, 0.0));
+	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.75, 0.0, 0.75)), Color(1.0, 0.0, 0.0));
 }

@@ -41,13 +41,64 @@ Color::~Color()
 // Methods
 // ------------------------------------------------------------------------
 
-Color Color::multiply(const Color & right_color)
+Color Color::multiply(const Color & top_layer, const double & alpha)
 {
-	return Color(
-		this->x * right_color.x,
-		this->y * right_color.y,
-		this->z * right_color.z
+	Color result = Color(
+		this->x * top_layer.x,
+		this->y * top_layer.y,
+		this->z * top_layer.z
 		);
+	return lerp(alpha, *this, result);
+}
+
+Color Color::divide(const Color & top_layer, const double & alpha)
+{
+	Color result = Color(
+		safe_divide(this->x, top_layer.x),
+		safe_divide(this->y, top_layer.y),
+		safe_divide(this->z, top_layer.z)
+	);
+	return lerp(alpha, *this, result);
+}
+
+Color Color::add(const Color & top_layer, const double & alpha)
+{
+	Color result = Color(
+		this->x + top_layer.x,
+		this->y + top_layer.y,
+		this->z + top_layer.z
+	);
+	return lerp(alpha, *this, result);
+}
+
+Color Color::subtract(const Color & top_layer, const double & alpha)
+{
+	Color result = Color(
+		this->x - top_layer.x,
+		this->y - top_layer.y,
+		this->z - top_layer.z
+	);
+	return lerp(alpha, *this, result);
+}
+
+Color Color::overlay(const Color & top_layer, const double & alpha)
+{
+	Color result = Color(
+		overlay_channel(this->x, top_layer.x),
+		overlay_channel(this->y, top_layer.y),
+		overlay_channel(this->z, top_layer.z)
+	);
+	return lerp(alpha, *this, result);
+}
+
+Color Color::screen(const Color & top_layer, const double & alpha)
+{
+	Color result = Color(
+		screen_channel(this->x, top_layer.x),
+		screen_channel(this->y, top_layer.y),
+		screen_channel(this->z, top_layer.z)
+	);
+	return lerp(alpha, *this, result);
 }
 
 Color Color::convert_linear_to_srgb()
@@ -70,11 +121,19 @@ Color Color::convert_srgb_to_linear()
 
 Tuple Color::operator*(const Color & right_color) const
 {
-	return Tuple(
+	return Color(
 		this->x * right_color.x,
 		this->y * right_color.y,
-		this->z * right_color.z,
-		this->w * right_color.w
+		this->z * right_color.z
+	);
+}
+
+Tuple Color::operator/(const Color & right_color) const
+{
+	return Color(
+		safe_divide(this->x, right_color.x),
+		safe_divide(this->y, right_color.y),
+		safe_divide(this->z, right_color.z)
 	);
 }
 
@@ -155,7 +214,11 @@ std::ostream & operator<< (std::ostream & os, const Color8Bit & col)
 }
 
 // ------------------------------------------------------------------------
+
 // Helper Functions
+
+// ------------------------------------------------------------------------
+// sRGB
 // ------------------------------------------------------------------------
 
 double linear_to_srgb(const double x)
@@ -168,4 +231,29 @@ double srgb_to_linear(const double x)
 {
 	// Converts the channel from the sRGB color curve to linear values
 	return (x >= 0.04045) ? pow((x +0.055)/1.055, 2.4) : x / 12.92;
+}
+
+// ------------------------------------------------------------------------
+// Blend Operations
+// ------------------------------------------------------------------------
+
+double safe_divide(const double a, const double b)
+{
+	if (abs(b) > EPSILON)
+		return a / b;
+	else
+		return a;
+}
+
+double overlay_channel(const double a, const double b)
+{
+	if (a < 0.5)
+		return 2.0 * a * b;
+	else
+		return 1.0 - (2.0 * (1.0 - a)) * (1.0 - b);
+}
+
+double screen_channel(const double a, const double b)
+{
+	return 1.0 - (1.0 - a) * (1.0 - b);
 }

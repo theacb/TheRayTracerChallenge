@@ -164,6 +164,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="Primitive.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Texmap.h" />
     <ClInclude Include="Tuple.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="World.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Raymond.cpp" />
+    <ClCompile Include="Texmap.cpp" />
     <ClCompile Include="Tuple.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="World.cpp" />
