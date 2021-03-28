@@ -5,6 +5,9 @@
 
 #include <iostream>
 #include <string>
+#include <exception>
+#include <typeinfo>
+#include <stdexcept>
 
 // Based on an answer on Stack Overflow by Howard Hinnant
 // https://stackoverflow.com/a/22593250/15062519
@@ -474,13 +477,16 @@ Canvas render_ch10_world(int width, int height, double fov)
 	auto gray_stripe_tex = std::make_shared<StripeMap>(Color(0.18), Color(0.36));
 
 	auto stripe1 = std::make_shared<StripeMap>(Color(1.0, 0.0, 0.0), Color(0.5, 0.0, 0.0));
-	stripe1->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5) * Matrix4::Rotation_Y(deg_to_rad(90)));
+	stripe1->transform->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5) * Matrix4::Rotation_Y(deg_to_rad(90)));
 	auto stripe2 = std::make_shared<StripeMap>(Color(0.0, 1.0, 0.0), Color(0.0, 0.5, 0.0));
-	stripe2->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+	stripe2->transform->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
 
 	auto c_map_1 = std::make_shared <CompositeMap>(stripe1, stripe2, CompAdd, 1.0);
 
-	matte_gray_mtl->color_tex = c_map_1;
+	auto perlin_noise = std::make_shared<ColoredPerlin>(32255);
+	perlin_noise->octaves = 6;
+
+	matte_gray_mtl->color_tex = perlin_noise;
 
 	auto shiny_green_mtl = std::make_shared<PhongMaterial>();
 	Color green = Color(Color8Bit(54, 163, 83)).convert_srgb_to_linear();
@@ -489,8 +495,13 @@ Canvas render_ch10_world(int width, int height, double fov)
 	shiny_green_mtl->ambient = 0.01;
 	auto green_stripe_tex = std::make_shared<StripeMap>(green, green * 1.2);
 	green_stripe_tex->set_mapping_space(ObjectSpace);
-	green_stripe_tex->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
-	shiny_green_mtl->color_tex = green_stripe_tex;
+	green_stripe_tex->transform->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
+
+	auto green_stripe_perturb = std::make_shared<PerturbMap>(green_stripe_tex, perlin_noise);
+	green_stripe_perturb->displacement_remap = true;
+	green_stripe_perturb->scale = 0.1;
+
+	shiny_green_mtl->color_tex = green_stripe_perturb;
 
 	auto shiny_yellow_mtl = std::make_shared<PhongMaterial>();
 	shiny_yellow_mtl->color = Color(Color8Bit(245, 209, 66)).convert_srgb_to_linear();
@@ -575,7 +586,21 @@ int main()
 	auto start = std::chrono::steady_clock::now();
 
 	// Execution
-	Canvas image = render_ch10_world(width, height, fov);
+	Canvas image;
+
+	try
+	{
+		image = render_ch10_world(width, height, fov);
+	}
+	catch (const std::exception& ex)
+	{
+		std::cout << ex.what() << std::endl;
+	}
+	catch (...)
+	{
+		std::cout << "unknown exception\n";
+	}
+	
 
 	// End time
 	auto end = std::chrono::steady_clock::now();

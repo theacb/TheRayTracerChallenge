@@ -7,6 +7,8 @@
 #include <chrono>
 #include <iomanip>
 
+#include "Constants.h"
+
 // Conversions
 
 double deg_to_rad(double degrees);
@@ -18,6 +20,10 @@ double rad_to_deg(double radians);
 std::string pad_num(int num, int pad);
 
 std::string generate_name(std::string name, std::string folder, int version);
+
+// Comparison
+
+bool flt_cmp(const double & left_double, const double & right_double);
 
 // Templates
 

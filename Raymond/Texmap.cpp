@@ -11,8 +11,7 @@
 
 TexMap::TexMap()
 {
-	this->transform_ = Matrix4::Identity();
-	this->inverse_transform_ = Matrix4::Identity();
+	this->transform = std::make_shared<TransformController>();
 	this->mapping_space_ = WorldSpace;
 }
 
@@ -25,22 +24,6 @@ TexMap::~TexMap()
 // ------------------------------------------------------------------------
 // Methods
 // ------------------------------------------------------------------------
-
-void TexMap::set_transform(Matrix4 m)
-{
-	this->transform_ = m;
-	this->inverse_transform_ = m.inverse();
-}
-
-Matrix4 TexMap::get_transform() const
-{
-	return this->transform_;
-}
-
-Matrix4 TexMap::get_inverse_transform() const
-{
-	return this->inverse_transform_;
-}
 
 void TexMap::set_mapping_space(MappingSpace space)
 {
@@ -61,12 +44,12 @@ Color TexMap::sample_at(const IxComps & comps) const
 	{
 	// Just transforms by the pattern's mapping matrix
 	case WorldSpace:
-		transformed_comps.texmap_point = this->inverse_transform_ * comps.point;
+		transformed_comps.texmap_point = this->transform->get_inverse_transform() * comps.point;
 		break;
 
 	// Also transforms by the object's transformation matrix
 	case ObjectSpace:
-		Matrix4 transform = this->inverse_transform_ * comps.object->get_inverse_transform();
+		Matrix4 transform = this->transform->get_inverse_transform() * comps.object->get_inverse_transform();
 		transformed_comps.texmap_point = transform * comps.point;
 		break;
 	}
@@ -338,11 +321,7 @@ Color CheckerMap::local_sample_at(const IxComps & comps) const
 // Constructors
 // ------------------------------------------------------------------------
 
-CompositeMap::CompositeMap() : CompositeMap(Color(0.0), Color(1.0))
-{
-}
-
-CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b) : CompositeMap(a, b, CompAdd, 1.0)
+CompositeMap::CompositeMap() : CompositeMap(Color(0.0), Color(1.0), CompBlend)
 {
 }
 
@@ -350,21 +329,21 @@ CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b,
 {
 }
 
-CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode, double factor) : TexMap()
+CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode, double factor) : CompositeMap(
+	a, 
+	b, 
+	mode, 
+	std::make_shared<SolidColorMap>(Color(factor))
+)
+{
+}
+
+CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode, std::shared_ptr<TexMap> factor) : TexMap()
 {
 	this->composite_mode = mode;
 	this->a = a;
 	this->b = b;
 	this->factor = factor;
-}
-
-CompositeMap::CompositeMap(Color a, Color b) : CompositeMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b)),
-	CompAdd,
-	1.0
-)
-{
 }
 
 CompositeMap::CompositeMap(Color a, Color b, CompositeMode mode) : CompositeMap(
@@ -398,29 +377,30 @@ Color CompositeMap::local_sample_at(const IxComps & comps) const
 	Color result;
 	Color a = this->a->sample_at(comps);
 	Color b = this->b->sample_at(comps);
+	double factor = this->factor->sample_at(comps).luminosity();
 
 	switch (this->composite_mode)
 	{
 	case CompBlend:
-		result = lerp(this->factor, a, b);
+		result = lerp(factor, a, b);
 		break;
 	case CompAdd:
-		result = a.add(b, this->factor);
+		result = a.add(b, factor);
 		break;
 	case CompMultiply:
-		result = a.multiply(b, this->factor);
+		result = a.multiply(b, factor);
 		break;
 	case CompDivide:
-		result = a.divide(b, this->factor);
+		result = a.divide(b, factor);
 		break;
 	case CompSubtract:
-		result = a.subtract(b, this->factor);
+		result = a.subtract(b, factor);
 		break;
 	case CompOverlay:
-		result = a.overlay(b, this->factor);
+		result = a.overlay(b, factor);
 		break;
 	case CompScreen:
-		result = a.screen(b, this->factor);
+		result = a.screen(b, factor);
 		break;
 	default:
 		result = b;
@@ -428,4 +408,83 @@ Color CompositeMap::local_sample_at(const IxComps & comps) const
 	}
 
 	return result;
+}
+
+// ------------------------------------------------------------------------
+//
+// Perturb Map
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+PerturbMap::PerturbMap() : PerturbMap(
+	std::make_shared<SolidColorMap>(),
+	std::make_shared<SolidColorMap>()
+)
+{
+}
+
+PerturbMap::PerturbMap(std::shared_ptr<TexMap> main, std::shared_ptr<TexMap> displacement)
+{
+	this->main = main;
+	this->displacement = displacement;
+	this->scale = 1.0;
+	this->displacement_remap = false;
+}
+
+PerturbMap::~PerturbMap()
+{
+}
+
+// ------------------------------------------------------------------------
+// Shade
+// ------------------------------------------------------------------------
+
+Color PerturbMap::local_sample_at(const IxComps & comps) const
+{
+	IxComps transformed_comps = IxComps(comps);
+	Color disp = displacement->sample_at(comps);
+	if (this->displacement_remap)
+	{
+		disp = remap(disp, Color(0.0), Color(1.0), Color(-1.0), Color(1.0));
+	}
+	transformed_comps.point = comps.point + (disp * this->scale);
+	return main->sample_at(transformed_comps);
+}
+
+// ------------------------------------------------------------------------
+//
+// Channel Map
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+ChannelMap::ChannelMap() : ChannelMap(
+	std::make_shared<SolidColorMap>(), 
+	std::make_shared<SolidColorMap>(), 
+	std::make_shared<SolidColorMap>()
+)
+{
+}
+
+ChannelMap::ChannelMap(std::shared_ptr<TexMap> r, std::shared_ptr<TexMap> g, std::shared_ptr<TexMap> b)
+{
+	this->r = r;
+	this->g = g;
+	this->b = b;
+}
+
+ChannelMap::~ChannelMap()
+{
+}
+
+Color ChannelMap::local_sample_at(const IxComps & comps) const
+{
+	return Color(
+		this->r->sample_at(comps).luminosity(), 
+		this->g->sample_at(comps).luminosity(),
+		this->b->sample_at(comps).luminosity()
+	);
 }

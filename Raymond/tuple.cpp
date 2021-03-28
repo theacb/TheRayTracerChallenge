@@ -211,9 +211,3 @@ Tuple operator*(const double & scalar, const Tuple & right_tuple)
 // ------------------------------------------------------------------------
 // Helpfer Functions
 // ------------------------------------------------------------------------
-
-// double Comparison
-bool flt_cmp(const double & left_double, const double & right_double)
-{
-	return fabs(left_double - right_double) < EPSILON;
-}

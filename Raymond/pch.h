@@ -25,5 +25,6 @@
 #include "Background.h"
 #include "Camera.h"
 #include "Utilities.h"
+#include "Noise.h"
 
 #endif //PCH_H

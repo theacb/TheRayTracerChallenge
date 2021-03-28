@@ -42,6 +42,7 @@
     <ClInclude Include="..\Raymond\Light.h" />
     <ClInclude Include="..\Raymond\Material.h" />
     <ClInclude Include="..\Raymond\Matrix.h" />
+    <ClInclude Include="..\Raymond\Noise.h" />
     <ClInclude Include="..\Raymond\Object.h" />
     <ClInclude Include="..\Raymond\Primitive.h" />
     <ClInclude Include="..\Raymond\Ray.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="..\Raymond\Light.cpp" />
     <ClCompile Include="..\Raymond\Material.cpp" />
     <ClCompile Include="..\Raymond\Matrix.cpp" />
+    <ClCompile Include="..\Raymond\Noise.cpp" />
     <ClCompile Include="..\Raymond\Object.cpp" />
     <ClCompile Include="..\Raymond\Primitive.cpp" />
     <ClCompile Include="..\Raymond\Ray.cpp" />

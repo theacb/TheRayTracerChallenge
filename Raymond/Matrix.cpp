@@ -331,7 +331,7 @@ std::vector<double> Matrix::inverse_vector() const
 {
 	// Seperates functionality from specified class return to facilitate overloading
 	double det = this->determinant();
-	if (flt_cmp(det, 0.0))
+	if (abs(det) < std::numeric_limits<double>::epsilon())
 	{
 		// Requested out of bounds row or column
 		throw NoninvertableMatrix(*this);

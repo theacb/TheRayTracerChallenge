@@ -11,6 +11,35 @@
 
 enum ObjectType { primitive, light };
 
+class TransformController
+{
+public:
+	TransformController();
+	TransformController(const Matrix4 & m);
+	TransformController(const TransformController & src);
+	~TransformController();
+
+	void set_transform(const Matrix4 & m);
+	Matrix4 get_transform() const;
+	Matrix4 get_inverse_transform() const;
+
+	// Self Transformers
+	Ray ray_to_object_space(const Ray & r) const;
+
+	Tuple point_to_object_space(const Tuple & p) const;
+	Tuple point_to_world_space(const Tuple & p) const;
+
+	Tuple normal_vector_to_world_space(const Tuple & v) const;
+
+	// Overloaded Operators
+	friend std::ostream & operator<<(std::ostream & os, const TransformController & ctrl);
+
+private:
+	//properties
+	Matrix4 x_transform_;
+	Matrix4 x_inverse_transform_;
+};
+
 class ObjectBase
 {
 public:
@@ -38,7 +67,6 @@ public:
 
 	Tuple normal_vector_to_world_space(const Tuple & v) const;
 
-
 	// Overloaded Operators
 	friend std::ostream & operator<<(std::ostream & os, const ObjectBase & obj);
 
@@ -46,11 +74,8 @@ public:
 	ObjectType object_type;
 
 private:
-	//properties
-	Matrix4 transform_;
-	Matrix4 inverse_transform_;
-	std::string name_;
-
+	std::string o_name_;
+	std::shared_ptr<TransformController> o_transform_;
 };
 
 class Intersection

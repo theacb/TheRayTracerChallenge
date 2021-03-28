@@ -3,6 +3,89 @@
 
 // ------------------------------------------------------------------------
 //
+// Transform Controller
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+TransformController::TransformController()
+{
+	this->x_transform_ = Matrix4::Identity();
+	this->x_inverse_transform_ = Matrix4::Identity();
+}
+
+TransformController::TransformController(const Matrix4 & m)
+{
+	this->x_transform_ = m;
+	this->x_inverse_transform_ = m.inverse();
+}
+
+TransformController::TransformController(const TransformController & src)
+{
+	this->x_transform_ = src.get_transform();
+	this->x_inverse_transform_ = src.get_transform().inverse();
+}
+
+TransformController::~TransformController()
+{
+}
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
+void TransformController::set_transform(const Matrix4 & m)
+{
+	this->x_transform_ = m;
+	this->x_inverse_transform_ = m.inverse();
+}
+
+Matrix4 TransformController::get_transform() const
+{
+	return this->x_transform_;
+}
+
+Matrix4 TransformController::get_inverse_transform() const
+{
+	return this->x_inverse_transform_;
+}
+
+// ------------------------------------------------------------------------
+// Transformers
+// ------------------------------------------------------------------------
+
+Ray TransformController::ray_to_object_space(const Ray & r) const
+{
+	return Ray(r).transform(this->x_inverse_transform_);
+}
+
+Tuple TransformController::point_to_object_space(const Tuple & p) const
+{
+	return this->x_inverse_transform_ * p;
+}
+
+Tuple TransformController::point_to_world_space(const Tuple & p) const
+{
+	return this->x_transform_ * p;
+}
+
+Tuple TransformController::normal_vector_to_world_space(const Tuple & v) const
+{
+	return this->x_inverse_transform_.transpose() * v;
+}
+
+// ------------------------------------------------------------------------
+// Operators
+// ------------------------------------------------------------------------
+
+std::ostream & operator<<(std::ostream & os, const TransformController & ctrl)
+{
+	return os << ctrl.x_transform_;
+}
+
+// ------------------------------------------------------------------------
+//
 // Base Object
 //
 // ------------------------------------------------------------------------
@@ -11,9 +94,8 @@
 
 ObjectBase::ObjectBase()
 {
-	this->transform_ = Matrix4::Identity();
-	this->inverse_transform_ = Matrix4::Identity();
-	this->name_ = "Default Object 000";
+	this->o_transform_ = std::make_shared<TransformController>();
+	this->o_name_ = "Default Object 000";
 }
 
 
@@ -28,13 +110,13 @@ ObjectBase::~ObjectBase()
 Tuple ObjectBase::normal_at(const Tuple & world_space_point) const
 {
 	// Multiply point by inverse xform matrix to bring into object space
-	Tuple object_space_point = this->point_to_object_space(world_space_point);
+	Tuple object_space_point = this->o_transform_->point_to_object_space(world_space_point);
 
 	// Calculate surface normal
 	Tuple object_normal_vector = this->local_normal_at(object_space_point);
 
 	// Multiply object space normal by transpose of the inverted x form matrix
-	Tuple world_normal_vector = this->normal_vector_to_world_space(object_normal_vector);
+	Tuple world_normal_vector = this->o_transform_->normal_vector_to_world_space(object_normal_vector);
 
 	// Enforce behavior as a vector by setting w to 0
 	world_normal_vector.w = 0.0;
@@ -45,28 +127,27 @@ Tuple ObjectBase::normal_at(const Tuple & world_space_point) const
 
 void ObjectBase::set_name(std::string new_name)
 {
-	this->name_ = new_name;
+	this->o_name_ = new_name;
 }
 
 std::string ObjectBase::get_name() const
 {
-	return this->name_;
+	return this->o_name_;
 }
 
 void ObjectBase::set_transform(Matrix4 m )
 {
-	this->transform_ = m;
-	this->inverse_transform_ = m.inverse();
+	this->o_transform_->set_transform(m);
 }
 
 Matrix4 ObjectBase::get_transform() const
 {
-	return this->transform_;
+	return this->o_transform_->get_transform();
 }
 
 Matrix4 ObjectBase::get_inverse_transform() const
 {
-	return this->inverse_transform_;
+	return this->o_transform_->get_inverse_transform();
 }
 
 // ------------------------------------------------------------------------
@@ -75,22 +156,22 @@ Matrix4 ObjectBase::get_inverse_transform() const
 
 Ray ObjectBase::ray_to_object_space(const Ray & r) const
 {
-	return Ray(r).transform(this->inverse_transform_);
+	return this->o_transform_->ray_to_object_space(r);
 }
 
 Tuple ObjectBase::point_to_object_space(const Tuple & p) const
 {
-	return this->inverse_transform_ * p;
+	return this->o_transform_->point_to_object_space(p);
 }
 
 Tuple ObjectBase::point_to_world_space(const Tuple & p) const
 {
-	return this->transform_ * p;
+	return this->o_transform_->point_to_world_space(p);
 }
 
 Tuple ObjectBase::normal_vector_to_world_space(const Tuple & v) const
 {
-	return this->get_inverse_transform().transpose() * v;
+	return this->o_transform_->normal_vector_to_world_space(v);
 }
 
 // ------------------------------------------------------------------------
@@ -99,7 +180,7 @@ Tuple ObjectBase::normal_vector_to_world_space(const Tuple & v) const
 
 std::ostream & operator<<(std::ostream & os, const ObjectBase & obj)
 {
-	return os << "(" << obj.name_ << ", " << obj.transform_ << ")";
+	return os << "(" << obj.o_name_ << ", " << obj.o_transform_ << ")";
 }
 
 // ------------------------------------------------------------------------
@@ -251,3 +332,4 @@ Intersections intersect( const Ray & r, const std::shared_ptr<ObjectBase> obj)
 
 	return Intersections(t_values, obj);
 }
+

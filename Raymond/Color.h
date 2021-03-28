@@ -44,8 +44,12 @@ public:
 	Color convert_linear_to_srgb();
 	Color convert_srgb_to_linear();
 
-	Tuple operator*(const Color & right_color) const;
-	Tuple operator/(const Color & right_color) const;
+	double luminosity() const;
+
+	Color operator*(const Color & right_color) const;
+	Color operator/(const Color & right_color) const;
+	Color operator+(const Color & right_color) const;
+	Color operator-(const Color & right_color) const;
 };
 
 // 8 Bit Color

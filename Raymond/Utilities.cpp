@@ -44,3 +44,8 @@ std::string generate_name(std::string name, std::string folder, int version)
 		".ppm"
 		);
 }
+
+bool flt_cmp(const double & left_double, const double & right_double)
+{
+	return fabs(left_double - right_double) < EPSILON;
+}

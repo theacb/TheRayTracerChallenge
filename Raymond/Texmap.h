@@ -1,9 +1,10 @@
 #ifndef H_RAYMOND_TEXMAP
 #define H_RAYMOND_TEXMAP
 
-#include "IxComps.h"
+#include "Object.h"
 #include "Color.h"
 #include "Utilities.h"
+#include "IxComps.h"
 
 enum MappingSpace {WorldSpace, ObjectSpace};
 enum CompositeMode { CompBlend, CompAdd, CompMultiply, CompDivide, CompSubtract, CompOverlay, CompScreen
@@ -15,10 +16,6 @@ public:
 	TexMap();
 	~TexMap();
 
-	void set_transform(Matrix4 m);
-	Matrix4 get_transform() const;
-	Matrix4 get_inverse_transform() const;
-
 	void set_mapping_space(MappingSpace space);
 
 	// Methods
@@ -26,10 +23,11 @@ public:
 	Color sample_at(const IxComps & comps) const;
 	Color sample_at_point(const Tuple & point) const;
 
+	//properties
+	std::shared_ptr<TransformController> transform;
+
 private:
 	//properties
-	Matrix4 transform_;
-	Matrix4 inverse_transform_;
 	MappingSpace mapping_space_;
 };
 
@@ -129,10 +127,9 @@ class CompositeMap :
 {
 public:
 	CompositeMap();
-	CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b);
 	CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode);
 	CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode, double factor);
-	CompositeMap(Color a, Color b);
+	CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b, CompositeMode mode, std::shared_ptr<TexMap> factor);
 	CompositeMap(Color a, Color b, CompositeMode mode);
 	CompositeMap(Color a, Color b, CompositeMode mode, double factor);
 	~CompositeMap();
@@ -142,8 +139,40 @@ public:
 
 	// Properties
 	CompositeMode composite_mode;
-	std::shared_ptr<TexMap> a, b;
-	double factor;
+	std::shared_ptr<TexMap> a, b, factor;
+};
+
+class PerturbMap :
+	public TexMap
+{
+public:
+	PerturbMap();
+	PerturbMap(std::shared_ptr<TexMap> main, std::shared_ptr<TexMap> displacement);
+	~PerturbMap();
+
+	// Methods
+	virtual Color local_sample_at(const IxComps & comps) const override;
+
+	// Properties
+	std::shared_ptr<TexMap> main, displacement;
+	double scale;
+	bool displacement_remap;
+};
+
+class ChannelMap :
+	public TexMap
+{
+public:
+	ChannelMap();
+	ChannelMap(std::shared_ptr<TexMap> r, std::shared_ptr<TexMap> g, std::shared_ptr<TexMap> b);
+	~ChannelMap();
+
+	// Methods
+	virtual Color local_sample_at(const IxComps & comps) const override;
+
+	// Properties
+	std::shared_ptr<TexMap> r, g, b;
+	double scale;
 };
 
 #endif

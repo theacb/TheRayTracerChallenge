@@ -119,7 +119,12 @@ Color Color::convert_srgb_to_linear()
 	);
 }
 
-Tuple Color::operator*(const Color & right_color) const
+double Color::luminosity() const
+{
+	return (0.299 * this->x) + (0.587 * this->y) + (0.114 * this->z);
+}
+
+Color Color::operator*(const Color & right_color) const
 {
 	return Color(
 		this->x * right_color.x,
@@ -128,12 +133,30 @@ Tuple Color::operator*(const Color & right_color) const
 	);
 }
 
-Tuple Color::operator/(const Color & right_color) const
+Color Color::operator/(const Color & right_color) const
 {
 	return Color(
 		safe_divide(this->x, right_color.x),
 		safe_divide(this->y, right_color.y),
 		safe_divide(this->z, right_color.z)
+	);
+}
+
+Color Color::operator+(const Color & right_color) const
+{
+	return Color(
+		this->x + right_color.x,
+		this->y + right_color.y,
+		this->z + right_color.z
+	);
+}
+
+Color Color::operator-(const Color & right_color) const
+{
+	return Color(
+		this->x - right_color.x,
+		this->y - right_color.y,
+		this->z - right_color.z
 	);
 }
 

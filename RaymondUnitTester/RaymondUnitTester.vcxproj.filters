@@ -48,6 +48,9 @@
     <ClCompile Include="..\Raymond\Texmap.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\Noise.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -95,6 +98,9 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\Texmap.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Noise.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>

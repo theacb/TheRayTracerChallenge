@@ -4,7 +4,7 @@
 #include <iostream>
 #include "math.h"
 
-#include "Constants.h"
+#include "Utilities.h"
 
 class Tuple
 {
@@ -49,8 +49,5 @@ std::ostream & operator<<(std::ostream & os, const Tuple & tuple);
 bool operator==(const Tuple & left_tuple, const Tuple & right_tuple);
 bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple);
 Tuple operator*(const double & scalar, const Tuple & right_tuple);
-
-// Helper Functions
-bool flt_cmp(const double & left_double, const double & right_double);
 
 #endif
