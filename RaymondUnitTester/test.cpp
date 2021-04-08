@@ -385,7 +385,7 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline)
 {
 	Canvas c = Canvas(10, 10);
 
-	std::string file_path = "E:\\dump\\projects\\Raymond\\frames\\PPMFilesTerminateWithNewline.ppm";
+	std::string file_path = "E:\\dump\\projects\\Raymond\\frames\\_x\\PPMFilesTerminateWithNewline.ppm";
 
 	canvas_to_ppm(c, file_path);
 
@@ -1471,10 +1471,10 @@ TEST(Chapter06Tests, TheDefaultMaterial)
 	PhongMaterial m = PhongMaterial();
 	
 	ASSERT_EQ(m.color, Color(1.0, 1.0, 1.0));
-	ASSERT_TRUE(flt_cmp(m.ambient, 0.1));
-	ASSERT_TRUE(flt_cmp(m.diffuse, 0.9));
-	ASSERT_TRUE(flt_cmp(m.specular, 0.9));
-	ASSERT_TRUE(flt_cmp(m.shininess, 200.0));
+	ASSERT_TRUE(flt_cmp(m.ambient.value().luminosity(), 0.1));
+	ASSERT_TRUE(flt_cmp(m.diffuse.value(), 0.9));
+	ASSERT_TRUE(flt_cmp(m.specular.value(), 0.9));
+	ASSERT_TRUE(flt_cmp(m.shininess.value(), 200.0));
 }
 
 TEST(Chapter06Tests, ASphereHasADefaulMaterial)
@@ -2177,7 +2177,7 @@ TEST(Chapter10Tests, LightingWithAPatternApplied)
 	auto light = std::make_shared<PointLight>(Tuple::Point(0.0, 0.0, -10), Color(1.0));
 
 	PhongMaterial m = PhongMaterial();
-	m.color_tex = pattern;
+	m.color.connect(pattern);
 	m.ambient = 1.0;
 	m.diffuse = 0.0;
 	m.specular = 0.0;
@@ -2504,4 +2504,130 @@ TEST(Chapter10Tests, CompositeMapBlendMode)
 	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.25, 0.0, 0.25)), c_1b); // 1b, 2a
 	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.75, 0.0, 0.25)), c_1b); // 1b, 2b
 	ASSERT_EQ(c_map_3.sample_at_point(Tuple::Point(0.75, 0.0, 0.75)), c_1a); // 1a, 2b
+}
+
+// ------------------------------------------------------------------------
+// Chapter 11 Reflection and Refraction
+// ------------------------------------------------------------------------
+
+TEST(Chapter11Tests, ReflectivityForTheDefaultMaterial)
+{
+	PhongMaterial m = PhongMaterial();
+	ASSERT_EQ(m.reflection.value(), Color(0.0));
+}
+
+TEST(Chapter11Tests, PrecomputingTheReflectionVector)
+{
+	auto shape = std::make_shared<InfinitePlane>();
+	Ray r = Ray(Tuple::Point(0.0, 1.0, -1.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
+	Intersection i = Intersection(sqrt(2.0), shape);
+
+	IxComps comps = IxComps(i, r);
+
+	ASSERT_EQ(comps.reflect_v, Tuple::Vector(0.0, sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
+}
+
+TEST(Chapter11Tests, TheReflectedColorForANonreflectiveMaterial)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	auto shape = w.get_primitives()[1];
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->ambient.set_value(Color(1.0));
+
+	Intersection i = Intersection(1.0, shape);
+	IxComps comps = IxComps(i, r);
+	Color ref = ms1->reflect(w, comps);
+
+	ASSERT_EQ(ref, Color(0.0));
+}
+
+TEST(Chapter11Tests, TheReflectedColorForAReflectiveMaterial)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
+
+	auto shape = std::make_shared<InfinitePlane>();
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->reflection.set_value(Color(0.5));
+	shape->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(shape);
+
+	Intersection i = Intersection(sqrt(2.0), shape);
+	IxComps comps = IxComps(i, r);
+	Color ref = ms1->reflect(w, comps);
+
+	ASSERT_EQ(ref, Color(0.19032, 0.2379, 0.14274));
+}
+
+TEST(Chapter11Tests, shadeFunctionWithAReflectiveMaterial)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
+
+	auto shape = std::make_shared<InfinitePlane>();
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->reflection.set_value(Color(0.5));
+	shape->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(shape);
+
+	Intersection i = Intersection(sqrt(2.0), shape);
+	IxComps comps = IxComps(i, r);
+	Color ref = w.shade(comps);
+
+	ASSERT_EQ(ref, Color(0.87677, 0.92436, 0.82918));
+}
+
+TEST(Chapter11Tests, color_atFunctionWithMutuallyReflectiveSurfaces)
+{
+	World w = World();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0));
+
+	w.add_object(std::make_shared<PointLight>(Tuple::Point(0.0, 0.0, 0.0), Color(1.0)));
+
+	auto lower = std::make_shared<InfinitePlane>();
+	lower->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(lower);
+
+	auto upper = std::make_shared<InfinitePlane>();
+	upper->set_transform(Matrix4::Translation(0.0, 1.0, 0.0));
+	w.add_object(upper);
+
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(lower->material);
+	ms1->reflection.set_value(Color(1.0));
+	upper->material = ms1;
+
+	auto start = std::chrono::steady_clock::now();
+
+	w.color_at(r);
+
+	auto end = std::chrono::steady_clock::now();
+
+	auto diff = end - start;
+
+	ASSERT_LT(diff, std::chrono::duration<int>(10));
+}
+
+TEST(Chapter11Tests, TheReflectedColorAtTheMaximumRecursionDepth)
+{
+	World w = World::Default();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0), RAY_DEPTH_LIMIT);
+
+	auto shape = std::make_shared<InfinitePlane>();
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->reflection.set_value(Color(0.5));
+	shape->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(shape);
+
+	Intersection i = Intersection(sqrt(2.0), shape);
+	IxComps comps = IxComps(i, r);
+	Color ref = ms1->reflect(w, comps);
+
+	ASSERT_EQ(ref, Color(0.0));
 }

@@ -15,11 +15,22 @@ double deg_to_rad(double degrees);
 
 double rad_to_deg(double radians);
 
+// Random Number Utilities
+// Taken from Ray Tracing in One Weekend by Peter Shirley
+// https://raytracing.github.io/books/RayTracingInOneWeekend.html#antialiasing/somerandomnumberutilities
+double random_double();
+
+double random_double(double min, double max);
+
 // Files
 
 std::string pad_num(int num, int pad);
 
 std::string generate_name(std::string name, std::string folder, int version);
+
+// Display
+
+std::ostream& clock_display(std::ostream& os, std::chrono::duration<double, std::nano> dur);
 
 // Comparison
 

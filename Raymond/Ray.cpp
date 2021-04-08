@@ -9,20 +9,24 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-Ray::Ray():Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0))
+Ray::Ray():Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0), 0)
 {
 }
 
-Ray::Ray(const Ray & src) : Ray(src.origin, src.direction)
+Ray::Ray(const Ray & src) : Ray(src.origin, src.direction, src.depth)
 {
 }
 
-Ray::Ray(Tuple origin, Tuple direction)
+Ray::Ray(Tuple origin, Tuple direction) : Ray(origin, direction, 0)
+{
+}
+
+Ray::Ray(Tuple origin, Tuple direction, int depth)
 {
 	this->origin = origin;
 	this->direction = direction;
+	this->depth = depth;
 }
-
 
 Ray::~Ray()
 {
@@ -44,5 +48,5 @@ Ray Ray::transform(Matrix4 m) const
 
 std::ostream & operator<<(std::ostream & os, const Ray & r)
 {
-	return os << "<" << r.origin << ", " << r.direction << ">";
+	return os << "<" << r.origin << ", " << r.direction << ", " << r.depth << ">";
 }

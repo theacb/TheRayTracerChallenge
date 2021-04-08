@@ -44,6 +44,22 @@ Tuple Tuple::Vector(double x_axis, double y_axis, double z_axis)
 	return Tuple(x_axis, y_axis, z_axis, 0.0);
 }
 
+Tuple Tuple::RandomVector(double min, double max)
+{
+	return Tuple::Vector(random_double(min, max), random_double(min, max), random_double(min, max));
+}
+
+// Taken from Ray Tracing in One Weekend by Peter Shirley
+// https://raytracing.github.io/books/RayTracingInOneWeekend.html#diffusematerials/asimplediffusematerial
+Tuple Tuple::RandomInUnitSphere()
+{
+	while (true) {
+		Tuple p = Tuple::RandomVector(-1.0, 1.0);
+		if (p.magnitude_squared() >= 1.0) continue;
+		return p;
+	}
+}
+
 // Destructor
 
 Tuple::~Tuple()
@@ -58,9 +74,16 @@ Tuple::~Tuple()
 double Tuple::magnitude() const
 {
 	// Computes magnitude using Pythagorean theorem
-	// sqrt(x^2 + y^2 + z^2 + w^2)
-	const double power = 2.0;
-	return sqrt(pow(this->x, power) + pow(this->y, power) + pow(this->z, power) + pow(this->w, power));
+	// sqrt(magnitude_squared())
+	
+	return sqrt(this->magnitude_squared());
+}
+
+double Tuple::magnitude_squared() const
+{
+	// Computes magnitude using Pythagorean theorem
+	// x^2 + y^2 + z^2 + w^2
+	return (this->x * this->x) + (this->y * this->y) + (this->z * this->z) + (this->w * this->w);
 }
 
 // Normalize

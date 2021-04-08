@@ -9,32 +9,6 @@
 #include <typeinfo>
 #include <stdexcept>
 
-// Based on an answer on Stack Overflow by Howard Hinnant
-// https://stackoverflow.com/a/22593250/15062519
-std::ostream& clock_display(std::ostream& os, std::chrono::duration<double, std::nano> dur)
-{
-	char fill = os.fill();
-	os.fill('0');
-
-	auto h = std::chrono::duration_cast<std::chrono::hours>(dur);
-	dur -= h;
-	auto m = std::chrono::duration_cast<std::chrono::minutes>(dur);
-	dur -= m;
-	auto s = std::chrono::duration_cast<std::chrono::seconds>(dur);
-	dur -= s;
-	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
-
-	os  << std::setw(2) << h.count() << "h:"
-		<< std::setw(2) << m.count() << "m:"
-		<< std::setw(2) << s.count() << "s:";
-	os.fill(fill);
-
-	os << ms.count() << "ms";
-
-	return os;
-}
-
-
 struct Projectile
 {
 	Tuple position, velocity;
@@ -486,14 +460,14 @@ Canvas render_ch10_world(int width, int height, double fov)
 	auto perlin_noise = std::make_shared<ColoredPerlin>(32255);
 	perlin_noise->octaves = 6;
 
-	matte_gray_mtl->color_tex = perlin_noise;
+	matte_gray_mtl->color.connect(perlin_noise);
 
 	auto shiny_green_mtl = std::make_shared<PhongMaterial>();
-	Color green = Color(Color8Bit(54, 163, 83)).convert_srgb_to_linear();
+	Color green = Color(Color8Bit(57, 0, 214)).convert_srgb_to_linear();
 	shiny_green_mtl->color = green;
 	shiny_green_mtl->specular = 0.9;
 	shiny_green_mtl->ambient = 0.01;
-	auto green_stripe_tex = std::make_shared<StripeMap>(green, green * 1.2);
+	auto green_stripe_tex = std::make_shared<StripeMap>(green, green * 0.6);
 	green_stripe_tex->set_mapping_space(ObjectSpace);
 	green_stripe_tex->transform->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
 
@@ -501,7 +475,7 @@ Canvas render_ch10_world(int width, int height, double fov)
 	green_stripe_perturb->displacement_remap = true;
 	green_stripe_perturb->scale = 0.1;
 
-	shiny_green_mtl->color_tex = green_stripe_perturb;
+	shiny_green_mtl->color.connect(green_stripe_perturb);
 
 	auto shiny_yellow_mtl = std::make_shared<PhongMaterial>();
 	shiny_yellow_mtl->color = Color(Color8Bit(245, 209, 66)).convert_srgb_to_linear();
@@ -570,11 +544,136 @@ Canvas render_ch10_world(int width, int height, double fov)
 	return image;
 }
 
+World render_ch11_world()
+{
+	World w = World();
+
+	w.background = std::make_shared<NormalGradientBackground>();
+
+	// Lights
+
+	auto light_000 = std::make_shared<PointLight>(Tuple::Point(-9.0, 9.0, -9.0), Color(1.0), 50.0);
+	light_000->falloff = true;
+	light_000->set_name("light 000");
+	w.add_object(light_000);
+
+	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0, 6.0, 5.0), Color(1.0, 0.0, 0.0), 50.0);
+	light_001->falloff = true;
+	light_001->set_name("light 001");
+	w.add_object(light_001);
+
+	// Materials
+
+	auto matte_gray_mtl = std::make_shared<PhongMaterial>();
+	matte_gray_mtl->color = Color(0.18);
+	matte_gray_mtl->specular = 0.0;
+	matte_gray_mtl->ambient = 0.01;
+
+	auto gray_checkers_tex = std::make_shared<CheckerMap>(Color(0.18), Color(0.36));
+	auto gray_ring_tex = std::make_shared<RingMap>(Color(0.18), Color(0.36));
+	auto gray_gradient_tex = std::make_shared<GradientMap>(Color(0.18), Color(0.36));
+	auto gray_stripe_tex = std::make_shared<StripeMap>(Color(0.18), Color(0.36));
+
+	auto stripe1 = std::make_shared<StripeMap>(Color(1.0, 0.0, 0.0), Color(0.5, 0.0, 0.0));
+	stripe1->transform->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5) * Matrix4::Rotation_Y(deg_to_rad(90)));
+	auto stripe2 = std::make_shared<StripeMap>(Color(0.0, 1.0, 0.0), Color(0.0, 0.5, 0.0));
+	stripe2->transform->set_transform(Matrix4::Scaling(0.5, 0.5, 0.5));
+
+	auto c_map_1 = std::make_shared <CompositeMap>(stripe1, stripe2, CompAdd, 1.0);
+
+	auto perlin_noise = std::make_shared<ColoredPerlin>(32255);
+	perlin_noise->octaves = 6;
+
+	matte_gray_mtl->color.connect(perlin_noise);
+
+	auto shiny_purple_mtl = std::make_shared<PhongMaterial>();
+	Color purple = Color(Color8Bit(57, 0, 214)).convert_srgb_to_linear();
+	shiny_purple_mtl->color.set_value(purple);
+	shiny_purple_mtl->specular.set_value(0.9);
+	shiny_purple_mtl->ambient.set_value(0.01);
+	shiny_purple_mtl->reflection_roughness.set_value(0.05);
+	shiny_purple_mtl->reflection.set_value(Color(1.0));
+
+	// Reflection Map
+	auto purple_stripe_tex = std::make_shared<StripeMap>(purple, Color(0.1));
+	purple_stripe_tex->set_mapping_space(ObjectSpace);
+	purple_stripe_tex->transform->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
+
+	auto purple_stripe_perturb = std::make_shared<PerturbMap>(purple_stripe_tex, perlin_noise);
+	purple_stripe_perturb->displacement_remap = true;
+	purple_stripe_perturb->scale = 0.1;
+
+	// Shininess Map
+	auto bw_stripe_tex = std::make_shared<StripeMap>(Color(200.0), Color(10.0));
+	bw_stripe_tex->set_mapping_space(ObjectSpace);
+	bw_stripe_tex->transform->set_transform(Matrix4::Scaling(0.1, 0.1, 0.1));
+
+	auto bw_stripe_perturb = std::make_shared<PerturbMap>(bw_stripe_tex, perlin_noise);
+	bw_stripe_perturb->displacement_remap = true;
+	bw_stripe_perturb->scale = 0.1;
+
+	// Maps
+	//shiny_purple_mtl->color.connect(purple_stripe_perturb);
+	shiny_purple_mtl->reflection.connect(purple_stripe_perturb);
+	shiny_purple_mtl->shininess.connect(bw_stripe_tex);
+
+	auto shiny_yellow_mtl = std::make_shared<PhongMaterial>();
+	shiny_yellow_mtl->color = Color(Color8Bit(245, 209, 66)).convert_srgb_to_linear();
+	shiny_yellow_mtl->specular = 0.9;
+	shiny_yellow_mtl->ambient = 0.01;
+
+	auto matte_blue_mtl = std::make_shared<PhongMaterial>();
+	matte_blue_mtl->color = Color(Color8Bit(21, 80, 117)).convert_srgb_to_linear();
+	matte_blue_mtl->specular = 0.0;
+	matte_blue_mtl->ambient = 0.01;
+
+	// Objects
+
+	auto floor_000 = std::make_shared<InfinitePlane>("floor 000");
+	floor_000->material = matte_gray_mtl;
+	w.add_object(floor_000);
+
+	auto green_sphere = std::make_shared<Sphere>("green sphere");
+	green_sphere->material = shiny_purple_mtl;
+	green_sphere->set_transform(Matrix4::Translation(0.0, 1.0, 0.0) * Matrix4::Rotation_Z(deg_to_rad(45.0)));
+	w.add_object(green_sphere);
+
+	auto yellow_sphere_000 = std::make_shared<Sphere>("yellow sphere 000");
+	yellow_sphere_000->material = shiny_yellow_mtl;
+	yellow_sphere_000->set_transform(Matrix4::Translation(-1.5, 0.5, -0.0) * Matrix4::Scaling(0.5, 0.5, 0.5));
+	w.add_object(yellow_sphere_000);
+
+	auto yellow_sphere_001 = std::make_shared<Sphere>("yellow sphere 001");
+	yellow_sphere_001->material = shiny_yellow_mtl;
+	yellow_sphere_001->set_transform(Matrix4::Translation(2.0, 0.5, -0.5) * Matrix4::Scaling(0.5, 0.5, 0.5));
+	w.add_object(yellow_sphere_001);
+
+	int num_blue_sphs = 7;
+
+	for (int i = 0; i < num_blue_sphs; i++)
+	{
+		double sx = double(num_blue_sphs - 1);
+
+		auto blue_sphere_inst = std::make_shared<Sphere>("yellow sphere 001");
+		blue_sphere_inst->material = matte_blue_mtl;
+
+		blue_sphere_inst->set_transform(
+			Matrix4::Translation((i * 2.0) - sx, 0.0, 2.0) *
+			Matrix4::Rotation_Z((((M_PI / 2.0) / sx) * (num_blue_sphs - i)) - (M_PI / 4.0)) *
+			Matrix4::Scaling(0.25, 2.0, 0.25)
+		);
+
+		w.add_object(blue_sphere_inst);
+	}
+
+	return w;
+}
+
 int main()
 {
-	std::string chapter = "Patterns_CH10";
+	std::string chapter = "ReflectionAndRefraction_CH11";
 	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
-	int version = 2;
+	int version = 1;
 
 	int width = 560;
 	int height = 315;
@@ -585,12 +684,31 @@ int main()
 	// Start time
 	auto start = std::chrono::steady_clock::now();
 
+	// Build World
+	std::cout << "Building World...\n";
+	World w = render_ch11_world();
+
 	// Execution
 	Canvas image;
 
+	Camera c = Camera(width, height, deg_to_rad(fov));
+
+	Tuple from = Tuple::Point(0.0, 0.8, -5.0);
+	Tuple to = Tuple::Point(0.0, 1.0, 0.0);
+	Tuple up = Tuple::Vector(0.0, 1.0, 0.0);
+
+	c.set_transform(Matrix4::ViewTransform(from, to, up));
+
 	try
 	{
-		image = render_ch10_world(width, height, fov);
+		std::cout << "Tracing...\n";
+
+
+		image = c.threaded_render(w);
+		// Canvas image = c.render(w);
+
+		std::cout << "Complete\n";
+
 	}
 	catch (const std::exception& ex)
 	{

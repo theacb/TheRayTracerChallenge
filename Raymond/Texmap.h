@@ -6,8 +6,73 @@
 #include "Utilities.h"
 #include "IxComps.h"
 
-enum MappingSpace {WorldSpace, ObjectSpace};
-enum CompositeMode { CompBlend, CompAdd, CompMultiply, CompDivide, CompSubtract, CompOverlay, CompScreen
+enum MappingSpace { WorldSpace, ObjectSpace };
+enum CompositeMode { CompBlend, CompAdd, CompMultiply, CompDivide, CompSubtract, CompOverlay, CompScreen };
+enum SlotType { ColorMapSlotType, FloatMapSlotType, BaseMapSlotType };
+
+class TexMap;
+
+class TexMapSlot
+{
+public:
+	TexMapSlot();
+	~TexMapSlot();
+
+	virtual void connect(std::shared_ptr<TexMap> slot);
+	virtual void disconnect();
+	bool is_connected() const;
+
+	// property
+	std::shared_ptr<TexMap> connection;
+};
+
+class ColorMapSlot :
+	public TexMapSlot
+{
+public:
+	ColorMapSlot();
+	ColorMapSlot(const Color & col);
+	~ColorMapSlot();
+
+	// Methods
+	Color value() const;
+	void set_value(const Color & col);
+	void set_value(const double & lum);
+
+	Color sample_at(const IxComps & comps) const;
+
+	// Overloaded Operators
+	ColorMapSlot& operator=(const Color& b);
+	friend bool operator==(const ColorMapSlot & left_slt, const ColorMapSlot & right_slt);
+	friend bool operator!=(const ColorMapSlot & left_slt, const ColorMapSlot & right_slt);
+
+private:
+	// property
+	Color value_;
+};
+
+class FloatMapSlot :
+	public TexMapSlot
+{
+public:
+	FloatMapSlot();
+	FloatMapSlot(const double & val);
+	~FloatMapSlot();
+
+	// Methods
+	double value() const;
+	void set_value(const double & val);
+
+	double sample_at(const IxComps & comps) const;
+
+	// Overloaded Operators
+	FloatMapSlot& operator=(const double& b);
+	friend bool operator==(const FloatMapSlot & left_slt, const FloatMapSlot & right_slt);
+	friend bool operator!=(const FloatMapSlot & left_slt, const FloatMapSlot & right_slt);
+
+private:
+	// property
+	double value_;
 };
 
 class TexMap

@@ -13,11 +13,13 @@ IxComps::IxComps()
 {
 	this->t_value = 0.0;
 	this->object = nullptr;
+	this->ray_depth = 0;
 
 	this->point = Tuple::Point(0.0, 0.0, 0.0);
 	this->texmap_point = this->point;
 	this->eye_v = Tuple::Vector(0.0, 1.0, 0.0);
 	this->normal_v = Tuple::Vector(0.0, 1.0, 0.0);
+	this->reflect_v = Tuple::reflect(-(this->eye_v), this->normal_v);
 	this->over_point = this->point + (this->normal_v * EPSILON);
 
 	this->shadow_multiplier = 1.0;
@@ -29,11 +31,13 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray)
 {
 	this->t_value = ix.t_value;
 	this->object = ix.object;
+	this->ray_depth = ray.depth;
 
 	this->point = ray.position(this->t_value);
 	this->texmap_point = this->point;
 	this->eye_v = -(Tuple(ray.direction));
 	this->normal_v = this->object->normal_at(this->point);
+	this->reflect_v = Tuple::reflect(ray.direction, this->normal_v);
 
 	this->shadow_multiplier = 1.0;
 
@@ -54,11 +58,13 @@ IxComps::IxComps(const IxComps & src)
 {
 	this->t_value = src.t_value;
 	this->object = src.object;
+	this->ray_depth = src.ray_depth;
 
 	this->point = src.point;
 	this->texmap_point = src.texmap_point;
 	this->eye_v = src.eye_v;
 	this->normal_v = src.normal_v;
+	this->reflect_v = src.reflect_v;
 	this->over_point = src.over_point;
 
 	this->shadow_multiplier = src.shadow_multiplier;
@@ -79,11 +85,13 @@ IxComps IxComps::Background(const Ray & r)
 	IxComps comp = IxComps();
 	comp.t_value = std::numeric_limits<double>::infinity();
 	comp.object = nullptr;
+	comp.ray_depth = r.depth;
 
 	comp.point = Tuple::Point(0.0, 0.0, 0.0);
 	comp.texmap_point = comp.point;
 	comp.eye_v = -(Tuple(r.direction));
 	comp.normal_v = comp.eye_v;
+	comp.reflect_v = Tuple::reflect(r.direction, comp.normal_v);
 
 	comp.inside = false;
 

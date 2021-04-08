@@ -8,8 +8,9 @@ class Ray
 {
 public:
 	Ray();
-	Ray(const Ray &);
-	Ray(Tuple, Tuple);
+	Ray(const Ray & src);
+	Ray(Tuple origin, Tuple direction);
+	Ray(Tuple origin, Tuple direction, int depth);
 	~Ray();
 
 	// Methods
@@ -20,6 +21,7 @@ public:
 	// Properties
 	Tuple origin;
 	Tuple direction;
+	int depth;
 
 	// Overloaded Operators
 	friend std::ostream & operator<<(std::ostream &, const Ray &);

@@ -28,6 +28,8 @@ public:
 	Tuple over_point;
 	Tuple eye_v;
 	Tuple normal_v;
+	Tuple reflect_v;
+	int ray_depth;
 	bool inside;
 	double t_value;
 	double shadow_multiplier;

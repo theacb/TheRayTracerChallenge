@@ -3,6 +3,187 @@
 
 // ------------------------------------------------------------------------
 //
+// TexMapSlot
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+TexMapSlot::TexMapSlot()
+{
+	this->connection = nullptr;
+}
+
+TexMapSlot::~TexMapSlot()
+{
+}
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
+void TexMapSlot::connect(std::shared_ptr<TexMap> slot)
+{
+	this->connection = slot;
+}
+
+void TexMapSlot::disconnect()
+{
+	this->connection = nullptr;
+}
+
+bool TexMapSlot::is_connected() const
+{
+	return (this->connection != nullptr);
+}
+
+// ------------------------------------------------------------------------
+//
+// ColorMapSlot
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+ColorMapSlot::ColorMapSlot() : ColorMapSlot(Color(0.0))
+{
+}
+
+ColorMapSlot::ColorMapSlot(const Color & col) : TexMapSlot()
+{
+	this->value_ = col;
+}
+
+ColorMapSlot::~ColorMapSlot()
+{
+}
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
+Color ColorMapSlot::value() const
+{
+	return this->value_;
+}
+
+void ColorMapSlot::set_value(const Color & col)
+{
+	this->value_ = col;
+}
+
+void ColorMapSlot::set_value(const double & lum)
+{
+	this->value_ = Color(lum);
+}
+
+Color ColorMapSlot::sample_at(const IxComps & comps) const
+{
+	if (this->is_connected())
+	{
+		return this->connection->sample_at(comps);
+	}
+	else
+	{
+		return this->value_;
+	}
+}
+
+// ------------------------------------------------------------------------
+// Overloaded Operators
+// ------------------------------------------------------------------------
+
+ColorMapSlot & ColorMapSlot::operator=(const Color & b)
+{
+	this->value_ = b;
+	return *this;
+}
+
+bool operator==(const ColorMapSlot & left_slt, const ColorMapSlot & right_slt)
+{
+	return (
+		left_slt.connection == right_slt.connection &&
+		left_slt.value_ == right_slt.value_
+		);
+}
+
+bool operator!=(const ColorMapSlot & left_slt, const ColorMapSlot & right_slt)
+{
+	return !(left_slt == right_slt);
+}
+
+// ------------------------------------------------------------------------
+//
+// FloatMapSlot
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+FloatMapSlot::FloatMapSlot() : FloatMapSlot(0.0)
+{
+}
+
+FloatMapSlot::FloatMapSlot(const double & val) : TexMapSlot()
+{
+	this->value_ = val;
+}
+
+FloatMapSlot::~FloatMapSlot()
+{
+}
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
+double FloatMapSlot::value() const
+{
+	return this->value_;
+}
+
+void FloatMapSlot::set_value(const double & val)
+{
+	this->value_ = val;
+}
+
+double FloatMapSlot::sample_at(const IxComps & comps) const
+{
+	if (this->is_connected())
+	{
+		return this->connection->sample_at(comps).luminosity();
+	}
+	else
+	{
+		return this->value_;
+	}
+}
+
+// ------------------------------------------------------------------------
+// Overloaded Operators
+// ------------------------------------------------------------------------
+
+FloatMapSlot & FloatMapSlot::operator=(const double & b)
+{
+	this->value_ = b;
+	return *this;
+}
+
+bool operator==(const FloatMapSlot & left_slt, const FloatMapSlot & right_slt)
+{
+	return (
+		left_slt.connection == right_slt.connection &&
+		flt_cmp(left_slt.value_, right_slt.value_)
+		);
+}
+
+bool operator!=(const FloatMapSlot & left_slt, const FloatMapSlot & right_slt)
+{
+	return !(left_slt == right_slt);
+}
+
+// ------------------------------------------------------------------------
+//
 // TexMap Base
 //
 // ------------------------------------------------------------------------

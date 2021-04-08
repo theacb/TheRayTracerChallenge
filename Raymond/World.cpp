@@ -88,9 +88,10 @@ Color World::shade(IxComps & comps) const
 	// std::cout << "Shading " << comps.object->get_name() << " at ";
 	// std::cout << comps.point << ", Normal: " << comps.normal_v << ", Offset Point: " << comps.over_point << "\n";
 
+	auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
+
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
-		auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
 
 		bool shd = this->is_shadowed(lgt, comps.over_point);
 
@@ -114,6 +115,9 @@ Color World::shade(IxComps & comps) const
 			sample = sample + obj_prim->material->lighting(lgt, comps);
 		}
 	}
+
+	sample = sample + (obj_prim->material->reflect(*this, comps));
+
 	return sample;
 }
 

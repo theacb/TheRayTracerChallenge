@@ -18,6 +18,8 @@ public:
 	static Tuple Point(double x_axis, double y_axis, double z_axis);
 	static Tuple Origin();
 	static Tuple Vector(double x_axis, double y_axis, double z_axis);
+	static Tuple RandomVector(double min, double max);
+	static Tuple RandomInUnitSphere();
 
 	// Destructor
 	~Tuple();
@@ -27,6 +29,7 @@ public:
 
 	// Methods
 	double magnitude() const;
+	double magnitude_squared() const;
 	Tuple normalize() const;
 
 	static double dot(const Tuple & left_tuple, const Tuple & right_tuple);
