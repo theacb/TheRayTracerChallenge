@@ -48,7 +48,7 @@ World World::Default()
 // Intersector
 // ------------------------------------------------------------------------
 
-Intersections World::intersect_world(Ray & ray) const
+Intersections World::intersect_world(const Ray & ray) const
 {
 	Intersections result;
 
@@ -73,6 +73,7 @@ Intersections World::intersect_world(Ray & ray) const
 	}
 
 	std::sort(result.begin(), result.end());
+	result.calculate_hit();
 
 	return result;
 }
@@ -84,18 +85,13 @@ Intersections World::intersect_world(Ray & ray) const
 Color World::shade(IxComps & comps) const
 {
 	Color sample = Color(0.0);
-	
-	// std::cout << "Shading " << comps.object->get_name() << " at ";
-	// std::cout << comps.point << ", Normal: " << comps.normal_v << ", Offset Point: " << comps.over_point << "\n";
 
 	auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
 
-		bool shd = this->is_shadowed(lgt, comps.over_point);
-
-		comps.shadow_multiplier = shd ? 0.0 : 1.0;
+		comps.shadow_multiplier = this->shadowed(lgt, comps.over_point, comps.ray_depth);
 
 		if (lgt->falloff)
 		{
@@ -116,18 +112,34 @@ Color World::shade(IxComps & comps) const
 		}
 	}
 
-	sample = sample + (obj_prim->material->reflect(*this, comps));
+	// Reflection
+	Color refl = (obj_prim->material->reflect(*this, comps));
 
+	// Refraction
+	Color rafr =  (obj_prim->material->refract(*this, comps));
+
+	// Use Schlick approximation Effect
+	if (obj_prim->material->use_schlick)
+	{
+		double reflectance = schlick(comps);
+
+		sample = sample + (refl * reflectance) + (rafr * (1.0 - reflectance));
+	}
+	else
+	{
+		sample = sample + refl + rafr;
+	}
+	
 	return sample;
 }
 
-Color World::color_at(Ray & ray) const
+Color World::color_at(const Ray & ray) const
 {
-	Intersections ix = this->intersect_world(ray);
-	if (ix.size() > 0)
+	Intersections xs = this->intersect_world(ray);
+	if (xs.size() > 0)
 	{
-		Intersection hit = ix.hit();
-		IxComps comps = IxComps(hit, ray);
+		Intersection hit = xs.hit();
+		IxComps comps = IxComps(hit, ray, xs);
 
 		return this->shade(comps);
 	}
@@ -139,18 +151,39 @@ Color World::color_at(Ray & ray) const
 	}
 }
 
-bool World::is_shadowed(std::shared_ptr<Light> light, Tuple & point) const
+bool World::is_shadowed(const std::shared_ptr<Light> light, const Tuple & point) const
 {
 	Tuple v = light->position() - point;
 	double distance = v.magnitude();
 	Tuple direction = v.normalize();
 
 	Ray r = Ray(point, direction);
-	Intersections ix = intersect_world(r);
+	Intersections ix = this->intersect_world(r);
 
 	Intersection h = ix.hit();
 
 	return (h.is_valid() && h.t_value < distance);
+}
+
+Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, const int depth) const
+{
+	Tuple v = light->position() - point;
+	double distance = v.magnitude();
+	Tuple direction = v.normalize();
+
+	Ray r = Ray(point, direction, depth);
+	Intersections ix = this->intersect_world(r);
+
+	Intersection h = ix.hit();
+
+	if (h.is_valid() && h.t_value < distance)
+	{
+		IxComps comps = IxComps(h, r, ix);
+		auto obj_prim = std::dynamic_pointer_cast<Primitive>(h.object);
+
+		return obj_prim->material->transmit(light, *this, comps, ix);
+	}
+	return Color(1.0);
 }
 
 // ------------------------------------------------------------------------

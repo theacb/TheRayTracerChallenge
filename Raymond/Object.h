@@ -111,11 +111,20 @@ public:
 
 	// Methods
 	Intersection hit() const;
+	int get_hit_index() const;
+	void calculate_hit();
 
 	// Overloaded Operators
 	friend std::ostream & operator<<(std::ostream & os, const Intersections & ixs);
+
+private:
+	// Methods
+	int hit_() const;
+	// Properties
+	int hit_index_;
 };
 
+// Single Functions
 Intersections intersect(const Ray & r, const std::shared_ptr<ObjectBase> obj);
 
 #endif

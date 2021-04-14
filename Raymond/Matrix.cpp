@@ -26,7 +26,9 @@ Matrix::Matrix(int side, const std::vector<double> values)
 
 	// Check vector size before replacing it.
 	if (values.size() == side * side)
+	{
 		this->m_data_ = values;
+	}
 	else
 	{
 		// Vector is the wrong size
@@ -68,8 +70,11 @@ double Matrix::get(int row, int col) const
 {
 	// Check if the index is within the bounds of the matrix
 	if (col >= 0 && col < this->m_num_columns_ && row >= 0 && row < this->m_num_rows_)
+	{
 		return this->m_data_[this->m_index_from_coordinates_(row, col)];
+	}
 	else
+	{
 		// Out of bounds throws an error
 		throw std::out_of_range(
 			"The requested index, (" +
@@ -78,6 +83,7 @@ double Matrix::get(int row, int col) const
 			std::to_string(row) +
 			"), is not within the bounds of the matrix."
 		);
+	}
 }
 
 double & Matrix::get(int index)

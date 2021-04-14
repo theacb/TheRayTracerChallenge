@@ -35,6 +35,9 @@ public:
 	// Properties
 	double radius;
 
+	// Static Methods
+	static std::shared_ptr<Sphere> GlassSphere();
+
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;

@@ -248,23 +248,32 @@ bool operator<(const Intersection & l_ix, const Intersection & r_ix)
 
 Intersections::Intersections() : std::vector<Intersection>()
 {
+	this->hit_index_ = -1;
 }
 
 Intersections::Intersections(std::initializer_list<Intersection> il) :
 	std::vector<Intersection>(il)
 {
+	this->hit_index_ = -1;
+
 	std::sort(this->begin(), this->end());
+
+	this->hit_index_ = this->hit_();
 }
 
 Intersections::Intersections(std::vector<double> t_values, std::shared_ptr<ObjectBase> obj) :
 	std::vector<Intersection>()
 {
+	this->hit_index_ = -1;
+
 	for (double t : t_values)
 	{
 		this->push_back(Intersection(t, obj));
 	}
 
 	std::sort(this->begin(), this->end());
+
+	this->hit_index_ = this->hit_();
 }
 
 // ------------------------------------------------------------------------
@@ -273,12 +282,33 @@ Intersections::Intersections(std::vector<double> t_values, std::shared_ptr<Objec
 
 Intersection Intersections::hit() const
 {
-	// Returns a null intersection if there are no valid intersections inside the vector
-	if (this->size() < 1)
+	if (this->hit_index_ > -1)
+	{ 
+		Intersection hit = this->at(this->hit_index_);
+		return hit;
+	}
+	else
 	{
 		return Intersection();
 	}
-	else
+}
+
+int Intersections::get_hit_index() const
+{
+	return this->hit_index_;
+}
+
+void Intersections::calculate_hit()
+{
+	this->hit_index_ = this->hit_();
+}
+
+// Private
+
+int Intersections::hit_() const
+{
+	// Returns a null intersection if there are no valid intersections inside the vector
+	if (this->size() > 0)
 	{
 		// The vector is sorted from lowest to highest on construction
 		// Finds the first intersection with a positive t_value
@@ -293,13 +323,12 @@ Intersection Intersections::hit() const
 		// iterator and return the result
 		if ((*result).t_value > 0.0)
 		{
-			return *result;
-		}
-		else
-		{
-			return Intersection();
+			return static_cast<int>(result - this->begin());
 		}
 	}
+
+	// default to returning -1
+	return -1;
 }
 
 std::ostream & operator<<(std::ostream & os, const Intersections & ixs)

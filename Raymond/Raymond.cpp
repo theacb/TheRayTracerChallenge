@@ -544,6 +544,74 @@ Canvas render_ch10_world(int width, int height, double fov)
 	return image;
 }
 
+void shadowed_test(World & w, const std::shared_ptr<Light> light, const Tuple & point, const int depth)
+{
+	// locater
+	auto locator = std::make_shared<Sphere>("locator 001");
+	auto locator_mat_phong = std::dynamic_pointer_cast<PhongMaterial>(locator->material);
+	locator_mat_phong->ambient.set_value(Color(1.0));
+	locator_mat_phong->color.set_value(Color(1.0, 1.0, 0.0) * (1.0 - (double(depth) / 30.0)));
+	locator_mat_phong->specular.set_value(0.0);
+	locator->set_transform(Matrix4::Translation(point.x, point.y, point.z) * Matrix4::Scaling(0.05, 0.05, 0.05));
+	w.add_object(locator);
+
+	std::cout << "Placing locater: " << point << "Number " << depth << std::endl;
+
+	// Function
+	Tuple v = light->position() - point;
+	double light_distance = v.magnitude();
+	Tuple direction = v.normalize();
+
+	Ray r = Ray(point, direction, depth);
+	Intersections ix = w.intersect_world(r);
+
+	Intersection h = ix.hit();
+
+	if (h.is_valid() && h.t_value < light_distance)
+	{
+		IxComps comps = IxComps(h, r, ix);
+		auto obj_prim = std::dynamic_pointer_cast<Primitive>(h.object);
+		auto mat_phong = std::dynamic_pointer_cast<PhongMaterial>(obj_prim->material);
+
+		// Start transmit function
+		Color transmittance = mat_phong->refraction.sample_at(comps);
+
+		if (mat_phong->transparent_shadows && transmittance.magnitude() > Color(light->cutoff).magnitude() && comps.ray_depth < 30)
+		{
+			// light that is reflected casts shadows
+			double cos_i = Tuple::dot(comps.eye_v, comps.normal_v);
+
+			if (cos_i > 0.001)
+			{
+				// Copy Transmittance
+				Color result = Color(transmittance);
+
+				int hit_index = ix.get_hit_index();
+
+				if (hit_index + 1 < ix.size())
+				{
+					Intersection next_ix = ix[hit_index + 1];
+
+					double point_to_light_distance = (comps.point - light->position()).magnitude();
+					double distance = next_ix.t_value - comps.t_value;
+
+					if (point_to_light_distance > distance)
+					{
+						shadowed_test(w, light, comps.under_point, depth + 1);
+					}
+
+					// Clip linear attenuation to [0,1];
+					double	linear_attenuation = clip(1.0 / (fmin(distance, point_to_light_distance) * comps.n2 * 5.0), 0.0, 1.0);
+					result = result * linear_attenuation;
+				}
+
+				return;
+			}
+		}
+	}
+	return;
+}
+
 World render_ch11_world()
 {
 	World w = World();
@@ -584,7 +652,7 @@ World render_ch11_world()
 	auto perlin_noise = std::make_shared<ColoredPerlin>(32255);
 	perlin_noise->octaves = 6;
 
-	matte_gray_mtl->color.connect(perlin_noise);
+	//matte_gray_mtl->color.connect(perlin_noise);
 
 	auto shiny_purple_mtl = std::make_shared<PhongMaterial>();
 	Color purple = Color(Color8Bit(57, 0, 214)).convert_srgb_to_linear();
@@ -593,6 +661,7 @@ World render_ch11_world()
 	shiny_purple_mtl->ambient.set_value(0.01);
 	shiny_purple_mtl->reflection_roughness.set_value(0.05);
 	shiny_purple_mtl->reflection.set_value(Color(1.0));
+	shiny_purple_mtl->ior = 20.0;
 
 	// Reflection Map
 	auto purple_stripe_tex = std::make_shared<StripeMap>(purple, Color(0.1));
@@ -628,6 +697,27 @@ World render_ch11_world()
 	matte_blue_mtl->ambient = 0.01;
 
 	// Objects
+
+	auto gs = Sphere::GlassSphere();
+	gs->set_name("Glass Sphere 001");
+	gs->set_transform(Matrix4::Translation(-2.0, 0.5, -1.0) * Matrix4::Scaling(0.5, 0.5, 0.5));
+	w.add_object(gs);
+
+	auto gs2 = Sphere::GlassSphere();
+	gs2->set_name("Glass Sphere 002");
+	gs2->set_transform(Matrix4::Translation(-2.0, 0.5, -1.0) * Matrix4::Scaling(0.4, 0.4, 0.4));
+	w.add_object(gs2);
+
+	auto glass_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs->material);
+	glass_mtl->reflection.set_value(Color(1.0));
+	glass_mtl->color.set_value(Color(0.0));
+
+	gs2->material = glass_mtl;
+
+	/*auto air_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs2->material);
+	air_mtl->reflection.set_value(Color(1.0));
+	air_mtl->color.set_value(Color(0.0));
+	air_mtl->ior = 1.0;*/
 
 	auto floor_000 = std::make_shared<InfinitePlane>("floor 000");
 	floor_000->material = matte_gray_mtl;
@@ -666,6 +756,8 @@ World render_ch11_world()
 		w.add_object(blue_sphere_inst);
 	}
 
+	// shadowed_test(w, light_001, Tuple::Point(-2.1586175486649597, 0.64386222869072685,-1.3379706235927262), 0);
+
 	return w;
 }
 
@@ -673,7 +765,7 @@ int main()
 {
 	std::string chapter = "ReflectionAndRefraction_CH11";
 	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
-	int version = 1;
+	int version = 3;
 
 	int width = 560;
 	int height = 315;
@@ -705,7 +797,9 @@ int main()
 
 
 		image = c.threaded_render(w);
-		// Canvas image = c.render(w);
+		//image = c.render(w);
+
+		//image = c.render_scanline(w, 160);
 
 		std::cout << "Complete\n";
 

@@ -44,6 +44,25 @@ Sphere::~Sphere()
 {
 }
 
+// ------------------------------------------------------------------------
+// Static Factory Methods
+// ------------------------------------------------------------------------
+
+std::shared_ptr<Sphere> Sphere::GlassSphere()
+{
+	auto s = std::make_shared<Sphere>();
+
+	auto ms = std::dynamic_pointer_cast<PhongMaterial>(s->material);
+	ms->refraction.set_value(Color(1.0));
+	ms->ior.set_value(1.5);
+
+	return s;
+}
+
+// ------------------------------------------------------------------------
+// Methods
+// ------------------------------------------------------------------------
+
 std::vector<double> Sphere::local_intersect_t(const Ray & r) const
 {
 	std::vector<double> result = std::vector<double>();

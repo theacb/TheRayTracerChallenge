@@ -2514,6 +2514,7 @@ TEST(Chapter11Tests, ReflectivityForTheDefaultMaterial)
 {
 	PhongMaterial m = PhongMaterial();
 	ASSERT_EQ(m.reflection.value(), Color(0.0));
+	ASSERT_EQ(m.reflection_roughness.value(), 0.0);
 }
 
 TEST(Chapter11Tests, PrecomputingTheReflectionVector)
@@ -2563,17 +2564,19 @@ TEST(Chapter11Tests, TheReflectedColorForAReflectiveMaterial)
 	ASSERT_EQ(ref, Color(0.19032, 0.2379, 0.14274));
 }
 
-TEST(Chapter11Tests, shadeFunctionWithAReflectiveMaterial)
+TEST(Chapter11Tests, shade_hit_WithAReflectiveMaterial)
 {
 	World w = World::Default();
 
 	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
 
 	auto shape = std::make_shared<InfinitePlane>();
-	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
-	ms1->reflection.set_value(Color(0.5));
 	shape->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
 	w.add_object(shape);
+
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->reflection.set_value(Color(0.5));
+	ms1->use_schlick = false;
 
 	Intersection i = Intersection(sqrt(2.0), shape);
 	IxComps comps = IxComps(i, r);
@@ -2630,4 +2633,290 @@ TEST(Chapter11Tests, TheReflectedColorAtTheMaximumRecursionDepth)
 	Color ref = ms1->reflect(w, comps);
 
 	ASSERT_EQ(ref, Color(0.0));
+}
+
+TEST(Chapter11Tests, TransparencyAndRefractiveIndexForTheDefaultMaterial)
+{
+	PhongMaterial m = PhongMaterial();
+	ASSERT_EQ(m.refraction.value(), Color(0.0));
+	ASSERT_EQ(m.ior.value(), 1.0);
+	ASSERT_EQ(m.refraction_roughness.value(), 0.0);
+}
+
+TEST(Chapter11Tests, AHelperForProducingASphereWithAGlassyMaterial)
+{
+	auto s = Sphere::GlassSphere();
+	auto ms = std::dynamic_pointer_cast<PhongMaterial>(s->material);
+
+	ASSERT_EQ(s->get_transform(), Matrix4::Identity());
+	ASSERT_EQ(ms->refraction.value(), Color(1.0));
+	ASSERT_EQ(ms->ior.value(), 1.5);
+}
+
+TEST(Chapter11Tests, Finding_n1_And_n2_AtVariousIntersections)
+{
+	auto expected_n1 = std::vector<double>({ 1.0, 1.5, 2.0, 2.5, 2.5, 1.5 });
+	auto expected_n2 = std::vector<double>({ 1.5, 2.0, 2.5, 2.5, 1.5, 1.0 });
+
+	auto A = Sphere::GlassSphere();
+	A->set_name("A");
+	A->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+	auto A_mat = std::dynamic_pointer_cast<PhongMaterial>(A->material);
+	A_mat->ior.set_value(1.5);
+
+	auto B = Sphere::GlassSphere();
+	B->set_name("B");
+	B->set_transform(Matrix4::Translation(0.0, 0.0, -0.25));
+	auto B_mat = std::dynamic_pointer_cast<PhongMaterial>(B->material);
+	B_mat->ior.set_value(2.0);
+
+	auto C = Sphere::GlassSphere();
+	C->set_name("C");
+	C->set_transform(Matrix4::Translation(0.0, 0.0, 0.25));
+	auto C_mat = std::dynamic_pointer_cast<PhongMaterial>(C->material);
+	C_mat->ior.set_value(2.5);
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -4.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = Intersections({
+		Intersection(2.0, A),
+		Intersection(2.75, B),
+		Intersection(3.25, C),
+		Intersection(4.75, B),
+		Intersection(5.25, C),
+		Intersection(6.0, A)
+		});
+
+	for (size_t i = 0; i < expected_n1.size(); i++)
+	{
+		IxComps comps = IxComps(xs[i], r, xs);
+
+		EXPECT_EQ(comps.n1, expected_n1[i]) << "Index: " << i << ", IX: <" << xs[i].t_value << ", " << xs[i].object->get_name() << ">\n\n";
+		EXPECT_EQ(comps.n2, expected_n2[i]) << "Index: " << i << ", IX: <" << xs[i].t_value << ", " << xs[i].object->get_name() << ">\n\n";
+	}
+}
+
+TEST(Chapter11Tests, TheUnderPointIsOffsetBelowTheSurface)
+{
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+	auto shape = Sphere::GlassSphere();
+
+	shape->set_transform(Matrix4::Translation(0.0, 0.0, 1.0));
+	Intersection i = Intersection(5.0, shape);
+
+	Intersections xs = Intersections({ i });
+
+	IxComps comps = IxComps(i, r, xs);
+
+	ASSERT_GT(comps.under_point.z, EPSILON / 2);
+	ASSERT_LT(comps.point.z, comps.under_point.z);
+}
+
+TEST(Chapter11Tests, TheRefractedColorWithAnOpaqueSurface)
+{
+	World w = World::Default();
+
+	auto shape = w.get_primitives()[0];
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+	Intersections xs = Intersections({ Intersection(4.0, shape), Intersection(4.0, shape) });
+
+	IxComps comps = IxComps(xs[0], r, xs);
+
+	Color c = shape->material->refract(w, comps);
+
+	ASSERT_EQ(c, Color(0.0));
+}
+
+TEST(Chapter11Tests, TheRefractedColorAtTheMaximumRecursiveDepth)
+{
+	World w = World::Default();
+
+	auto shape = w.get_primitives()[0];
+
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->refraction.set_value(Color(1.0));
+	ms1->ior.set_value(1.5);
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0), RAY_DEPTH_LIMIT);
+	Intersections xs = Intersections({ Intersection(4.0, shape), Intersection(4.0, shape) });
+
+	IxComps comps = IxComps(xs[0], r, xs);
+
+	Color c = shape->material->refract(w, comps);
+
+	ASSERT_EQ(c, Color(0.0));
+}
+
+TEST(Chapter11Tests, TheRefractedColorUnderTotalInternalReflection)
+{
+	World w = World::Default();
+
+	auto shape = w.get_primitives()[0];
+
+	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
+	ms1->refraction.set_value(Color(1.0));
+	ms1->ior.set_value(1.5);
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, sqrt(2.0)/2.0), Tuple::Vector(0.0, 1.0, 0.0));
+	Intersections xs = Intersections({ Intersection(-sqrt(2.0) / 2.0, shape), Intersection(sqrt(2.0) / 2.0, shape) });
+
+	IxComps comps = IxComps(xs[1], r, xs);
+
+	Color c = shape->material->refract(w, comps);
+
+	ASSERT_EQ(c, Color(0.0));
+}
+
+TEST(Chapter11Tests, TheRefractColorWithARefractedRay)
+{
+	World w = World::Default();
+
+	auto A = w.get_primitives()[0];
+
+	auto A_mat = std::dynamic_pointer_cast<PhongMaterial>(A->material);
+	A_mat->ambient.set_value(Color(1.0));
+	A_mat->color.connect(std::make_shared<TestMap>());
+
+	auto B = w.get_primitives()[1];
+
+	auto B_mat = std::dynamic_pointer_cast<PhongMaterial>(B->material);
+	B_mat->refraction.set_value(Color(1.0));
+	B_mat->ior.set_value(1.5);
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.1), Tuple::Vector(0.0, 1.0, 0.0));
+
+	Intersections xs = Intersections({ 
+		Intersection(-0.9899, A), 
+		Intersection(-0.4899, B),
+		Intersection(0.4899, B),
+		Intersection(0.9899, A)
+		});
+
+	IxComps comps = IxComps(xs[2], r, xs);
+
+	Color c = B->material->refract(w, comps);
+
+	ASSERT_EQ(c, Color(0.0, 0.99888, 0.04725));
+}
+
+TEST(Chapter11Tests, shade_hit_FunctionWithATransparentMaterial)
+{
+	World w = World::Default();
+
+	auto floor = std::make_shared<InfinitePlane>();
+	floor->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(floor);
+
+	auto floor_mat = std::dynamic_pointer_cast<PhongMaterial>(floor->material);
+	floor_mat->refraction.set_value(0.5);
+	floor_mat->ior.set_value(1.5);
+	floor_mat->use_schlick = false;
+
+	auto ball = std::make_shared<Sphere>();
+	ball->set_transform(Matrix4::Translation(0.0, -3.5, -0.5));
+	w.add_object(ball);
+
+	auto ball_mat = std::dynamic_pointer_cast<PhongMaterial>(ball->material);
+	ball_mat->color.set_value(Color(1.0, 0.0, 0.0));
+	ball_mat->ambient.set_value(Color(0.5));
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0)/2.0, sqrt(2.0) / 2.0));
+
+	Intersections xs = Intersections({
+		Intersection(sqrt(2.0), floor)
+		});
+
+	IxComps comps = IxComps(xs[0], r, xs);
+
+	Color c = w.shade(comps);
+
+	ASSERT_EQ(c, Color(0.93642, 0.68642, 0.68642));
+}
+
+TEST(Chapter11Tests, TheSchlickApproximationUnderTotalInternalReflection)
+{
+	auto shape = Sphere::GlassSphere();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, sqrt(2.0) / 2.0), Tuple::Vector(0.0, 1.0, 0.0));
+
+	Intersections xs = Intersections({
+		Intersection(-sqrt(2.0) / 2.0, shape),
+		Intersection(sqrt(2.0) / 2.0, shape)
+		});
+
+	IxComps comps = IxComps(xs[1], r, xs);
+
+	double reflectance = schlick(comps);
+
+	ASSERT_TRUE(flt_cmp(reflectance, 1.0)) << reflectance;
+}
+
+TEST(Chapter11Tests, TheSchlickApproximationWithAPerpendicularViewingAngle)
+{
+	auto shape = Sphere::GlassSphere();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 1.0, 0.0));
+
+	Intersections xs = Intersections({
+		Intersection(-1.0, shape),
+		Intersection(1.0, shape)
+		});
+
+	IxComps comps = IxComps(xs[1], r, xs);
+
+	double reflectance = schlick(comps);
+
+	ASSERT_TRUE(flt_cmp(reflectance, 0.04)) << reflectance;
+}
+
+TEST(Chapter11Tests, TheSchlickApproximationWithASmallAngleAndGreater_n2_Value)
+{
+	auto shape = Sphere::GlassSphere();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.99, -2.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = Intersections({
+		Intersection(1.8589, shape)
+		});
+
+	IxComps comps = IxComps(xs[0], r, xs);
+
+	double reflectance = schlick(comps);
+
+	ASSERT_TRUE(flt_cmp(reflectance, 0.48873)) << reflectance;
+}
+
+TEST(Chapter11Tests, shade_hit_WithAReflectiveAndTransparentMaterial)
+{
+	World w = World::Default();
+
+	auto floor = std::make_shared<InfinitePlane>();
+	floor->set_transform(Matrix4::Translation(0.0, -1.0, 0.0));
+	w.add_object(floor);
+
+	auto floor_mat = std::dynamic_pointer_cast<PhongMaterial>(floor->material);
+	floor_mat->reflection.set_value(Color(0.5));
+	floor_mat->refraction.set_value(Color(0.5));
+	floor_mat->ior.set_value(1.5);
+
+	auto ball = std::make_shared<Sphere>();
+	ball->set_transform(Matrix4::Translation(0.0, -3.5, -0.5));
+	w.add_object(ball);
+
+	auto ball_mat = std::dynamic_pointer_cast<PhongMaterial>(ball->material);
+	ball_mat->color.set_value(Color(1.0, 0.0, 0.0));
+	ball_mat->ambient.set_value(Color(0.5));
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -3.0), Tuple::Vector(0.0, -sqrt(2.0) / 2.0, sqrt(2.0) / 2.0));
+
+	Intersections xs = Intersections({
+		Intersection(sqrt(2.0), floor)
+		});
+
+	IxComps comps = IxComps(xs[0], r, xs);
+
+	Color c = w.shade(comps);
+
+	ASSERT_EQ(c, Color(0.93391, 0.69643, 0.69243));
 }
