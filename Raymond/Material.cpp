@@ -201,22 +201,18 @@ Color PhongMaterial::reflect(const World & world, const IxComps & comps) const
 	Color blk = Color(0.0);
 	Color slt_reflection = this->reflection.sample_at(comps);
 
-	// Black texture means no reflection
-	if (slt_reflection != blk)
+	// Black texture means no reflection && prevents ray from reflecting infinitely
+	if (slt_reflection != blk && comps.ray_depth < RAY_DEPTH_LIMIT)
 	{
-		// prevents ray from reflecting infinitely
-		if (comps.ray_depth < RAY_DEPTH_LIMIT)
-		{
-			// Roughness code from Ray Tracing in One Weekend by Peter Shirley
-			// https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/fuzzyreflection
-			double slt_refl_rough = this->reflection_roughness.sample_at(comps);
-			Ray reflect_ray = Ray(
-				comps.over_point, 
-				comps.reflect_v + (slt_refl_rough * Tuple::RandomInUnitSphere()), 
-				comps.ray_depth + 1
-			);
-			return world.color_at(reflect_ray) * slt_reflection;
-		}
+		// Roughness code from Ray Tracing in One Weekend by Peter Shirley
+		// https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/fuzzyreflection
+		double slt_refl_rough = this->reflection_roughness.sample_at(comps);
+		Ray reflect_ray = Ray(
+			comps.over_point, 
+			comps.reflect_v + (slt_refl_rough * Tuple::RandomInUnitSphere()), 
+			comps.ray_depth + 1
+		);
+		return world.color_at(reflect_ray) * slt_reflection;
 	}
 
 	return blk;
@@ -227,47 +223,43 @@ Color PhongMaterial::refract(const World & world, const IxComps & comps) const
 	Color blk = Color(0.0);
 	Color slt_refraction = this->refraction.sample_at(comps);
 
-	// Black texture means no reflection
-	if (slt_refraction != blk)
+	// Black texture means no refraction && prevents ray from refracting infinitely
+	if (slt_refraction != blk && comps.ray_depth < RAY_DEPTH_LIMIT)
 	{
-		// prevents ray from reflecting infinitely
-		if (comps.ray_depth < RAY_DEPTH_LIMIT)
+		// Calculations to determine if there is total internal reflection
+
+		// Find the ratio of the first IOR to the second
+		// Inverted from the definition of Snell's Law
+		double n_ratio = comps.n1 / comps.n2;
+
+		// cos(theta_i) is the same as the dot product of the two vectors
+		double cos_i = Tuple::dot(comps.eye_v, comps.normal_v);
+
+		// Find sin(theta_t)^2 via trigonometric identity
+		double sin2_t = (n_ratio * n_ratio) * (1 - (cos_i * cos_i));
+
+		// False if Total Internal Reflection applies
+		if (sin2_t < 1.0)
 		{
-			// Calculations to determine if there is total internal reflection
+			// Refraction
 
-			// Find the ratio of the first IOR to the second
-			// Inverted from the definition of Snell's Law
-			double n_ratio = comps.n1 / comps.n2;
+			// Find cos(theta_t) via trigonometric identity
+			double cos_t = sqrt(1.0 - sin2_t);
 
-			// cos(theta_i) is the same as the dot product of the two vectors
-			double cos_i = Tuple::dot(comps.eye_v, comps.normal_v);
+			// Compute the direction of the refracted ray
+			Tuple direction = comps.normal_v * (n_ratio * cos_i - cos_t) - comps.eye_v * n_ratio;
 
-			// Find sin(theta_t)^2 via trigonometric identity
-			double sin2_t = (n_ratio * n_ratio) * (1 - (cos_i * cos_i));
-
-			// Total Internal Reflection Test
-			if (sin2_t < 1.0)
-			{
-				// Refraction
-
-				// Find cos(theta_t) via trigonometric identity
-				double cos_t = sqrt(1.0 - sin2_t);
-
-				// Compute the direction of the refracted ray
-				Tuple direction = comps.normal_v * (n_ratio * cos_i - cos_t) - comps.eye_v * n_ratio;
-
-				// Create the refracted Ray
-				// Roughness code from Ray Tracing in One Weekend by Peter Shirley
-				// https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/fuzzyreflection
-				double slt_rafr_rough = this->refraction_roughness.sample_at(comps);
-				Ray refract_ray = Ray(
-					comps.under_point,
-					direction + (slt_rafr_rough * Tuple::RandomInUnitSphere()),
-					comps.ray_depth + 1
-				);
-				// Find the color of the refracted ray
-				return world.color_at(refract_ray) * slt_refraction;
-			}
+			// Create the refracted Ray
+			// Roughness code from Ray Tracing in One Weekend by Peter Shirley
+			// https://raytracing.github.io/books/RayTracingInOneWeekend.html#metal/fuzzyreflection
+			double slt_rafr_rough = this->refraction_roughness.sample_at(comps);
+			Ray refract_ray = Ray(
+				comps.under_point,
+				direction + (slt_rafr_rough * Tuple::RandomInUnitSphere()),
+				comps.ray_depth + 1
+			);
+			// Find the color of the refracted ray
+			return world.color_at(refract_ray) * slt_refraction;
 		}
 	}
 

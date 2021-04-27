@@ -2728,6 +2728,7 @@ TEST(Chapter11Tests, TheRefractedColorWithAnOpaqueSurface)
 	ASSERT_EQ(c, Color(0.0));
 }
 
+// pg. 156
 TEST(Chapter11Tests, TheRefractedColorAtTheMaximumRecursiveDepth)
 {
 	World w = World::Default();
@@ -2737,9 +2738,11 @@ TEST(Chapter11Tests, TheRefractedColorAtTheMaximumRecursiveDepth)
 	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(shape->material);
 	ms1->refraction.set_value(Color(1.0));
 	ms1->ior.set_value(1.5);
+	ms1->transparent_shadows = false;
+	ms1->use_schlick = false;
 
 	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0), RAY_DEPTH_LIMIT);
-	Intersections xs = Intersections({ Intersection(4.0, shape), Intersection(4.0, shape) });
+	Intersections xs = Intersections({ Intersection(4.0, shape), Intersection(6.0, shape) });
 
 	IxComps comps = IxComps(xs[0], r, xs);
 
@@ -2811,6 +2814,7 @@ TEST(Chapter11Tests, shade_hit_FunctionWithATransparentMaterial)
 	auto floor_mat = std::dynamic_pointer_cast<PhongMaterial>(floor->material);
 	floor_mat->refraction.set_value(0.5);
 	floor_mat->ior.set_value(1.5);
+	floor_mat->transparent_shadows = false;
 	floor_mat->use_schlick = false;
 
 	auto ball = std::make_shared<Sphere>();
@@ -2898,6 +2902,7 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveAndTransparentMaterial)
 	auto floor_mat = std::dynamic_pointer_cast<PhongMaterial>(floor->material);
 	floor_mat->reflection.set_value(Color(0.5));
 	floor_mat->refraction.set_value(Color(0.5));
+	floor_mat->transparent_shadows = false;
 	floor_mat->ior.set_value(1.5);
 
 	auto ball = std::make_shared<Sphere>();
@@ -2919,4 +2924,434 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveAndTransparentMaterial)
 	Color c = w.shade(comps);
 
 	ASSERT_EQ(c, Color(0.93391, 0.69643, 0.69243));
+}
+
+// ------------------------------------------------------------------------
+// Chapter 12 Cubes
+// ------------------------------------------------------------------------
+
+TEST(Chapter12Tests, ARayIntersectsACube)
+{
+	auto cube = std::make_shared<Cube>();
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(5.0, 0.5, 0.0),
+		Tuple::Point(-5.0, 0.5, 0.0),
+		Tuple::Point(0.5, 5.0, 0.0),
+		Tuple::Point(0.5, -5.0, 0.0),
+		Tuple::Point(0.5, 0.0, 5.0),
+		Tuple::Point(0.5, 0.0, -5.0),
+		Tuple::Point(0.0, 0.5, 0.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(-1.0, 0.0, 0.0),
+		Tuple::Vector(1.0, 0.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 0.0, -1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0)
+		});
+
+	auto results = std::vector<std::vector<double>>({
+		{4.0, 6.0},
+		{4.0, 6.0},
+		{4.0, 6.0},
+		{4.0, 6.0},
+		{4.0, 6.0},
+		{4.0, 6.0},
+		{-1.0, 1.0}
+		});
+
+	auto labels = std::vector<std::string>({
+		"+x",
+		"-x",
+		"+y",
+		"-y",
+		"+z",
+		"-z",
+		"inside"
+		});
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i]);
+
+		Intersections xs = intersect(r, cube);
+
+		ASSERT_EQ(xs.size(), 2) << "Test: " << labels[i] << " Intersections: " << xs;
+		EXPECT_TRUE(flt_cmp(xs[0].t_value, results[i][0])) << "Test: " << labels[i] << " " << xs[0].t_value << " == " << results[i][0];
+		EXPECT_TRUE(flt_cmp(xs[1].t_value, results[i][1])) << "Test: " << labels[i] << " " << xs[1].t_value << " == " << results[i][1];
+	}
+}
+
+TEST(Chapter12Tests, ARayMissesACube)
+{
+	auto cube = std::make_shared<Cube>();
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(-2.0, 0.0, 0.0),
+		Tuple::Point(0.0, -2.0, 0.0),
+		Tuple::Point(0.0, 0.0, -2.0),
+		Tuple::Point(2.0, 0.0, 2.0),
+		Tuple::Point(0.0, 2.0, 2.0),
+		Tuple::Point(2.0, 2.0, 0.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.2673, 0.5345, 0.8018),
+		Tuple::Vector(0.8018, 0.2673, 0.5345),
+		Tuple::Vector(0.5345, 0.8018, 0.2673),
+		Tuple::Vector(0.0, 0.0, -1.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(-1.0, 0.0, 0.0)
+		});
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i]);
+
+		Intersections xs = intersect(r, cube);
+
+		EXPECT_EQ(xs.size(), 0) << " Intersections: " << xs;
+	}
+}
+
+TEST(Chapter12Tests, TheNormalOnTheSurfaceOfACube)
+{
+	auto cube = std::make_shared<Cube>();
+
+	auto points = std::vector<Tuple>({
+		Tuple::Point(1.0, 0.5, -0.8),
+		Tuple::Point(-1.0, -0.2, 0.9),
+		Tuple::Point(-0.4, 1.0, -0.1),
+		Tuple::Point(0.3, -1.0, -0.7),
+		Tuple::Point(-0.6, 0.3, 1.0),
+		Tuple::Point(0.4, 0.4, -1.0),
+		Tuple::Point(1.0, 1.0, 1.0),
+		Tuple::Point(-1.0, -1.0, -1.0)
+		});
+
+	auto results = std::vector<Tuple>({
+		Tuple::Vector(1.0, 0.0, 0.0),
+		Tuple::Vector(-1.0, 0.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, -1.0),
+		Tuple::Vector(1.0, 0.0, 0.0),
+		Tuple::Vector(-1.0, 0.0, 0.0)
+		});
+
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		Tuple normal = cube->local_normal_at(points[i]);
+
+		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
+	}
+}
+
+// ------------------------------------------------------------------------
+// Chapter 13 Cylinders
+// ------------------------------------------------------------------------
+
+
+TEST(Chapter13Tests, ARayMissesACylinder)
+{
+	auto cyl = std::make_shared<Cylinder>();
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(1.0, 0.0, 0.0),
+		Tuple::Point(0.0, 0.0, 0.0),
+		Tuple::Point(0.0, 0.0, -5.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(1.0, 1.0, 1.0)
+		});
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cyl);
+
+		EXPECT_EQ(xs.size(), 0) << " Intersections: " << xs;
+	}
+}
+
+TEST(Chapter13Tests, ARayStrikesACylinder)
+{
+	auto cyl = std::make_shared<Cylinder>();
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(1.0, 0.0, -5.0),
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.5, 0.0, -5.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.1, 1.0, 1.0)
+		});
+
+	auto results = std::vector<std::vector<double>>({
+		{5.0, 5.0},
+		{4.0, 6.0},
+		{6.80798, 7.08872}
+		});
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cyl);
+
+		ASSERT_EQ(xs.size(), 2) << " Intersections: " << xs;
+		EXPECT_TRUE(flt_cmp(xs[0].t_value, results[i][0])) << "Test: " << xs[0].t_value << " == " << results[i][0];
+		EXPECT_TRUE(flt_cmp(xs[1].t_value, results[i][1])) << "Test: " << xs[1].t_value << " == " << results[i][1];
+	}
+}
+
+TEST(Chapter13Tests, NormalVectorOnACylinder)
+{
+	auto cyl = std::make_shared<Cylinder>();
+
+	auto points = std::vector<Tuple>({
+		Tuple::Point(1.0, 0.0, 0.0),
+		Tuple::Point(0.0, 5.0, -1.0),
+		Tuple::Point(0.0, -2.0, 1.0),
+		Tuple::Point(-1.0, 1.0, 0.0)
+		});
+
+	auto results = std::vector<Tuple>({
+		Tuple::Vector(1.0, 0.0, 0.0),
+		Tuple::Vector(0.0, 0.0, -1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(-1.0, 0.0, 0.0)
+		});
+
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		Tuple normal = cyl->local_normal_at(points[i]);
+
+		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
+	}
+}
+
+TEST(Chapter13Tests, TheDefaultMinimumAndMaximumForACylinder)
+{
+	auto cyl = std::make_shared<Cylinder>();
+
+	ASSERT_EQ(cyl->minimum, -std::numeric_limits<double>::infinity());
+	ASSERT_EQ(cyl->maximum, std::numeric_limits<double>::infinity());
+}
+
+TEST(Chapter13Tests, IntersectingAConstrainedCylinder)
+{
+	auto cyl = std::make_shared<Cylinder>(1.0, 2.0);
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(0.0, 1.5, 0.0),
+		Tuple::Point(0.0, 3.0, -5.0),
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 2.0, -5.0),
+		Tuple::Point(0.0, 1.0, -5.0),
+		Tuple::Point(0.0, 1.5, -2.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.1, 1.0, 0.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, 1.0)
+		});
+
+	auto results = std::vector<size_t>({ 0, 0, 0, 0, 0, 2 });
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cyl);
+
+		EXPECT_EQ(xs.size(), results[i]) << "Number: " << i + 1 << " Intersections: " << xs;
+	}
+}
+
+TEST(Chapter13Tests, TheDefaultClosedValueForACylinder)
+{
+	auto cyl = std::make_shared<Cylinder>();
+
+	ASSERT_FALSE(cyl->closed);
+}
+
+TEST(Chapter13Tests, IntersectingTheCapsOfAClosedCylinder)
+{
+	auto cyl = std::make_shared<Cylinder>(1.0, 2.0);
+	cyl->closed = true;
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(0.0, 3.0, 0.0),
+		Tuple::Point(0.0, 3.0, -2.0),
+		Tuple::Point(0.0, 4.0, -2.0),
+		Tuple::Point(0.0, 0.0, -2.0),
+		Tuple::Point(0.0, -1.0, -2.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 2.0),
+		Tuple::Vector(0.0, -1.0, 1.0),
+		Tuple::Vector(0.0, 1.0, 2.0),
+		Tuple::Vector(0.0, 1.0, 1.0)
+		});
+
+	auto results = std::vector<size_t>({ 2, 2, 2, 2, 2 });
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cyl);
+
+		EXPECT_EQ(xs.size(), results[i]) << "Number: " << i + 1 << " Intersections: " << xs;
+	}
+}
+
+TEST(Chapter13Tests, TheNormalVectorOnACylindersEndCaps)
+{
+	auto cyl = std::make_shared<Cylinder>(1.0, 2.0);
+	cyl->closed = true;
+
+	auto points = std::vector<Tuple>({
+		Tuple::Point(0.0, 1.0, 0.0),
+		Tuple::Point(0.5, 1.0, 0.0),
+		Tuple::Point(0.0, 1.0, 0.5),
+		Tuple::Point(0.0, 2.0, 0.0),
+		Tuple::Point(0.5, 2.0, 0.0),
+		Tuple::Point(0.0, 2.0, 0.5)
+		});
+
+	auto results = std::vector<Tuple>({
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 0.0)
+		});
+
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		Tuple normal = cyl->local_normal_at(points[i]);
+
+		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
+	}
+}
+
+TEST(Chapter13Tests, IntersectingAConeWithARay)
+{
+	auto cone = std::make_shared<DoubleNappedCone>();
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(1.0, 1.0, -5.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(1.0, 1.0, 1.0),
+		Tuple::Vector(-0.5, -1.0, 1.0)
+		});
+
+	auto results = std::vector<std::vector<double>>({
+		{5.0, 5.0},
+		{8.66025, 8.66025},
+		{4.55006, 49.44994}
+		});
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cone);
+
+		ASSERT_EQ(xs.size(), 2) << " Intersections: " << xs;
+		EXPECT_TRUE(flt_cmp(xs[0].t_value, results[i][0])) << "Test " << i + 1 << ": " << xs[0].t_value << " == " << results[i][0];
+		EXPECT_TRUE(flt_cmp(xs[1].t_value, results[i][1])) << "Test " << i + 1 << ": " << xs[1].t_value << " == " << results[i][1];
+	}
+}
+
+TEST(Chapter13Tests, IntersectingAConeWithARayParralelToOneOfItsHalves)
+{
+	auto cone = std::make_shared<DoubleNappedCone>();
+
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -1.0), Tuple::Vector(0.0, 1.0, 1.0).normalize());
+
+	Intersections xs = intersect(r, cone);
+
+	ASSERT_EQ(xs.size(), 1) << " Intersections: " << xs;
+	ASSERT_TRUE(flt_cmp(xs[0].t_value, 0.35355)) << xs[0].t_value << " == " << 0.35355;
+}
+
+TEST(Chapter13Tests, IntersectingAConesEndCaps)
+{
+	auto cone = std::make_shared<DoubleNappedCone>(-0.5, 0.5);
+	cone->closed = true;
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 0.0, -0.25),
+		Tuple::Point(0.0, 0.0, -0.25)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 1.0),
+		Tuple::Vector(0.0, 1.0, 0.0)
+		});
+
+	auto results = std::vector<size_t>({ 0, 2, 4 });
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		Intersections xs = intersect(r, cone);
+
+		EXPECT_EQ(xs.size(), results[i]) << "Number: " << i + 1 << " Intersections: " << xs;
+	}
+}
+
+TEST(Chapter13Tests, ComputingTheNormalVectorOnACone)
+{
+	auto cyl = std::make_shared<DoubleNappedCone>();
+
+	auto points = std::vector<Tuple>({
+		Tuple::Point(0.0, 0.0, 0.0),
+		Tuple::Point(1.0, 1.0, 1.0),
+		Tuple::Point(-1.0, -1.0, 0.0)
+		});
+
+	auto results = std::vector<Tuple>({
+		Tuple::Vector(0.0, 0.0, 0.0),
+		Tuple::Vector(1.0, -sqrt(2.0), 1.0),
+		Tuple::Vector(-1.0, 1.0, 0.0)
+		});
+
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		Tuple normal = cyl->local_normal_at(points[i]);
+
+		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
+	}
 }

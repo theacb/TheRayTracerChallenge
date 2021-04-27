@@ -132,7 +132,7 @@ Canvas Camera::render_scanline(const World & w, int line) const
 	// Create a canvas with the full image width but only 1 height
 	Canvas image_line = Canvas(this->c_h_size_, 1);
 
-	std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << std::endl;
+	//std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << std::endl;
 
 	for (int x = 0; x < this->c_h_size_; x++)
 	{
