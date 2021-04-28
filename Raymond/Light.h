@@ -16,9 +16,6 @@ public:
 	Light(Color color, double multiplier);
 	~Light();
 
-	virtual std::vector<double> local_intersect_t(const Ray &) const = 0;
-	virtual Tuple local_normal_at(const Tuple &) const = 0;
-
 	//properties
 	Color color;
 	double multiplier;
@@ -38,10 +35,6 @@ public:
 	PointLight(Tuple position, Color color);
 	PointLight(Tuple position, Color color, double multiplier);
 	~PointLight();
-
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & ray) const override;
-	virtual Tuple local_normal_at(const Tuple & point) const override;
 };
 
 //Overloaded Operators

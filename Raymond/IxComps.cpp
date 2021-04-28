@@ -89,7 +89,7 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray, const Intersections &
 			}
 			else
 			{
-				this->n1 = std::dynamic_pointer_cast<Primitive>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
+				this->n1 = std::dynamic_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
 			}
 		}
 
@@ -127,7 +127,7 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray, const Intersections &
 			}
 			else
 			{
-				this->n2 = std::dynamic_pointer_cast<Primitive>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
+				this->n2 = std::dynamic_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
 			}
 
 			break;

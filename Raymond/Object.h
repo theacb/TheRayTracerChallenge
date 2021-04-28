@@ -8,6 +8,7 @@
 
 #include "Ray.h"
 #include "Tuple.h"
+#include "PrimitiveDefinition.h"
 
 enum ObjectType { primitive, light };
 
@@ -19,6 +20,7 @@ public:
 	TransformController(const TransformController & src);
 	~TransformController();
 
+	// Methods
 	void set_transform(const Matrix4 & m);
 	Matrix4 get_transform() const;
 	Matrix4 get_inverse_transform() const;
@@ -44,16 +46,19 @@ class ObjectBase
 {
 public:
 	ObjectBase();
-	~ObjectBase();
+	virtual ~ObjectBase();
 
 	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray &) const = 0;
-	virtual Tuple local_normal_at(const Tuple &) const = 0;
 	Tuple normal_at(const Tuple & world_space_point) const;
+	std::vector<double> intersect_t(const Ray & r) const;
 
 	// Accessors
 	void set_name(std::string new_name);
 	std::string get_name() const;
+
+	void set_definition(std::shared_ptr<PrimitiveDefinition> def);
+	std::shared_ptr<PrimitiveDefinition> get_definition();
+	std::shared_ptr<PrimitiveDefinition> get_definition() const;
 
 	void set_transform(Matrix4 m);
 	Matrix4 get_transform() const;
@@ -76,6 +81,7 @@ public:
 private:
 	std::string o_name_;
 	std::shared_ptr<TransformController> o_transform_;
+	std::shared_ptr<PrimitiveDefinition> o_definition_;
 };
 
 class Intersection

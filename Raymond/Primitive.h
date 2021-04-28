@@ -5,75 +5,54 @@
 
 #include "Object.h"
 #include "Material.h"
+#include "PrimitiveDefinition.h"
 
-
-
-class Primitive :
+class PrimitiveBase :
 	public ObjectBase
 {
 public:
-	Primitive();
-	~Primitive();
+	PrimitiveBase();
+	~PrimitiveBase();
 
 	//properties
 	std::shared_ptr<BaseMaterial> material;
 
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const = 0;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const = 0;
-
 };
 
 class Sphere :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	Sphere();
 	Sphere(std::string name);
 	~Sphere();
 
-	// Properties
-	double radius;
-
 	// Static Methods
 	static std::shared_ptr<Sphere> GlassSphere();
-
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 };
 
 class InfinitePlane :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	InfinitePlane();
 	InfinitePlane(std::string name);
 	~InfinitePlane();
 
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 };
 
 class Cube :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	Cube();
 	Cube(std::string name);
 	~Cube();
 
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
-
-private:
-	std::vector<double> check_axis_(const double & origin, const double & direction) const;
 };
 
 class Cylinder :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	Cylinder();
@@ -82,21 +61,19 @@ public:
 	Cylinder(double minimum, double maximum, std::string name);
 	~Cylinder();
 
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	// Accessors
+	bool get_closed() const;
+	void set_closed(const bool & closed);
 
-	// Properties
-	double minimum;
-	double maximum;
-	bool closed;
-private:
-	void intersect_caps_(const Ray & r, std::vector<double> & xs) const;
-	bool check_caps_(const Ray & r, const double & t) const;
+	double get_minimum() const;
+	void set_minimum(const double & min);
+
+	double get_maximum() const;
+	void set_maximum(const double & max);
 };
 
 class DoubleNappedCone :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	DoubleNappedCone();
@@ -105,17 +82,15 @@ public:
 	DoubleNappedCone(double minimum, double maximum, std::string name);
 	~DoubleNappedCone();
 
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	// Accessors
+	bool get_closed() const;
+	void set_closed(const bool & closed);
 
-	// Properties
-	double minimum;
-	double maximum;
-	bool closed;
-private:
-	void intersect_caps_(const Ray & r, std::vector<double> & xs) const;
-	bool check_caps_(const Ray & r, const double & t, const double & radius) const;
+	double get_minimum() const;
+	void set_minimum(const double & min);
+
+	double get_maximum() const;
+	void set_maximum(const double & max);
 };
 
 // Cone (Just a pre-truncated DoubleNappedCone)
@@ -129,19 +104,12 @@ public:
 };
 
 class TestShape :
-	public Primitive
+	public PrimitiveBase
 {
 public:
 	TestShape();
 	TestShape(std::string name);
 	~TestShape();
-
-	// Properties
-	Ray ray;
-
-	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 };
 
 #endif

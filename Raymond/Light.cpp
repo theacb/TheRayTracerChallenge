@@ -60,25 +60,6 @@ PointLight::~PointLight()
 {
 }
 
-std::vector<double> PointLight::local_intersect_t(const Ray & ray) const
-{
-	Tuple position = this->position();
-	Tuple ix_vector = position - ray.origin;
-	if (ix_vector.normalize() == ray.direction.normalize())
-	{
-		return std::vector<double>({ Tuple::distance(position, ray.origin) });
-	}
-	else
-	{
-		return std::vector<double>();
-	}
-}
-
-Tuple PointLight::local_normal_at(const Tuple & point) const
-{
-	return Tuple::Vector(0.0, 1.0, 0.0);
-}
-
 bool operator==(const PointLight & left_light, const PointLight & right_light)
 {
 	return (

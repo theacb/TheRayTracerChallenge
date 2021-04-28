@@ -30,13 +30,13 @@ public:
 	Color shadowed(const std::shared_ptr<Light> light, const Tuple & point, const int depth) const;
 
 	// accessors
-	const std::vector<std::shared_ptr<Primitive>> & get_primitives();
+	const std::vector<std::shared_ptr<PrimitiveBase>> & get_primitives();
 	const std::vector<std::shared_ptr<Light>> & get_lights();
 
 	void remove_primitive(int index);
 	void remove_light(int index);
 
-	void add_object(std::shared_ptr<Primitive> obj);
+	void add_object(std::shared_ptr<PrimitiveBase> obj);
 	void add_object(std::shared_ptr<Light> obj);
 
 	// Public Properties
@@ -44,7 +44,7 @@ public:
 
 private:
 	// private properties
-	std::vector<std::shared_ptr<Primitive>> w_primitives_;
+	std::vector<std::shared_ptr<PrimitiveBase>> w_primitives_;
 	std::vector<std::shared_ptr<Light>> w_lights_;
 };
 

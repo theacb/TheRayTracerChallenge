@@ -10,7 +10,7 @@
 #include "Color.h"
 #include "Constants.h"
 
-class Primitive;
+class PrimitiveBase;
 
 class IxComps
 {

@@ -56,7 +56,7 @@ Intersections World::intersect_world(const Ray & ray) const
 	// This may be unwise...
 	result.reserve(this->w_primitives_.size() * 3);
 
-	for (std::shared_ptr<Primitive> obj: this->w_primitives_)
+	for (std::shared_ptr<PrimitiveBase> obj: this->w_primitives_)
 	{
 		// generates an intersection for each object in the scene
 		Intersections obj_xs = intersect(ray, obj);
@@ -86,7 +86,7 @@ Color World::shade(IxComps & comps) const
 {
 	Color sample = Color(0.0);
 
-	auto obj_prim = std::dynamic_pointer_cast<Primitive>(comps.object);
+	auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(comps.object);
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
@@ -179,7 +179,7 @@ Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, c
 	if (h.is_valid() && h.t_value < distance)
 	{
 		IxComps comps = IxComps(h, r, ix);
-		auto obj_prim = std::dynamic_pointer_cast<Primitive>(h.object);
+		auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
 
 		return obj_prim->material->transmit(light, *this, comps, ix);
 	}
@@ -190,7 +190,7 @@ Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, c
 // Accessors
 // ------------------------------------------------------------------------
 
-const std::vector<std::shared_ptr<Primitive>> & World::get_primitives()
+const std::vector<std::shared_ptr<PrimitiveBase>> & World::get_primitives()
 {
 	return this->w_primitives_;
 }
@@ -210,7 +210,7 @@ void World::remove_light(int index)
 	this->w_lights_.erase(this->w_lights_.begin() + index);
 }
 
-void World::add_object(std::shared_ptr<Primitive> obj)
+void World::add_object(std::shared_ptr<PrimitiveBase> obj)
 {
 	this->w_primitives_.push_back(obj);
 }

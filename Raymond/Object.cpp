@@ -96,6 +96,7 @@ ObjectBase::ObjectBase()
 {
 	this->o_transform_ = std::make_shared<TransformController>();
 	this->o_name_ = "Default Object 000";
+	this->o_definition_ = std::make_shared<NullShapeDefinition>();
 }
 
 
@@ -113,7 +114,7 @@ Tuple ObjectBase::normal_at(const Tuple & world_space_point) const
 	Tuple object_space_point = this->o_transform_->point_to_object_space(world_space_point);
 
 	// Calculate surface normal
-	Tuple object_normal_vector = this->local_normal_at(object_space_point);
+	Tuple object_normal_vector = this->o_definition_->local_normal_at(object_space_point);
 
 	// Multiply object space normal by transpose of the inverted x form matrix
 	Tuple world_normal_vector = this->o_transform_->normal_vector_to_world_space(object_normal_vector);
@@ -125,6 +126,17 @@ Tuple ObjectBase::normal_at(const Tuple & world_space_point) const
 	return world_normal_vector.normalize();
 }
 
+std::vector<double> ObjectBase::intersect_t(const Ray & r) const
+{
+	// Transform ray to object space
+	Ray transformed_ray = this->ray_to_object_space(r);
+	return this->o_definition_->local_intersect_t(transformed_ray);
+}
+
+// ------------------------------------------------------------------------
+// Accessors
+// ------------------------------------------------------------------------
+
 void ObjectBase::set_name(std::string new_name)
 {
 	this->o_name_ = new_name;
@@ -133,6 +145,21 @@ void ObjectBase::set_name(std::string new_name)
 std::string ObjectBase::get_name() const
 {
 	return this->o_name_;
+}
+
+void ObjectBase::set_definition(std::shared_ptr<PrimitiveDefinition> def)
+{
+	this->o_definition_ = def;
+}
+
+std::shared_ptr<PrimitiveDefinition> ObjectBase::get_definition()
+{
+	return this->o_definition_;
+}
+
+std::shared_ptr<PrimitiveDefinition> ObjectBase::get_definition() const
+{
+	return this->o_definition_;
 }
 
 void ObjectBase::set_transform(Matrix4 m )
@@ -356,8 +383,7 @@ std::ostream & operator<<(std::ostream & os, const Intersections & ixs)
 Intersections intersect( const Ray & r, const std::shared_ptr<ObjectBase> obj)
 {
 	// Transform Ray by Inverse of Object transform Matrix
-	Ray transformed_ray = obj->ray_to_object_space(r);
-	std::vector<double> t_values = obj->local_intersect_t(transformed_ray);
+	std::vector<double> t_values = obj->intersect_t(r);
 
 	return Intersections(t_values, obj);
 }

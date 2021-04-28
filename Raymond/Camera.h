@@ -19,9 +19,6 @@ public:
 	~Camera();
 
 	// Methods
-	// Virtual
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
-	virtual Tuple local_normal_at(const Tuple & p) const override;
 
 	// Rays
 	Ray ray_from_pixel(int, int) const;

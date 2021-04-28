@@ -8,6 +8,7 @@
 #include "../Raymond/Color.h"
 #include "../Raymond/Matrix.h"
 #include "../Raymond/Ray.h"
+#include "../Raymond/PrimitiveDefinition.h"
 #include "../Raymond/Object.h"
 #include "../Raymond/Primitive.h"
 #include "../Raymond/Light.h"
@@ -1152,7 +1153,7 @@ TEST(Chapter05Tests, ARayIntersectsASphereAtTwoPoints)
 
 	Sphere S = Sphere();
 
-	std::vector<double> xs = S.local_intersect_t(r);
+	std::vector<double> xs = S.intersect_t(r);
 
 	ASSERT_EQ(xs.size(), 2);
 	ASSERT_TRUE(flt_cmp(xs[0], 4.0));
@@ -1165,7 +1166,7 @@ TEST(Chapter05Tests, ARayIntersectsASphereAtATangent)
 
 	Sphere S = Sphere();
 
-	std::vector<double> xs = S.local_intersect_t(r);
+	std::vector<double> xs = S.intersect_t(r);
 
 	ASSERT_EQ(xs.size(), 2);
 	ASSERT_TRUE(flt_cmp(xs[0], 5.0)) << xs[0];
@@ -1178,7 +1179,7 @@ TEST(Chapter05Tests, ARayMissesASphere)
 
 	Sphere S = Sphere();
 
-	std::vector<double> xs = S.local_intersect_t(r);
+	std::vector<double> xs = S.intersect_t(r);
 
 	ASSERT_EQ(xs.size(), 0);
 }
@@ -1189,7 +1190,7 @@ TEST(Chapter05Tests, ARayOriginatesInsideASphere)
 
 	Sphere S = Sphere();
 
-	std::vector<double> xs = S.local_intersect_t(r);
+	std::vector<double> xs = S.intersect_t(r);
 
 	ASSERT_EQ(xs.size(), 2);
 	ASSERT_TRUE(flt_cmp(xs[0], -1.0));
@@ -1202,7 +1203,7 @@ TEST(Chapter05Tests, ASphereIsBehindARay)
 
 	Sphere s = Sphere();
 
-	std::vector<double> xs = s.local_intersect_t(r);
+	std::vector<double> xs = s.intersect_t(r);
 
 	ASSERT_EQ(xs.size(), 2);
 	ASSERT_TRUE(flt_cmp(xs[0], -6.0));
@@ -1669,7 +1670,7 @@ TEST(Chapter07Tests, ShadingAnIntersection)
 
 	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
 
-	std::shared_ptr<Primitive> s = w.get_primitives()[0];
+	std::shared_ptr<PrimitiveBase> s = w.get_primitives()[0];
 	Intersection i = Intersection(4.0, s);
 
 	IxComps comps = IxComps(i, r);
@@ -1688,7 +1689,7 @@ TEST(Chapter07Tests, ShadingAnIntersectionFromTheInside)
 
 	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
 
-	std::shared_ptr<Primitive> s = w.get_primitives()[1];
+	std::shared_ptr<PrimitiveBase> s = w.get_primitives()[1];
 	Intersection i = Intersection(0.5, s);
 
 	IxComps comps = IxComps(i, r);
@@ -1725,11 +1726,11 @@ TEST(Chapter07Tests, TheColorWithAnIntersectionBehindTheRay)
 
 	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.75), Tuple::Vector(0.0, 0.0, -1.0));
 
-	std::shared_ptr<Primitive> outer = w.get_primitives()[0];
+	std::shared_ptr<PrimitiveBase> outer = w.get_primitives()[0];
 	auto outer_mat = std::dynamic_pointer_cast<PhongMaterial>(outer->material);
 	outer_mat->ambient = 1.0;
 
-	std::shared_ptr<Primitive> inner = w.get_primitives()[1];
+	std::shared_ptr<PrimitiveBase> inner = w.get_primitives()[1];
 	auto inner_mat = std::dynamic_pointer_cast<PhongMaterial>(inner->material);
 	inner_mat->ambient = 1.0;
 
@@ -2067,9 +2068,9 @@ TEST(Chapter09Tests, TheNormalOfAPlaneIsConstantEverywhere)
 {
 	auto p = InfinitePlane();
 
-	Tuple n1 = p.local_normal_at(Tuple::Point(0.0, 0.0, 0.0));
-	Tuple n2 = p.local_normal_at(Tuple::Point(10.0, 0.0, -10.0));
-	Tuple n3 = p.local_normal_at(Tuple::Point(-50.0, 0.0, 150.0));
+	Tuple n1 = p.get_definition()->local_normal_at(Tuple::Point(0.0, 0.0, 0.0));
+	Tuple n2 = p.get_definition()->local_normal_at(Tuple::Point(10.0, 0.0, -10.0));
+	Tuple n3 = p.get_definition()->local_normal_at(Tuple::Point(-50.0, 0.0, 150.0));
 
 	Tuple expected_result = Tuple::Vector(0.0, 1.0, 0.0);
 
@@ -3046,7 +3047,7 @@ TEST(Chapter12Tests, TheNormalOnTheSurfaceOfACube)
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
-		Tuple normal = cube->local_normal_at(points[i]);
+		Tuple normal = cube->get_definition()->local_normal_at(points[i]);
 
 		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
 	}
@@ -3137,7 +3138,7 @@ TEST(Chapter13Tests, NormalVectorOnACylinder)
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
-		Tuple normal = cyl->local_normal_at(points[i]);
+		Tuple normal = cyl->get_definition()->local_normal_at(points[i]);
 
 		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
 	}
@@ -3147,8 +3148,8 @@ TEST(Chapter13Tests, TheDefaultMinimumAndMaximumForACylinder)
 {
 	auto cyl = std::make_shared<Cylinder>();
 
-	ASSERT_EQ(cyl->minimum, -std::numeric_limits<double>::infinity());
-	ASSERT_EQ(cyl->maximum, std::numeric_limits<double>::infinity());
+	ASSERT_EQ(cyl->get_minimum(), -std::numeric_limits<double>::infinity());
+	ASSERT_EQ(cyl->get_maximum(), std::numeric_limits<double>::infinity());
 }
 
 TEST(Chapter13Tests, IntersectingAConstrainedCylinder)
@@ -3189,13 +3190,13 @@ TEST(Chapter13Tests, TheDefaultClosedValueForACylinder)
 {
 	auto cyl = std::make_shared<Cylinder>();
 
-	ASSERT_FALSE(cyl->closed);
+	ASSERT_FALSE(cyl->get_closed());
 }
 
 TEST(Chapter13Tests, IntersectingTheCapsOfAClosedCylinder)
 {
 	auto cyl = std::make_shared<Cylinder>(1.0, 2.0);
-	cyl->closed = true;
+	cyl->set_closed(true);
 
 	auto ray_origins = std::vector<Tuple>({
 		Tuple::Point(0.0, 3.0, 0.0),
@@ -3228,7 +3229,7 @@ TEST(Chapter13Tests, IntersectingTheCapsOfAClosedCylinder)
 TEST(Chapter13Tests, TheNormalVectorOnACylindersEndCaps)
 {
 	auto cyl = std::make_shared<Cylinder>(1.0, 2.0);
-	cyl->closed = true;
+	cyl->set_closed(true);
 
 	auto points = std::vector<Tuple>({
 		Tuple::Point(0.0, 1.0, 0.0),
@@ -3250,7 +3251,7 @@ TEST(Chapter13Tests, TheNormalVectorOnACylindersEndCaps)
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
-		Tuple normal = cyl->local_normal_at(points[i]);
+		Tuple normal = cyl->get_definition()->local_normal_at(points[i]);
 
 		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
 	}
@@ -3306,7 +3307,7 @@ TEST(Chapter13Tests, IntersectingAConeWithARayParralelToOneOfItsHalves)
 TEST(Chapter13Tests, IntersectingAConesEndCaps)
 {
 	auto cone = std::make_shared<DoubleNappedCone>(-0.5, 0.5);
-	cone->closed = true;
+	cone->set_closed(true);
 
 	auto ray_origins = std::vector<Tuple>({
 		Tuple::Point(0.0, 0.0, -5.0),
@@ -3350,7 +3351,7 @@ TEST(Chapter13Tests, ComputingTheNormalVectorOnACone)
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
-		Tuple normal = cyl->local_normal_at(points[i]);
+		Tuple normal = cyl->get_definition()->local_normal_at(points[i]);
 
 		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
 	}

@@ -26,29 +26,6 @@ Camera::~Camera()
 }
 
 // ------------------------------------------------------------------------
-// Virtual
-// ------------------------------------------------------------------------
-
-std::vector<double> Camera::local_intersect_t(const Ray & r) const
-{
-	Tuple position = (this->get_transform()).position();
-	Tuple ix_vector = position - r.origin;
-	if (ix_vector.normalize() == r.direction.normalize())
-	{
-		return std::vector<double>({ Tuple::distance(position, r.origin) });
-	}
-	else
-	{
-		return std::vector<double>();
-	}
-}
-
-Tuple Camera::local_normal_at(const Tuple & p) const
-{
-	return Tuple::Vector(0.0, 1.0, 0.0);
-}
-
-// ------------------------------------------------------------------------
 // Rays
 // ------------------------------------------------------------------------
 

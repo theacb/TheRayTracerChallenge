@@ -175,7 +175,7 @@ int render_sphere()
 
 			if (h.is_valid())
 			{
-				auto obj_ptr = std::dynamic_pointer_cast<Primitive>(h.object);
+				auto obj_ptr = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
 				Tuple hit_point = r.position(h.t_value);
 
 				auto mat_ptr = std::dynamic_pointer_cast<PhongMaterial>(obj_ptr->material);
@@ -184,7 +184,7 @@ int render_sphere()
 					lgt, 
 					hit_point, 
 					-(r.direction), 
-					obj_ptr->local_normal_at(hit_point)
+					obj_ptr->get_definition()->local_normal_at(hit_point)
 				);
 
 				c.write_pixel(x, y, col);
@@ -570,7 +570,7 @@ void shadowed_test(World & w, const std::shared_ptr<Light> light, const Tuple & 
 	if (h.is_valid() && h.t_value < light_distance)
 	{
 		IxComps comps = IxComps(h, r, ix);
-		auto obj_prim = std::dynamic_pointer_cast<Primitive>(h.object);
+		auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
 		auto mat_phong = std::dynamic_pointer_cast<PhongMaterial>(obj_prim->material);
 
 		// Start transmit function
@@ -1067,13 +1067,13 @@ World render_ch13_world()
 	w.add_object(gold_inf_cylinder_005);
 
 	auto purple_cone = std::make_shared<DoubleNappedCone>(-1.0, -0.8, "blue cone 000");
-	purple_cone->closed = true;
+	purple_cone->set_closed(true);
 	purple_cone->material = glass_mtl;
 	purple_cone->set_transform(Matrix4::Translation(-1.0, 1.0, -2.0) * Matrix4::Rotation_Y(deg_to_rad(-90.0)) * Matrix4::Rotation_Z(deg_to_rad(90.0)) * Matrix4::Scaling(0.5, 0.5, 0.5));
 	w.add_object(purple_cone);
 
 	auto purple_cyl = std::make_shared<Cylinder>(-1.0, -0.95, "blue cylinder 000");
-	purple_cyl->closed = true;
+	purple_cyl->set_closed(true);
 	purple_cyl->material = glass_mtl;
 	purple_cyl->set_transform(Matrix4::Translation(0.0, 2.0, -2.0) * Matrix4::Rotation_Y(deg_to_rad(-45.0)) * Matrix4::Rotation_Z(deg_to_rad(90.0)) * Matrix4::Scaling(0.5, 0.5, 0.5));
 	w.add_object(purple_cyl);
@@ -1104,8 +1104,8 @@ int render_still()
 	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
 	int version = 2;
 
-	int width = 1920;
-	int height = 1080;
+	int width = 560;
+	int height = 315;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
