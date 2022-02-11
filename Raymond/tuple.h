@@ -4,6 +4,7 @@
 #include <iostream>
 #include "math.h"
 
+#include "Constants.h"
 #include "Utilities.h"
 
 class Tuple
@@ -16,6 +17,7 @@ public:
 
 	// Factories
 	static Tuple Point(double x_axis, double y_axis, double z_axis);
+	static Tuple Point2D(double x_axis, double y_axis);
 	static Tuple Origin();
 	static Tuple Vector(double x_axis, double y_axis, double z_axis);
 	static Tuple RandomVector(double min, double max);
@@ -31,6 +33,7 @@ public:
 	double magnitude() const;
 	double magnitude_squared() const;
 	Tuple normalize() const;
+	Tuple multiplicative_inverse() const;
 
 	static double dot(const Tuple & left_tuple, const Tuple & right_tuple);
 	static Tuple cross(const Tuple & left_tuple, const Tuple & right_tuple);
@@ -44,6 +47,8 @@ public:
 	Tuple operator-(const Tuple & right_tuple) const;
 	Tuple operator*(const double & scalar) const;
 	Tuple operator/(const double & scalar) const;
+	double & operator[](int i);
+	const double & operator[](int i) const;
  
 };
 
@@ -52,5 +57,8 @@ std::ostream & operator<<(std::ostream & os, const Tuple & tuple);
 bool operator==(const Tuple & left_tuple, const Tuple & right_tuple);
 bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple);
 Tuple operator*(const double & scalar, const Tuple & right_tuple);
+
+// Helper Functions
+double safe_divide(const double a, const double b);
 
 #endif

@@ -21,6 +21,7 @@ public:
 	// Properties
 	Tuple origin;
 	Tuple direction;
+	Tuple dir_mult_inv;
 	int depth;
 
 	// Overloaded Operators

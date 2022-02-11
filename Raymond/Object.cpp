@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Object.h"
+#include "Primitive.h"
 
 // ------------------------------------------------------------------------
 //
@@ -72,7 +73,10 @@ Tuple TransformController::point_to_world_space(const Tuple & p) const
 
 Tuple TransformController::normal_vector_to_world_space(const Tuple & v) const
 {
-	return this->x_inverse_transform_.transpose() * v;
+	Tuple nor = this->x_inverse_transform_.transpose() * v;
+	nor.w = 0;
+	nor.normalize();
+	return nor;
 }
 
 // ------------------------------------------------------------------------
@@ -97,11 +101,18 @@ ObjectBase::ObjectBase()
 	this->o_transform_ = std::make_shared<TransformController>();
 	this->o_name_ = "Default Object 000";
 	this->o_definition_ = std::make_shared<NullShapeDefinition>();
+	this->o_parent_ = nullptr;
+	this->o_bounds_as_group_ = false;
 }
 
 
 ObjectBase::~ObjectBase()
 {
+}
+
+std::shared_ptr<ObjectBase> ObjectBase::get_ptr()
+{
+	return shared_from_this();
 }
 
 // ------------------------------------------------------------------------
@@ -110,14 +121,14 @@ ObjectBase::~ObjectBase()
 
 Tuple ObjectBase::normal_at(const Tuple & world_space_point) const
 {
-	// Multiply point by inverse xform matrix to bring into object space
-	Tuple object_space_point = this->o_transform_->point_to_object_space(world_space_point);
+	// Multiply point by inverse x form matrix to bring into object space
+	Tuple object_space_point = this->point_to_object_space(world_space_point);
 
 	// Calculate surface normal
 	Tuple object_normal_vector = this->o_definition_->local_normal_at(object_space_point);
 
 	// Multiply object space normal by transpose of the inverted x form matrix
-	Tuple world_normal_vector = this->o_transform_->normal_vector_to_world_space(object_normal_vector);
+	Tuple world_normal_vector = this->normal_vector_to_world_space(object_normal_vector);
 
 	// Enforce behavior as a vector by setting w to 0
 	world_normal_vector.w = 0.0;
@@ -131,6 +142,106 @@ std::vector<double> ObjectBase::intersect_t(const Ray & r) const
 	// Transform ray to object space
 	Ray transformed_ray = this->ray_to_object_space(r);
 	return this->o_definition_->local_intersect_t(transformed_ray);
+}
+
+Intersections ObjectBase::intersect_i(const Ray & r)
+{
+	// Transform ray to object space
+	Ray transformed_ray = this->ray_to_object_space(r);
+
+	// Calculate intersections for the parent object (this)
+	Intersections result = Intersections(this->o_definition_->local_intersect_t(transformed_ray), this->get_ptr());
+
+	// Calculate Intersections for Child objects using the transformed Ray
+	for (std::shared_ptr<ObjectBase> obj : this->o_children_)
+	{
+		// generates an intersection for each object in the scene
+		Intersections obj_xs = obj->intersect_i(transformed_ray);
+
+		// Then concatenates them into a single vector
+		for (Intersection& ix : obj_xs)
+		{
+			// Filter bad values
+			if (ix.is_valid())
+			{
+				result.push_back(ix);
+			}
+		}
+	}
+
+	// Sorting is required to find the hit
+	std::sort(result.begin(), result.end());
+	result.calculate_hit();
+
+	return result;
+}
+
+// ------------------------------------------------------------------------
+// Parenting
+// ------------------------------------------------------------------------
+
+void ObjectBase::parent_children(std::vector<std::shared_ptr<ObjectBase>> & children)
+{
+	this->o_children_.insert(this->o_children_.end(), children.begin(), children.end());
+
+	auto ptr = this->get_ptr();
+
+	for (size_t i = 0; i < children.size(); i++)
+	{
+		children[i]->o_set_parent_(ptr);
+	}
+}
+
+void ObjectBase::parent_children(std::shared_ptr<ObjectBase> & child)
+{
+	this->o_children_.push_back(child);
+
+	auto ptr = this->get_ptr();
+
+	child->o_set_parent_(ptr);
+}
+
+void ObjectBase::o_unparent_()
+{
+	this->o_parent_ = nullptr;
+}
+
+void ObjectBase::freeze_children()
+{
+	for (size_t i = 0; i < this->o_children_.size(); i++)
+	{
+		this->o_children_[i]->set_transform(this->o_children_[i]->get_world_transform());
+
+		this->o_children_[i]->o_unparent_();
+	}
+
+	this->o_children_.clear();
+}
+
+void ObjectBase::o_set_parent_(std::shared_ptr<ObjectBase>& parent_children)
+{
+	this->o_parent_ = parent_children;
+}
+
+std::shared_ptr<ObjectBase> ObjectBase::get_parent() const
+{
+	return this->o_parent_;
+}
+
+bool ObjectBase::has_parent() const
+{
+	return (this->o_parent_ != nullptr);
+}
+
+std::vector<std::shared_ptr<ObjectBase>> ObjectBase::get_children() const
+{
+	// copy of children vector
+	return std::vector<std::shared_ptr<ObjectBase>>(this->o_children_);
+}
+
+size_t ObjectBase::num_children() const
+{
+	return this->o_children_.size();
 }
 
 // ------------------------------------------------------------------------
@@ -172,9 +283,31 @@ Matrix4 ObjectBase::get_transform() const
 	return this->o_transform_->get_transform();
 }
 
+Matrix4 ObjectBase::get_world_transform() const
+{
+	if (this->has_parent())
+	{
+		return this->o_transform_->get_transform() * this->o_parent_->get_world_transform();
+	}
+	else
+	{
+		return this->o_transform_->get_transform();
+	}
+}
+
 Matrix4 ObjectBase::get_inverse_transform() const
 {
 	return this->o_transform_->get_inverse_transform();
+}
+
+bool ObjectBase::bounds_as_group() const
+{
+	return this->o_bounds_as_group_;
+}
+
+void ObjectBase::set_bounds_as_group(bool bound_as_group)
+{
+	this->o_bounds_as_group_ = bound_as_group;
 }
 
 // ------------------------------------------------------------------------
@@ -188,17 +321,40 @@ Ray ObjectBase::ray_to_object_space(const Ray & r) const
 
 Tuple ObjectBase::point_to_object_space(const Tuple & p) const
 {
-	return this->o_transform_->point_to_object_space(p);
+	if (this->has_parent())
+	{
+		return this->o_transform_->point_to_object_space(this->o_parent_->point_to_object_space(p));
+	}
+	else
+	{
+		return this->o_transform_->point_to_object_space(p);
+	}
 }
 
 Tuple ObjectBase::point_to_world_space(const Tuple & p) const
 {
-	return this->o_transform_->point_to_world_space(p);
+	if (this->has_parent())
+	{
+		return this->o_transform_->point_to_world_space(this->o_parent_->point_to_world_space(p));
+	}
+	else
+	{
+		return this->o_transform_->point_to_world_space(p);
+	}
 }
 
 Tuple ObjectBase::normal_vector_to_world_space(const Tuple & v) const
 {
-	return this->o_transform_->normal_vector_to_world_space(v);
+	Tuple nor = this->o_transform_->normal_vector_to_world_space(v);
+
+	if (this->has_parent())
+	{
+		return this->o_parent_->normal_vector_to_world_space(nor);
+	}
+	else
+	{
+		return nor;
+	}
 }
 
 // ------------------------------------------------------------------------

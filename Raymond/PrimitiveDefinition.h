@@ -5,6 +5,7 @@
 
 #include "Tuple.h"
 #include "Ray.h"
+#include "BoundingBox.h"
 
 class PrimitiveDefinition
 {
@@ -15,6 +16,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const = 0;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const = 0;
+	virtual BoundingBox bounding_box() const = 0;
 };
 
 class SphereDefinition :
@@ -27,6 +29,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 };
 
 class InfinitePlaneDefinition :
@@ -39,6 +42,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 };
 
 class CubeDefinition :
@@ -51,6 +55,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 
 private:
 	std::vector<double> check_axis_(const double & origin, const double & direction) const;
@@ -67,6 +72,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 
 	// Properties
 	double minimum;
@@ -89,6 +95,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 
 	// Properties
 	double minimum;
@@ -110,6 +117,7 @@ public:
 	// Methods
 	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
+	virtual BoundingBox bounding_box() const override;
 };
 
 #endif

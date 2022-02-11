@@ -34,6 +34,11 @@ Tuple Tuple::Point(double x_axis, double y_axis, double z_axis)
 	return Tuple(x_axis, y_axis, z_axis, 1.0);
 }
 
+Tuple Tuple::Point2D(double x_axis, double y_axis)
+{
+	return Tuple(x_axis, y_axis, 0.0, 1.0);
+}
+
 Tuple Tuple::Origin()
 {
 	return Tuple::Point(0.0, 0.0, 0.0);
@@ -91,6 +96,16 @@ Tuple Tuple::normalize() const
 {
 	double mag = this->magnitude();
 	return Tuple(this->x / mag, this->y / mag, this->z / mag, this->w / mag);
+}
+
+Tuple Tuple::multiplicative_inverse() const
+{
+	return Tuple(
+		1.0 / this->x,
+		1.0 / this->y,
+		1.0 / this->z,
+		this->w
+	);
 }
 
 // Dot product
@@ -188,6 +203,56 @@ Tuple Tuple::operator/(const double & scalar) const
 	);
 }
 
+double & Tuple::operator[](int i)
+{
+	switch (i)
+	{
+	case 0:
+		return this->x;
+		break;
+	case 1:
+		return this->y;
+		break;
+	case 2:
+		return this->z;
+		break;
+	case 3:
+		return this->w;
+		break;
+	default:
+		throw std::out_of_range(
+			"Tuple::operator[](): The input [" + 
+			std::to_string(i) + 
+			"] is out of range."
+		);
+	}
+}
+
+const double & Tuple::operator[](int i) const
+{
+	switch (i)
+	{
+	case 0:
+		return this->x;
+		break;
+	case 1:
+		return this->y;
+		break;
+	case 2:
+		return this->z;
+		break;
+	case 3:
+		return this->w;
+		break;
+	default:
+		throw std::out_of_range(
+			"Tuple::operator[](): The input [" +
+			std::to_string(i) +
+			"] is out of range."
+		);
+	}
+}
+
 // Negate (Unary Minus)
 Tuple Tuple::operator-()
 {
@@ -232,5 +297,17 @@ Tuple operator*(const double & scalar, const Tuple & right_tuple)
 }
 
 // ------------------------------------------------------------------------
-// Helpfer Functions
+// Helper Functions
 // ------------------------------------------------------------------------
+
+double safe_divide(const double a, const double b)
+{
+	double result = 0.0;
+
+	if (abs(b) > std::numeric_limits<double>::epsilon())
+	{
+		result = a / b;
+	}
+	
+	return result;
+}

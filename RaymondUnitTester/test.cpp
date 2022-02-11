@@ -2,6 +2,7 @@
 
 #include "math.h"
 #include <sstream> 
+#include <typeinfo>
 
 #include "../Raymond/Tuple.h"
 #include "../Raymond/Canvas.h"
@@ -20,6 +21,10 @@
 #include "../Raymond/Constants.h"
 #include "../Raymond/Utilities.h"
 #include "../Raymond/Texmap.h"
+#include "../Raymond/BoundingBox.h"
+#include "../Raymond/Sample.h"
+#include "../Raymond/SamplerGrid.h"
+#include "../Raymond/Quadtree.h"
 
 // ------------------------------------------------------------------------
 // Constants
@@ -386,7 +391,7 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline)
 {
 	Canvas c = Canvas(10, 10);
 
-	std::string file_path = "E:\\dump\\projects\\Raymond\\frames\\_x\\PPMFilesTerminateWithNewline.ppm";
+	std::string file_path = "I:\\projects\\Raymond\\frames\\_x\\PPMFilesTerminateWithNewline.ppm";
 
 	canvas_to_ppm(c, file_path);
 
@@ -3355,4 +3360,501 @@ TEST(Chapter13Tests, ComputingTheNormalVectorOnACone)
 
 		EXPECT_EQ(normal, results[i]) << "Normal At [" << i << "] - Point: " << points[i] << " Expected: " << results[i] << " Actual: " << normal;
 	}
+}
+
+// ------------------------------------------------------------------------
+// Chapter 14 Groups
+// ------------------------------------------------------------------------
+
+TEST(Chapter14Tests, CreatingANewGroup)
+{
+	auto grp = std::make_shared<Group>();
+
+	ASSERT_EQ(grp->get_transform(), Matrix4::Identity());
+	ASSERT_EQ(grp->num_children(), 0);
+}
+
+TEST(Chapter14Tests, AShapeHasAParentAttribute)
+{
+	auto s = std::make_shared<TestShape>();
+
+	ASSERT_EQ(s->get_parent(), nullptr);
+}
+
+TEST(Chapter14Tests, AddingAChildToTheGroup)
+{
+	auto grp = std::make_shared<Group>();
+	auto s = std::make_shared<TestShape>();
+
+	grp->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+	ASSERT_EQ(grp->num_children(), 1);
+	ASSERT_EQ(grp->get_children()[0], s);
+	ASSERT_EQ(s->get_parent(), grp);
+}
+
+TEST(Chapter14Tests, IntersectingARayWithAnEmptyGroup)
+{
+	auto grp = std::make_shared<Group>();
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = intersect(r, grp);
+
+	ASSERT_EQ(xs.size(), 0);
+}
+
+TEST(Chapter14Tests, IntersectingARayWithANonEmptyGroup)
+{
+	auto grp = std::make_shared<Group>();
+
+	auto s1 = std::make_shared<Sphere>();
+	auto s2 = std::make_shared<Sphere>();
+	s2->set_transform(Matrix4::Translation(0.0, 0.0, -3.0));
+	auto s3 = std::make_shared<Sphere>();
+	s3->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	grp->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s1, s2, s3 }));
+
+	Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = grp->intersect_i(r);
+
+	ASSERT_EQ(xs.size(), 4);
+	EXPECT_EQ(xs[0].object, s2);
+	EXPECT_EQ(xs[1].object, s2);
+	EXPECT_EQ(xs[2].object, s1);
+	EXPECT_EQ(xs[3].object, s1);
+}
+
+TEST(Chapter14Tests, IntersectingATransformedGroup)
+{
+	auto grp = std::make_shared<Group>();
+	grp->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	grp->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+
+	Ray r = Ray(Tuple::Point(10.0, 0.0, -1.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+	Intersections xs = grp->intersect_i(r);
+
+	ASSERT_EQ(xs.size(), 2);
+}
+
+TEST(Chapter14Tests, ConvertingAPointFromWorldToObjectSpace)
+{
+	auto g1 = std::make_shared<Group>();
+	g1->set_transform(Matrix4::Rotation_Y(M_PI / 2.0));
+
+	auto g2 = std::make_shared<Group>();
+	g2->set_transform(Matrix4::Scaling(2.0, 2.0, 2.0));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	g1->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ g2 }));
+	g2->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+
+	Tuple p = s->point_to_object_space(Tuple::Point(-2.0, 0.0, -10.0));
+
+	ASSERT_EQ(p, Tuple::Point(0.0, 0.0, -1.0));
+}
+
+TEST(Chapter14Tests, ConvertingANormalFromObjectToWorldSpace)
+{
+	auto g1 = std::make_shared<Group>();
+	g1->set_transform(Matrix4::Rotation_Y(M_PI / 2.0));
+	g1->set_name("g1");
+
+	auto g2 = std::make_shared<Group>();
+	g2->set_transform(Matrix4::Scaling(1.0, 2.0, 3.0));
+	g2->set_name("g2");
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+	s->set_name("s");
+
+	g1->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ g2 }));
+	g2->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+
+	double x = sqrt(3.0) / 3.0;
+
+	Tuple v = s->normal_vector_to_world_space(Tuple::Vector(x, x, x));
+
+	ASSERT_EQ(v.normalize(), Tuple::Vector(0.2857, 0.4286, -0.8571));
+}
+
+TEST(Chapter14Tests, FindingTheNormalOnAChildObject)
+{
+	auto g1 = std::make_shared<Group>();
+	g1->set_transform(Matrix4::Rotation_Y(M_PI / 2.0));
+
+	auto g2 = std::make_shared<Group>();
+	g2->set_transform(Matrix4::Scaling(1.0, 2.0, 3.0));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	g1->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ g2 }));
+	g2->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+
+	Tuple n = s->normal_at(Tuple::Point(1.7321, 1.1547, -5.5774));
+
+	ASSERT_EQ(n, Tuple::Vector(0.2857, 0.4286, -0.8571));
+}
+
+TEST(Chapter14Tests, GettingAGroupedObjectsWorldTransformationMatrix)
+{
+	auto g1 = std::make_shared<Group>();
+	g1->set_transform(Matrix4::Rotation_Y(M_PI / 2.0));
+
+	auto g2 = std::make_shared<Group>();
+	g2->set_transform(Matrix4::Scaling(1.0, 2.0, 3.0));
+
+	auto s = std::make_shared<Sphere>();
+	s->set_transform(Matrix4::Translation(5.0, 0.0, 0.0));
+
+	g1->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ g2 }));
+	g2->parent_children(std::vector<std::shared_ptr<ObjectBase>>({ s }));
+
+	Matrix4 x = s->get_world_transform();
+
+	ASSERT_EQ(x, Matrix4::Translation(5.0, 0.0, 0.0) * Matrix4::Scaling(1.0, 2.0, 3.0) * Matrix4::Rotation_Y(M_PI / 2.0));
+}
+
+TEST(Chapter14Tests, ABoundingBoxHasDefaultDimensions)
+{
+	BoundingBox box = BoundingBox();
+
+	ASSERT_EQ(box.minimum, Tuple::Point(-1.0, -1.0, -1.0));
+	ASSERT_EQ(box.maximum, Tuple::Point(1.0, 1.0, 1.0));
+}
+
+TEST(Chapter14Tests, RaysIntersectABoundingBox)
+{
+	BoundingBox box = BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 0.0, 5.0),
+		Tuple::Point(0.0, -5.0, 0.0),
+		Tuple::Point(0.0, 5.0, 0.0),
+		Tuple::Point(-5.0, 0.0, 0.0),
+		Tuple::Point(5.0, 0.0, 0.0),
+		Tuple::Point(-5.0, -5.0, 0.0),
+		Tuple::Point(0.0, -5.0, -5.0),
+		Tuple::Point(-5.0, 0.0, -5.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.0, -1.0),
+		Tuple::Vector(0.0, 1.0, 0.0),
+		Tuple::Vector(0.0, -1.0, 0.0),
+		Tuple::Vector(1.0, 0.0, 0.0),
+		Tuple::Vector(-1.0, 0.0, 0.0),
+		Tuple::Vector(1.0, 1.0, 0.0),
+		Tuple::Vector(0.0, 1.0, 1.0),
+		Tuple::Vector(1.0, 0.0, 1.0)
+		});
+
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		EXPECT_TRUE(box.intersect(r)) << "Test: " << i + 1 << " - " << r.origin << " --> " << r.direction << std::endl;;
+	}
+}
+
+TEST(Chapter14Tests, RaysMissABoundingBox)
+{
+	auto ray_origins = std::vector<Tuple>({
+		Tuple::Point(1.1, 1.0, -5.0),
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 0.0, -5.0),
+		Tuple::Point(0.0, 5.0, 0.0)
+		});
+
+	auto ray_directions = std::vector<Tuple>({
+		Tuple::Vector(0.0, 0.0, 1.0),
+		Tuple::Vector(0.0, 0.3, 1.0),
+		Tuple::Vector(0.3, 0.0, -1.0),
+		Tuple::Vector(0.0, 0.0, 1.0)
+		});
+
+
+	for (size_t i = 0; i < ray_origins.size(); i++)
+	{
+		BoundingBox box = BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+
+		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
+
+		EXPECT_FALSE(box.intersect(r)) << "Test: " << i + 1 << " - " << r.origin << " --> " << r.direction << " inverse: " << r.dir_mult_inv << std::endl;
+	}
+}
+
+// ------------------------------------------------------------------------
+// Quadtrees
+// ------------------------------------------------------------------------
+
+TEST(Quadtrees, CreatingAQuadtree)
+{
+	QuadBranch<Sample> qt = QuadBranch<Sample>(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0), 7);
+}
+
+TEST(Quadtrees, InsertingAPoint)
+{
+	Sample s = Sample();
+	s.set_rgb(Color(0.5, 0.5, 1.0));
+	auto qt = std::make_shared<QuadBranch<Sample>>(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0), 7);
+
+	auto qn = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.5, 0.5), s);
+
+	qt->insert(qn);
+
+	std::vector<std::shared_ptr<QuadNode<Sample>>> vec = qt->get_child_nodes();
+
+	std::cout << vec.size() << std::endl;
+	std::cout << typeid(vec.front()).name() << std::endl;
+
+	Sample result = vec[0]->get_data();
+
+	std::cout << typeid(result).name() << std::endl;
+	std::cout << result.get_rgb() << std::endl;
+
+	ASSERT_EQ(result.get_rgb(), s.get_rgb());
+}
+
+TEST(Quadtrees, InsertingManyPoints)
+{
+	std::cout << std::endl << std::endl;
+
+	auto qt = std::make_shared<QuadBranch<Sample>>(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0), 7);
+
+	for (size_t i = 0; i < 200; i++)
+	{
+		std::cout << std::endl << "Inserting Point #" << int(i) << std::endl;
+		Sample s = Sample();
+		s.name = "Sample #" + std::to_string(i);
+		s.set_rgb(Color(random_double(0.0, 1.0), random_double(0.0, 1.0), random_double(0.0, 1.0)));
+
+		auto qn = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(random_double(0.0, 1.0), random_double(0.0, 1.0)), s);
+
+		qt->insert(qn);
+	}
+
+	std::cout << "Insert Done" << std::endl << std::endl;
+
+	std::vector<std::shared_ptr<QuadNode<Sample>>> vec = qt->get_all_nodes();
+
+	ASSERT_EQ(vec.size(), 200);
+}
+
+// ------------------------------------------------------------------------
+// Sampling
+// ------------------------------------------------------------------------
+
+TEST(Sampling, ADefaultSample)
+{
+	Sample s = Sample();
+
+	ASSERT_EQ(s.get_rgb(), Color(0.0));
+	ASSERT_EQ(s.get_alpha(), 0.0);
+	ASSERT_EQ(s.get_depth(), 0.0);
+	ASSERT_EQ(s.get_background(), Color(0.0));
+	ASSERT_EQ(s.get_normal(), Color(0.5, 0.5, 1.0));
+	ASSERT_EQ(s.get_position(), Color(0.0));
+	ASSERT_EQ(s.get_diffuse(), Color(1.0));
+	ASSERT_EQ(s.get_specular(), Color(0.0));
+	ASSERT_EQ(s.get_lighting(), Color(0.0));
+	ASSERT_EQ(s.get_globalillumination(), Color(0.0));
+	ASSERT_EQ(s.get_reflection(), Color(0.0));
+	ASSERT_EQ(s.get_reflectionfilter(), 1.0);
+	ASSERT_EQ(s.get_refraction(), Color(0.0));
+	ASSERT_EQ(s.get_refractionfilter(), 1.0);
+}
+
+TEST(Sampling, SettingSampleValues)
+{
+	Sample s = Sample();
+
+	s.set_alpha(1.0);
+	s.set_depth(33.567);
+	s.set_background(Color(0.1, 0.1, 0.7));
+	s.set_normal(Color(0.6, 0.4, 1.0));
+	s.set_position(Color(22.0, 11.0, 8.5));
+	s.set_diffuse(Color(0.2, 0.3, 0.4));
+	s.set_specular(Color(0.1, 0.12, 0.15));
+	s.set_lighting(Color(0.1, 0.05, 0.1));
+	s.set_globalillumination(Color(0.05, 0.06, 0.001));
+	s.set_reflection(Color(1.0, 1.0, 0.3));
+	s.set_reflectionfilter(0.5);
+	s.set_refraction(Color(0.01, 0.01, 0.01));
+	s.set_refractionfilter(0.1);
+
+	ASSERT_EQ(s.get_rgb(), Color(0.0));
+	ASSERT_EQ(s.get_alpha(), 1.0);
+	ASSERT_EQ(s.get_depth(), 33.567);
+	ASSERT_EQ(s.get_background(), Color(0.1, 0.1, 0.7));
+	ASSERT_EQ(s.get_normal(), Color(0.6, 0.4, 1.0));
+	ASSERT_EQ(s.get_position(), Color(22.0, 11.0, 8.5));
+	ASSERT_EQ(s.get_diffuse(), Color(0.2, 0.3, 0.4));
+	ASSERT_EQ(s.get_specular(), Color(0.1, 0.12, 0.15));
+	ASSERT_EQ(s.get_lighting(), Color(0.1, 0.05, 0.1));
+	ASSERT_EQ(s.get_globalillumination(), Color(0.05, 0.06, 0.001));
+	ASSERT_EQ(s.get_reflection(), Color(1.0, 1.0, 0.3));
+	ASSERT_EQ(s.get_reflectionfilter(), 0.5);
+	ASSERT_EQ(s.get_refraction(), Color(0.01, 0.01, 0.01));
+	ASSERT_EQ(s.get_refractionfilter(), 0.1);
+}
+
+TEST(Sampling, CalculatingSampleValues)
+{
+	Sample s = Sample();
+
+	s.set_alpha(1.0);
+	s.set_depth(33.567);
+	s.set_background(Color(0.1, 0.1, 0.7));
+	s.set_normal(Color(0.6, 0.4, 1.0));
+	s.set_position(Color(22.0, 11.0, 8.5));
+	s.set_diffuse(Color(0.1, 0.2, 0.3));
+	s.set_specular(Color(0.1, 0.1, 0.1));
+	s.set_lighting(Color(0.1, 0.05, 0.1));
+	s.set_globalillumination(Color(0.05, 0.06, 0.001));
+	s.set_reflection(Color(1.0, 1.0, 0.3));
+	s.set_reflectionfilter(0.5);
+	s.set_refraction(Color(0.01, 0.01, 0.01));
+	s.set_refractionfilter(0.1);
+
+	s.calculate_sample();
+
+	ASSERT_EQ(s.get_rgb(), Color(0.716, 0.723, 0.9813));
+}
+
+TEST(Sampling, AddingSamples)
+{
+	Sample s1 = Sample();
+	Sample result = Sample();
+
+	s1.set_alpha(0.5);
+	s1.set_depth(10.0);
+	s1.set_background(Color(0.5, 0.5, 0.5));
+	s1.set_normal(Color(0.6, 0.4, 1.0));
+	s1.set_position(Color(10.0, 10.0, 10.0));
+	s1.set_diffuse(Color(0.4, 0.0, 0.8));
+	s1.set_specular(Color(0.1, 0.1, 0.1));
+	s1.set_lighting(Color(0.5, 0.5, 0.5));
+	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
+	s1.set_reflection(Color(1.0, 1.0, 1.0));
+	s1.set_reflectionfilter(0.5);
+	s1.set_refraction(Color(0.1, 0.1, 0.1));
+	s1.set_refractionfilter(0.1);
+
+	s1.calculate_sample();
+
+	std::cout << s1.get_rgb() << std::endl;
+
+	Sample s2 = Sample(s1);
+
+	result = s1 + s2;
+
+	ASSERT_EQ(result.get_rgb(), Color(1.39 + 1.39, 1.11 + 1.11, 1.67 + 1.67));
+	ASSERT_EQ(result.get_alpha(), 1.0);
+	ASSERT_EQ(result.get_depth(), 20.0);
+	ASSERT_EQ(result.get_background(), Color(1.0, 1.0, 1.0));
+	ASSERT_EQ(result.get_normal(), Color(1.2, 0.8, 2.0));
+	ASSERT_EQ(result.get_position(), Color(20.0, 20.0, 20.0));
+	ASSERT_EQ(result.get_diffuse(), Color(0.8, 0.0, 1.6));
+	ASSERT_EQ(result.get_specular(), Color(0.2, 0.2, 0.2));
+	ASSERT_EQ(result.get_lighting(), Color(1.0, 1.0, 1.0));
+	ASSERT_EQ(result.get_globalillumination(), Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.get_reflection(), Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.get_reflectionfilter(), 1.0);
+	ASSERT_EQ(result.get_refraction(), Color(0.2, 0.2, 0.2));
+	ASSERT_EQ(result.get_refractionfilter(), 0.2);
+}
+
+TEST(Sampling, dividingSamplesByAScalar)
+{
+	Sample s1 = Sample();
+	Sample result = Sample();
+
+	s1.set_alpha(0.5);
+	s1.set_depth(10.0);
+	s1.set_background(Color(0.5, 0.5, 0.5));
+	s1.set_normal(Color(0.6, 0.4, 1.0));
+	s1.set_position(Color(10.0, 10.0, 10.0));
+	s1.set_diffuse(Color(0.4, 0.0, 0.8));
+	s1.set_specular(Color(0.1, 0.1, 0.1));
+	s1.set_lighting(Color(0.5, 0.5, 0.5));
+	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
+	s1.set_reflection(Color(1.0, 1.0, 1.0));
+	s1.set_reflectionfilter(0.5);
+	s1.set_refraction(Color(0.1, 0.1, 0.1));
+	s1.set_refractionfilter(0.1);
+
+	s1.calculate_sample();
+
+	//std::cout << s1.get_rgb() << std::endl;
+
+	result = s1 / 2.0;
+
+	ASSERT_EQ(result.get_rgb(), Color(1.39 / 2.0, 1.11 / 2.0, 1.67 / 2.0));
+	ASSERT_EQ(result.get_alpha(), 0.25);
+	ASSERT_EQ(result.get_depth(), 5.0);
+	ASSERT_EQ(result.get_background(), Color(0.25, 0.25, 0.25));
+	ASSERT_EQ(result.get_normal(), Color(0.3, 0.2, 0.5));
+	ASSERT_EQ(result.get_position(), Color(5.0, 5.0, 5.0));
+	ASSERT_EQ(result.get_diffuse(), Color(0.2, 0.0, 0.4));
+	ASSERT_EQ(result.get_specular(), Color(0.05, 0.05, 0.05));
+	ASSERT_EQ(result.get_lighting(), Color(0.25, 0.25, 0.25));
+	ASSERT_EQ(result.get_globalillumination(), Color(0.1, 0.1, 0.1));
+	ASSERT_EQ(result.get_reflection(), Color(0.5, 0.5, 0.5));
+	ASSERT_EQ(result.get_reflectionfilter(), 0.25);
+	ASSERT_EQ(result.get_refraction(), Color(0.05, 0.05, 0.05));
+	ASSERT_EQ(result.get_refractionfilter(), 0.05);
+}
+
+TEST(Sampling, multiplyingSamplesByAScalar)
+{
+	Sample s1 = Sample();
+	Sample result = Sample();
+
+	s1.set_alpha(0.5);
+	s1.set_depth(10.0);
+	s1.set_background(Color(0.5, 0.5, 0.5));
+	s1.set_normal(Color(0.6, 0.4, 1.0));
+	s1.set_position(Color(10.0, 10.0, 10.0));
+	s1.set_diffuse(Color(0.4, 0.0, 0.8));
+	s1.set_specular(Color(0.1, 0.1, 0.1));
+	s1.set_lighting(Color(0.5, 0.5, 0.5));
+	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
+	s1.set_reflection(Color(1.0, 1.0, 1.0));
+	s1.set_reflectionfilter(0.5);
+	s1.set_refraction(Color(0.1, 0.1, 0.1));
+	s1.set_refractionfilter(0.1);
+
+	s1.calculate_sample();
+
+	//std::cout << s1.get_rgb() << std::endl;
+
+	result = s1 * 4.0;
+
+	ASSERT_EQ(result.get_rgb(), Color(1.39 * 4.0, 1.11 * 4.0, 1.67 * 4.0));
+	ASSERT_EQ(result.get_alpha(), 2.0);
+	ASSERT_EQ(result.get_depth(), 40.0);
+	ASSERT_EQ(result.get_background(), Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.get_normal(), Color(2.4, 1.6, 4.0));
+	ASSERT_EQ(result.get_position(), Color(40.0, 40.0, 40.0));
+	ASSERT_EQ(result.get_diffuse(), Color(1.6, 0.0, 3.2));
+	ASSERT_EQ(result.get_specular(), Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.get_lighting(), Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.get_globalillumination(), Color(0.8, 0.8, 0.8));
+	ASSERT_EQ(result.get_reflection(), Color(4.0, 4.0, 4.0));
+	ASSERT_EQ(result.get_reflectionfilter(), 2.0);
+	ASSERT_EQ(result.get_refraction(), Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.get_refractionfilter(), 0.4);
 }

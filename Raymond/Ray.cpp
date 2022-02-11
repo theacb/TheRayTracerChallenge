@@ -26,6 +26,7 @@ Ray::Ray(Tuple origin, Tuple direction, int depth)
 	this->origin = origin;
 	this->direction = direction;
 	this->depth = depth;
+	this->dir_mult_inv = direction.multiplicative_inverse();
 }
 
 Ray::~Ray()

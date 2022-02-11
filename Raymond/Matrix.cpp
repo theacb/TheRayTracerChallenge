@@ -179,7 +179,7 @@ void Matrix::set_multiple(const std::vector<double> values)
 
 }
 
-// Overwite the Matrix with the Identity matrix
+// Overwrite the Matrix with the Identity matrix
 void Matrix::generate_identity()
 {
 	int columns = this->get_num_columns();
@@ -227,7 +227,7 @@ Matrix Matrix::transpose() const
 
 std::vector<double> Matrix::sub_matrix_vector(int remove_row, int remove_col) const
 {
-	// Seperates functionality from specified class return to facilitate overloading
+	// Separates functionality from specified class return to facilitate overloading
 
 	// Check that the requested row and column are in bounds
 	if (
@@ -252,9 +252,9 @@ std::vector<double> Matrix::sub_matrix_vector(int remove_row, int remove_col) co
 					if (c != remove_col)
 					{
 						// In order to skip certain rows and columns, an index variable 
-						// is stored seperately of the loop variables.
+						// is stored separately of the loop variables.
 						// The data is retrieved from the internal vector using the actual index (r + c),
-						// while the new index is assigned using the seperate variable.
+						// while the new index is assigned using the separate variable.
 						result[index] = this->m_data_[(r *  this->m_num_columns_) + c];
 						++index;
 					}
@@ -291,7 +291,7 @@ Matrix Matrix::sub_matrix(int remove_row, int remove_col) const
 // Minor
 double Matrix::minor(int row, int col) const
 {
-	// Determinant of the submatrix
+	// Determinant of the sub-matrix
 	return (this->sub_matrix(row, col)).determinant();
 }
 
@@ -335,7 +335,7 @@ bool Matrix::is_invertable() const
 
 std::vector<double> Matrix::inverse_vector() const
 {
-	// Seperates functionality from specified class return to facilitate overloading
+	// Separates functionality from specified class return to facilitate overloading
 	double det = this->determinant();
 	if (abs(det) < std::numeric_limits<double>::epsilon())
 	{
@@ -344,7 +344,7 @@ std::vector<double> Matrix::inverse_vector() const
 	}
 	std::vector<double> result = std::vector<double>(this->m_num_rows_ * this->m_num_columns_);
 
-	// Transposed vector of cofactors devided by the original Matrix's determinant
+	// Transposed vector of cofactors divided by the original Matrix's determinant
 
 	for (int r = 0; r < this->m_num_rows_; r++)
 	{
@@ -620,7 +620,7 @@ std::vector<double> Matrix3::get_column(int col) const
 	return { x, y, z };
 }
 
-// Submatrix
+// Sub-matrix
 Matrix2 Matrix3::sub_matrix3(int remove_row, int remove_col) const
 {
 	return Matrix2(this->sub_matrix_vector(remove_row, remove_col));
@@ -629,7 +629,7 @@ Matrix2 Matrix3::sub_matrix3(int remove_row, int remove_col) const
 // Minor
 double Matrix3::minor(int row, int col) const
 {
-	// Determinant of the submatrix
+	// Determinant of the sub-matrix
 	return (this->sub_matrix3(row, col)).determinant();
 }
 
@@ -842,7 +842,7 @@ Matrix3 Matrix4::sub_matrix4(int remove_row, int remove_col) const
 // Minor
 double Matrix4::minor(int row, int col) const
 {
-	// Determinant of the submatrix
+	// Determinant of the sub-matrix
 	return (this->sub_matrix4(row, col)).determinant();
 }
 

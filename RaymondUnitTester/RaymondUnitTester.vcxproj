@@ -34,6 +34,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClInclude Include="..\Raymond\Background.h" />
+    <ClInclude Include="..\Raymond\BoundingBox.h" />
     <ClInclude Include="..\Raymond\Camera.h" />
     <ClInclude Include="..\Raymond\Canvas.h" />
     <ClInclude Include="..\Raymond\Color.h" />
@@ -46,7 +47,10 @@
     <ClInclude Include="..\Raymond\Object.h" />
     <ClInclude Include="..\Raymond\Primitive.h" />
     <ClInclude Include="..\Raymond\PrimitiveDefinition.h" />
+    <ClInclude Include="..\Raymond\Quadtree.h" />
     <ClInclude Include="..\Raymond\Ray.h" />
+    <ClInclude Include="..\Raymond\Sample.h" />
+    <ClInclude Include="..\Raymond\SamplerGrid.h" />
     <ClInclude Include="..\Raymond\Texmap.h" />
     <ClInclude Include="..\Raymond\tuple.h" />
     <ClInclude Include="..\Raymond\Utilities.h" />
@@ -55,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Raymond\Background.cpp" />
+    <ClCompile Include="..\Raymond\BoundingBox.cpp" />
     <ClCompile Include="..\Raymond\Camera.cpp" />
     <ClCompile Include="..\Raymond\Canvas.cpp" />
     <ClCompile Include="..\Raymond\Color.cpp" />
@@ -66,7 +71,10 @@
     <ClCompile Include="..\Raymond\Object.cpp" />
     <ClCompile Include="..\Raymond\Primitive.cpp" />
     <ClCompile Include="..\Raymond\PrimitiveDefinition.cpp" />
+    <ClCompile Include="..\Raymond\Quadtree.cpp" />
     <ClCompile Include="..\Raymond\Ray.cpp" />
+    <ClCompile Include="..\Raymond\Sample.cpp" />
+    <ClCompile Include="..\Raymond\SamplerGrid.cpp" />
     <ClCompile Include="..\Raymond\Texmap.cpp" />
     <ClCompile Include="..\Raymond\tuple.cpp" />
     <ClCompile Include="..\Raymond\Utilities.cpp" />

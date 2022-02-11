@@ -50,7 +50,7 @@ std::shared_ptr<Sphere> Sphere::GlassSphere()
 {
 	auto s = std::make_shared<Sphere>();
 
-	auto ms = std::dynamic_pointer_cast<PhongMaterial>(s->material);
+	auto ms = std::static_pointer_cast<PhongMaterial>(s->material);
 	ms->refraction.set_value(Color(1.0));
 	ms->ior.set_value(1.5);
 
@@ -145,37 +145,37 @@ Cylinder::~Cylinder()
 
 bool Cylinder::get_closed() const
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	return def->closed;
 }
 
 void Cylinder::set_closed(const bool & closed)
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	def->closed = closed;
 }
 
 double Cylinder::get_minimum() const
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	return def->minimum;
 }
 
 void Cylinder::set_minimum(const double & min)
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	def->minimum = min;
 }
 
 double Cylinder::get_maximum() const
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	return def->maximum;
 }
 
 void Cylinder::set_maximum(const double & max)
 {
-	auto def = std::dynamic_pointer_cast<CylinderDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<CylinderDefinition>(this->get_definition());
 	def->minimum = max;
 }
 
@@ -223,37 +223,37 @@ DoubleNappedCone::~DoubleNappedCone()
 
 bool DoubleNappedCone::get_closed() const
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	return def->closed;
 }
 
 void DoubleNappedCone::set_closed(const bool & closed)
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	def->closed = closed;
 }
 
 double DoubleNappedCone::get_minimum() const
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	return def->minimum;
 }
 
 void DoubleNappedCone::set_minimum(const double & min)
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	def->minimum = min;
 }
 
 double DoubleNappedCone::get_maximum() const
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	return def->maximum;
 }
 
 void DoubleNappedCone::set_maximum(const double & max)
 {
-	auto def = std::dynamic_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
+	auto def = std::static_pointer_cast<DoubleNappedConeDefinition>(this->get_definition());
 	def->minimum = max;
 }
 
@@ -285,17 +285,38 @@ Cone::~Cone()
 // Constructors
 // ------------------------------------------------------------------------
 
-TestShape::TestShape() : TestShape("NullShape 000")
+TestShape::TestShape() : TestShape("Default NullShape 000")
 {
 }
 
 TestShape::TestShape(std::string name) : PrimitiveBase()
 {
-	this->set_definition(std::make_shared<NullShapeDefinition>());
 	this->set_name(name);
 }
 
 TestShape::~TestShape()
+{
+}
+
+// ------------------------------------------------------------------------
+//
+// Group
+//
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+Group::Group() : Group("Default Group 000")
+{
+}
+
+Group::Group(std::string name) : PrimitiveBase()
+{
+	this->set_name(name);
+	this->set_bounds_as_group(true);
+}
+
+Group::~Group()
 {
 }
 

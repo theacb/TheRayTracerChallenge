@@ -52,7 +52,7 @@ Color BaseMaterial::transmit(const std::shared_ptr<Light> lgt, const World & wor
 
 NormalsMaterial::NormalsMaterial() : BaseMaterial()
 {
-	this->name = "Default Normals Material Material 000";
+	this->name = "Default Normals Material 000";
 	this->use_schlick = false;
 }
 

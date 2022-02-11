@@ -79,7 +79,7 @@ int simulate_projectile()
 
 	//std::cout << c.to_ppm_lines(false).rdbuf();
 
-	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\ProjectileDotsCh02_tenth_02.ppm");
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\ProjectileDotsCh02_tenth_02.ppm");
 
 	return 0;
 }
@@ -114,7 +114,7 @@ int render_clock()
 		++hours;
 	}
 
-	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\ClockCh04_01.ppm");
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\ClockCh04_01.ppm");
 
 	return 0;
 }
@@ -143,7 +143,7 @@ int render_sphere()
 		
 	);
 
-	auto material = std::dynamic_pointer_cast<PhongMaterial>(s->material);
+	auto material = std::static_pointer_cast<PhongMaterial>(s->material);
 	material->color = Color(1.0, 0.2, 1.0);
 
 	auto lgt = std::make_shared<PointLight>(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0, 1.0, 1.0));
@@ -175,10 +175,10 @@ int render_sphere()
 
 			if (h.is_valid())
 			{
-				auto obj_ptr = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
+				auto obj_ptr = std::static_pointer_cast<PrimitiveBase>(h.object);
 				Tuple hit_point = r.position(h.t_value);
 
-				auto mat_ptr = std::dynamic_pointer_cast<PhongMaterial>(obj_ptr->material);
+				auto mat_ptr = std::static_pointer_cast<PhongMaterial>(obj_ptr->material);
 
 				Color col = mat_ptr->lighting(
 					lgt, 
@@ -202,7 +202,7 @@ int render_sphere()
 
 	std::cout << "Complete\n";
 
-	canvas_to_ppm(c, "E:\\dump\\projects\\Raymond\\frames\\LightAndShading_CH06_04.ppm", false);
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\LightAndShading_CH06_04.ppm", false);
 
 	return 0;
 }
@@ -547,8 +547,8 @@ Canvas render_ch10_world(int width, int height, double fov)
 void shadowed_test(World & w, const std::shared_ptr<Light> light, const Tuple & point, const int depth)
 {
 	// locater
-	auto locator = std::make_shared<Sphere>("locator 001");
-	auto locator_mat_phong = std::dynamic_pointer_cast<PhongMaterial>(locator->material);
+	auto locator = std::make_shared<Sphere>("locater 001");
+	auto locator_mat_phong = std::static_pointer_cast<PhongMaterial>(locator->material);
 	locator_mat_phong->ambient.set_value(Color(1.0));
 	locator_mat_phong->color.set_value(Color(1.0, 1.0, 0.0) * (1.0 - (double(depth) / 30.0)));
 	locator_mat_phong->specular.set_value(0.0);
@@ -570,8 +570,8 @@ void shadowed_test(World & w, const std::shared_ptr<Light> light, const Tuple & 
 	if (h.is_valid() && h.t_value < light_distance)
 	{
 		IxComps comps = IxComps(h, r, ix);
-		auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
-		auto mat_phong = std::dynamic_pointer_cast<PhongMaterial>(obj_prim->material);
+		auto obj_prim = std::static_pointer_cast<PrimitiveBase>(h.object);
+		auto mat_phong = std::static_pointer_cast<PhongMaterial>(obj_prim->material);
 
 		// Start transmit function
 		Color transmittance = mat_phong->refraction.sample_at(comps);
@@ -708,11 +708,11 @@ World render_ch11_world()
 	gs2->set_transform(Matrix4::Translation(-2.0, 0.5, -1.0) * Matrix4::Scaling(0.4, 0.4, 0.4));
 	w.add_object(gs2);
 
-	auto glass_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs->material);
+	auto glass_mtl = std::static_pointer_cast<PhongMaterial>(gs->material);
 	glass_mtl->reflection.set_value(Color(1.0));
 	glass_mtl->color.set_value(Color(0.0));
 
-	auto air_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs2->material);
+	auto air_mtl = std::static_pointer_cast<PhongMaterial>(gs2->material);
 	air_mtl->reflection.set_value(Color(1.0));
 	air_mtl->color.set_value(Color(0.0));
 	air_mtl->ior = 1.0;
@@ -855,11 +855,11 @@ World render_ch12_world()
 	gs2->set_transform(Matrix4::Translation(-2.0, 0.5, -1.0) * Matrix4::Scaling(0.1, 0.1, 0.1));
 	w.add_object(gs2);
 
-	auto glass_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs->material);
+	auto glass_mtl = std::static_pointer_cast<PhongMaterial>(gs->material);
 	glass_mtl->reflection.set_value(Color(1.0));
 	glass_mtl->color.set_value(Color(0.0));
 
-	auto air_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs2->material);
+	auto air_mtl = std::static_pointer_cast<PhongMaterial>(gs2->material);
 	air_mtl->reflection.set_value(Color(1.0));
 	air_mtl->color.set_value(Color(0.0));
 	air_mtl->ior = 1.0;
@@ -1008,11 +1008,11 @@ World render_ch13_world()
 	gs2->set_transform(Matrix4::Translation(-2.0, 0.5, -1.0) * Matrix4::Scaling(0.45, 0.45, 0.45));
 	w.add_object(gs2);
 
-	auto glass_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs->material);
+	auto glass_mtl = std::static_pointer_cast<PhongMaterial>(gs->material);
 	glass_mtl->reflection.set_value(Color(1.0));
 	glass_mtl->color.set_value(Color(0.0));
 
-	auto air_mtl = std::dynamic_pointer_cast<PhongMaterial>(gs2->material);
+	auto air_mtl = std::static_pointer_cast<PhongMaterial>(gs2->material);
 	air_mtl->reflection.set_value(Color(1.0));
 	air_mtl->color.set_value(Color(0.0));
 	air_mtl->ior = 1.0;
@@ -1101,11 +1101,13 @@ World render_ch13_world()
 int render_still()
 {
 	std::string chapter = "Cylinders_CH13";
-	std::string folder = "E:\\dump\\projects\\Raymond\\frames";
+	std::string folder = "I:\\projects\\Raymond\\frames";
 	int version = 2;
 
-	int width = 560;
-	int height = 315;
+	// 560 x 315
+
+	int width = 1920;
+	int height = 1080;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
@@ -1176,7 +1178,7 @@ int render_still()
 int render_animation()
 {
 	std::string file_name_root = "frame_";
-	std::string folder = "E:\\dump\\projects\\Raymond\\frames\\ani_DATE_01";
+	std::string folder = "I:\\projects\\Raymond\\frames\\ani_DATE_01";
 
 	int width = 1920;
 	int height = 1080;

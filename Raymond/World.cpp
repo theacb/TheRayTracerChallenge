@@ -29,7 +29,7 @@ World World::Default()
 	def.add_object(light);
 
 	auto s1 = std::make_shared<Sphere>();
-	auto ms1 = std::dynamic_pointer_cast<PhongMaterial>(s1->material);
+	auto ms1 = std::static_pointer_cast<PhongMaterial>(s1->material);
 	ms1->color = Color(0.8, 1.0, 0.6);
 	ms1->diffuse = 0.7;
 	ms1->specular = 0.2;
@@ -48,18 +48,14 @@ World World::Default()
 // Intersector
 // ------------------------------------------------------------------------
 
-Intersections World::intersect_world(const Ray & ray) const
+Intersections World::intersect_world(const Ray & r) const
 {
 	Intersections result;
-
-	// Prereserve space for at least 3 intersections per scene object
-	// This may be unwise...
-	result.reserve(this->w_primitives_.size() * 3);
 
 	for (std::shared_ptr<PrimitiveBase> obj: this->w_primitives_)
 	{
 		// generates an intersection for each object in the scene
-		Intersections obj_xs = intersect(ray, obj);
+		Intersections obj_xs = obj->intersect_i(r);
 
 		// Then concatenates them into a single vector
 		for (Intersection& ix : obj_xs)
@@ -72,6 +68,7 @@ Intersections World::intersect_world(const Ray & ray) const
 		}
 	}
 
+	// Sorting is required to find the hit
 	std::sort(result.begin(), result.end());
 	result.calculate_hit();
 
@@ -86,7 +83,7 @@ Color World::shade(IxComps & comps) const
 {
 	Color sample = Color(0.0);
 
-	auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(comps.object);
+	auto obj_prim = std::static_pointer_cast<PrimitiveBase>(comps.object);
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_)
 	{
@@ -179,7 +176,7 @@ Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, c
 	if (h.is_valid() && h.t_value < distance)
 	{
 		IxComps comps = IxComps(h, r, ix);
-		auto obj_prim = std::dynamic_pointer_cast<PrimitiveBase>(h.object);
+		auto obj_prim = std::static_pointer_cast<PrimitiveBase>(h.object);
 
 		return obj_prim->material->transmit(light, *this, comps, ix);
 	}

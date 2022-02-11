@@ -220,7 +220,7 @@ Color TexMap::sample_at(const IxComps & comps) const
 	// Make a copy to edit the point
 	IxComps transformed_comps = IxComps(comps);
 
-	// accomodate different mapping types
+	// accommodate different mapping types
 	switch (this->mapping_space_)
 	{
 	// Just transforms by the pattern's mapping matrix
@@ -230,8 +230,7 @@ Color TexMap::sample_at(const IxComps & comps) const
 
 	// Also transforms by the object's transformation matrix
 	case ObjectSpace:
-		Matrix4 transform = this->transform->get_inverse_transform() * comps.object->get_inverse_transform();
-		transformed_comps.texmap_point = transform * comps.point;
+		transformed_comps.texmap_point = this->transform->get_inverse_transform() * comps.object->point_to_object_space(comps.point);
 		break;
 	}
 
@@ -292,8 +291,8 @@ StripeMap::StripeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b)
 }
 
 StripeMap::StripeMap(Color a, Color b) : StripeMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
 )
 {
 }
@@ -369,8 +368,8 @@ GradientMap::GradientMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b) :
 }
 
 GradientMap::GradientMap(Color a, Color b) : GradientMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
 )
 {
 }
@@ -415,8 +414,8 @@ RingMap::RingMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b) : TexMap(
 }
 
 RingMap::RingMap(Color a, Color b) : RingMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
 )
 {
 }
@@ -463,8 +462,8 @@ CheckerMap::CheckerMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b) : T
 }
 
 CheckerMap::CheckerMap(Color a, Color b) : CheckerMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b))
 )
 {
 }
@@ -528,8 +527,8 @@ CompositeMap::CompositeMap(std::shared_ptr<TexMap> a, std::shared_ptr<TexMap> b,
 }
 
 CompositeMap::CompositeMap(Color a, Color b, CompositeMode mode) : CompositeMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b)),
 	mode,
 	1.0
 )
@@ -537,8 +536,8 @@ CompositeMap::CompositeMap(Color a, Color b, CompositeMode mode) : CompositeMap(
 }
 
 CompositeMap::CompositeMap(Color a, Color b, CompositeMode mode, double factor) : CompositeMap(
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
-	std::dynamic_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(a)),
+	std::static_pointer_cast<TexMap>(std::make_shared<SolidColorMap>(b)),
 	mode,
 	factor
 )

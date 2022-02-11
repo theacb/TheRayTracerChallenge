@@ -23,7 +23,7 @@ public:
 	Color(const Tuple & a);
 	Color(const Color8Bit & col);
 
-	// Destrcutor
+	// Destructor
 	~Color();
 
 	// Properties
@@ -81,8 +81,8 @@ std::ostream & operator<<(std::ostream & os, const Color & col);
 // Helper Functions
 double linear_to_srgb(const double x);
 double srgb_to_linear(const double x);
-double safe_divide(const double a, const double b);
 double overlay_channel(const double a, const double b);
 double screen_channel(const double a, const double b);
+double safe_comp_divide(const double a, const double b);
 
 #endif

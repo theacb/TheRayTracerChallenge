@@ -54,9 +54,9 @@ Color Color::multiply(const Color & top_layer, const double & alpha)
 Color Color::divide(const Color & top_layer, const double & alpha)
 {
 	Color result = Color(
-		safe_divide(this->x, top_layer.x),
-		safe_divide(this->y, top_layer.y),
-		safe_divide(this->z, top_layer.z)
+		safe_comp_divide(this->x, top_layer.x),
+		safe_comp_divide(this->y, top_layer.y),
+		safe_comp_divide(this->z, top_layer.z)
 	);
 	return lerp(alpha, *this, result);
 }
@@ -136,9 +136,9 @@ Color Color::operator*(const Color & right_color) const
 Color Color::operator/(const Color & right_color) const
 {
 	return Color(
-		safe_divide(this->x, right_color.x),
-		safe_divide(this->y, right_color.y),
-		safe_divide(this->z, right_color.z)
+		safe_comp_divide(this->x, right_color.x),
+		safe_comp_divide(this->y, right_color.y),
+		safe_comp_divide(this->z, right_color.z)
 	);
 }
 
@@ -197,7 +197,7 @@ Color8Bit::~Color8Bit()
 
 std::string Color8Bit::output()
 {
-	// returns a string representint the channel digits seperated by spaces
+	// returns a string representing the channel digits separated by spaces
 	// Examples 
 	//		0 0 0
 	//		18 2 255
@@ -260,14 +260,6 @@ double srgb_to_linear(const double x)
 // Blend Operations
 // ------------------------------------------------------------------------
 
-double safe_divide(const double a, const double b)
-{
-	if (abs(b) > EPSILON)
-		return a / b;
-	else
-		return a;
-}
-
 double overlay_channel(const double a, const double b)
 {
 	if (a < 0.5)
@@ -279,4 +271,22 @@ double overlay_channel(const double a, const double b)
 double screen_channel(const double a, const double b)
 {
 	return 1.0 - (1.0 - a) * (1.0 - b);
+}
+
+// Based on the implementation from GIMP for safe composite division
+//		returns a / b, clamped to [-SAFE_DIV_MAX, SAFE_DIV_MAX].
+//		if -SAFE_DIV_MIN <= a <= SAFE_DIV_MIN, returns 0.
+// https://gitlab.gnome.org/GNOME/gimp/-/blob/master/app/operations/layer-modes/gimpoperationlayermode-blend.c#L57
+
+double safe_comp_divide(const double a, const double b)
+{
+	double result = 0.0;
+
+	if (abs(b) > SAFE_DIV_MIN)
+	{
+		result = a / b;
+		result = clip(result, -SAFE_DIV_MAX, SAFE_DIV_MAX);
+	}
+
+	return result;
 }

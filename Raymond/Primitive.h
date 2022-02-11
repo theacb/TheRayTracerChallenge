@@ -12,7 +12,7 @@ class PrimitiveBase :
 {
 public:
 	PrimitiveBase();
-	~PrimitiveBase();
+	virtual ~PrimitiveBase();
 
 	//properties
 	std::shared_ptr<BaseMaterial> material;
@@ -110,6 +110,15 @@ public:
 	TestShape();
 	TestShape(std::string name);
 	~TestShape();
+};
+
+class Group :
+	public PrimitiveBase
+{
+public:
+	Group();
+	Group(std::string name);
+	~Group();
 };
 
 #endif

@@ -77,6 +77,11 @@ Tuple SphereDefinition::local_normal_at(const Tuple & object_space_point) const
 	return object_space_point - Tuple::Origin();
 }
 
+BoundingBox SphereDefinition::bounding_box() const
+{
+	return BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+}
+
 // ------------------------------------------------------------------------
 //
 // Infinite Plane
@@ -111,6 +116,22 @@ Tuple InfinitePlaneDefinition::local_normal_at(const Tuple & object_space_point)
 {
 	// Assumes that the object space plane is on the X and Z axis, pointing in the positive y direction
 	return Tuple::Vector(0.0, 1.0, 0.0);
+}
+
+BoundingBox InfinitePlaneDefinition::bounding_box() const
+{
+	return BoundingBox(
+		Tuple::Point(
+			-std::numeric_limits<double>::infinity(), 
+			-EPSILON,
+			-std::numeric_limits<double>::infinity()
+		), 
+		Tuple::Point(
+			std::numeric_limits<double>::infinity(), 
+			EPSILON, 
+			std::numeric_limits<double>::infinity()
+		)
+	);
 }
 
 // ------------------------------------------------------------------------
@@ -169,6 +190,11 @@ Tuple CubeDefinition::local_normal_at(const Tuple & object_space_point) const
 	return Tuple::Vector(0.0, 0.0, object_space_point.z);
 }
 
+BoundingBox CubeDefinition::bounding_box() const
+{
+	return BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+}
+
 std::vector<double> CubeDefinition::check_axis_(const double & origin, const double & direction) const
 {
 	// Intersect with an infinite plane
@@ -185,8 +211,8 @@ std::vector<double> CubeDefinition::check_axis_(const double & origin, const dou
 	}
 	else
 	{
-		tmin = tmin_numerator * std::numeric_limits<double>::infinity();;
-		tmax = tmax_numerator * std::numeric_limits<double>::infinity();;
+		tmin = tmin_numerator * std::numeric_limits<double>::infinity();
+		tmax = tmax_numerator * std::numeric_limits<double>::infinity();
 	}
 
 	// Swap so that the first value is always the minimum
@@ -266,14 +292,14 @@ std::vector<double> CylinderDefinition::local_intersect_t(const Ray & r) const
 			t0 = temp;
 		}
 
-		// Check if the first intesection is within the minimum bounds
+		// Check if the first intersection is within the minimum bounds
 		double y0 = r.origin.y + (t0 * r.direction.y);
 		if (this->minimum < y0 && y0 < this->maximum)
 		{
 			results.push_back(t0);
 		}
 
-		// Check if the second intesection is within the minimum bounds
+		// Check if the second intersection is within the minimum bounds
 		double y1 = r.origin.y + (t1 * r.direction.y);
 		if (this->minimum < y1 && y1 < this->maximum)
 		{
@@ -308,6 +334,11 @@ Tuple CylinderDefinition::local_normal_at(const Tuple & object_space_point) cons
 	{
 		return Tuple::Vector(object_space_point.x, 0.0, object_space_point.z);
 	}
+}
+
+BoundingBox CylinderDefinition::bounding_box() const
+{
+	return BoundingBox(Tuple::Point(-1.0, this->minimum, -1.0), Tuple::Point(1.0, this->maximum, 1.0));
 }
 
 void CylinderDefinition::intersect_caps_(const Ray & r, std::vector<double> & xs) const
@@ -401,14 +432,14 @@ std::vector<double> DoubleNappedConeDefinition::local_intersect_t(const Ray & r)
 			t0 = temp;
 		}
 
-		// Check if the first intesection is within the minimum bounds
+		// Check if the first intersection is within the minimum bounds
 		double y0 = r.origin.y + (t0 * r.direction.y);
 		if (this->minimum < y0 && y0 < this->maximum)
 		{
 			results.push_back(t0);
 		}
 
-		// Check if the second intesection is within the minimum bounds
+		// Check if the second intersection is within the minimum bounds
 		double y1 = r.origin.y + (t1 * r.direction.y);
 		if (this->minimum < y1 && y1 < this->maximum)
 		{
@@ -417,10 +448,10 @@ std::vector<double> DoubleNappedConeDefinition::local_intersect_t(const Ray & r)
 	}
 	else if (abs(b) > std::numeric_limits<double>::epsilon())
 	{
-		// The Ray is parralel to one of the cone halves, but will hit the other
+		// The Ray is parallel to one of the cone halves, but will hit the other
 		double t = -(c / (2.0 * b));
 
-		// Check if the intesection is within the minimum bounds
+		// Check if the intersection is within the minimum bounds
 		double y = r.origin.y + (t * r.direction.y);
 		if (this->minimum < y && y < this->maximum)
 		{
@@ -463,6 +494,19 @@ Tuple DoubleNappedConeDefinition::local_normal_at(const Tuple & object_space_poi
 	}
 }
 
+BoundingBox DoubleNappedConeDefinition::bounding_box() const
+{
+	return BoundingBox(Tuple::Point(
+		this->minimum, 
+		this->minimum, 
+		this->minimum
+	), Tuple::Point(
+		this->maximum,
+		this->maximum,
+		this->maximum
+	));
+}
+
 void DoubleNappedConeDefinition::intersect_caps_(const Ray & r, std::vector<double>& xs) const
 {
 	// Pass xs by reference, and update it rather than merge a return vector
@@ -487,7 +531,7 @@ bool DoubleNappedConeDefinition::check_caps_(const Ray & r, const double & t, co
 	double x = r.origin.x + (t * r.direction.x);
 	double z = r.origin.z + (t * r.direction.z);
 
-	// The radius is equal to the truncation length for this cap (minuimum or maximum)
+	// The radius is equal to the truncation length for this cap (minimum or maximum)
 	// Because these could be negative, it's simpler to abs the radius here
 	return ((x * x) + (z * z)) <= (radius * radius);
 }
@@ -520,4 +564,9 @@ std::vector<double> NullShapeDefinition::local_intersect_t(const Ray & r) const
 Tuple NullShapeDefinition::local_normal_at(const Tuple & object_space_point) const
 {
 	return Tuple::Vector(object_space_point.x, object_space_point.y, object_space_point.z);
+}
+
+BoundingBox NullShapeDefinition::bounding_box() const
+{
+	return BoundingBox(Tuple::Point(0.0, 0.0, 0.0), Tuple::Point(0.0, 0.0, 0.0));;
 }

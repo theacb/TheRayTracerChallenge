@@ -54,6 +54,18 @@
     <ClCompile Include="..\Raymond\PrimitiveDefinition.cpp">
       <Filter>files_to_test</Filter>
     </ClCompile>
+    <ClCompile Include="..\Raymond\BoundingBox.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\Sample.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\SamplerGrid.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Raymond\Quadtree.cpp">
+      <Filter>files_to_test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -107,6 +119,18 @@
       <Filter>files_to_test</Filter>
     </ClInclude>
     <ClInclude Include="..\Raymond\PrimitiveDefinition.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\BoundingBox.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Sample.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\SamplerGrid.h">
+      <Filter>files_to_test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Raymond\Quadtree.h">
       <Filter>files_to_test</Filter>
     </ClInclude>
   </ItemGroup>

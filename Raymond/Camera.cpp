@@ -31,7 +31,7 @@ Camera::~Camera()
 
 Ray Camera::ray_from_pixel(int x, int y) const
 {
-	// Offset from the edge of the canvas to the pixel's ceneter
+	// Offset from the edge of the canvas to the pixel's center
 	double x_offset = (double(x) + 0.5) * this->c_pixel_size_;
 	double y_offset = (double(y) + 0.5) * this->c_pixel_size_;
 
@@ -124,7 +124,7 @@ Canvas Camera::render_scanline(const World & w, int line) const
 }
 
 // ------------------------------------------------------------------------
-// Acssesors
+// Accessors
 // ------------------------------------------------------------------------
 
 int Camera::get_horizontal_size() const

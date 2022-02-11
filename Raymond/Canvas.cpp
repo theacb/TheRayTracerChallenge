@@ -2,10 +2,14 @@
 #include "Canvas.h"
 
 // ------------------------------------------------------------------------
+//
+// Canvas
+//
+// ------------------------------------------------------------------------
 // Constructors
 // ------------------------------------------------------------------------
 
-Canvas::Canvas()
+Canvas::Canvas() : Canvas(1, 1)
 {
 }
 
@@ -87,7 +91,7 @@ std::stringstream Canvas::to_ppm_lines(const bool convert_toSRGB)
 	// Tracks the line length
 	int line_length = 0;
 
-	for (Color c : c_pixels_)
+	for (Color c : this->c_pixels_)
 	{
 		Color cc;
 		if (convert_toSRGB)
@@ -98,7 +102,7 @@ std::stringstream Canvas::to_ppm_lines(const bool convert_toSRGB)
 		{
 			cc = c;
 		}
-		// The color is first converetd to sRGB, then to 8Bit, then to a string.
+		// The color is first converted to sRGB, then to 8Bit, then to a string.
 		std::string converted_color = Color8Bit(cc).output();
 		int length = static_cast<int>(converted_color.length());
 
@@ -130,24 +134,24 @@ std::vector<Color> Canvas::get_pixels() const
 
 int Canvas::width() const
 {
-	return c_width_;
+	return this->c_width_;
 }
 
 int Canvas::height() const
 {
-	return c_height_;
+	return this->c_height_;
 }
 
 // iterators
 // Allows iteration access to the underlying vector
 Color * Canvas::begin()
 {
-	return c_pixels_.data();
+	return this->c_pixels_.data();
 }
 
 Color * Canvas::end()
 {
-	return c_pixels_.data() + c_pixels_.size();
+	return this->c_pixels_.data() + c_pixels_.size();
 }
 
 
@@ -157,18 +161,18 @@ Color * Canvas::end()
 // ------------------------------------------------------------------------
 Color Canvas::c_get_element_(int x, int y)
 {
-	return c_pixels_.at(c_index_from_coordinates_(x, y));
+	return this->c_pixels_.at(this->c_index_from_coordinates_(x, y));
 }
 
 void Canvas::c_set_element_(int x, int y, Color color)
 {
-	c_pixels_.at(c_index_from_coordinates_(x, y)) = color;
+	this->c_pixels_.at(this->c_index_from_coordinates_(x, y)) = color;
 }
 
 // Converts x,y cartesian coords to an index in the internal vector
 int Canvas::c_index_from_coordinates_(int x, int y)
 {
-	return (y * c_width_) + x;
+	return (y * this->c_width_) + x;
 }
 
 // ------------------------------------------------------------------------

@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Background.h" />
+    <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Color.h" />
@@ -165,7 +166,10 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Primitive.h" />
+    <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Sample.h" />
+    <ClInclude Include="SamplerGrid.h" />
     <ClInclude Include="Texmap.h" />
     <ClInclude Include="Tuple.h" />
     <ClInclude Include="Utilities.h" />
@@ -173,6 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Background.cpp" />
+    <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="Color.cpp" />
@@ -190,8 +195,11 @@
     </ClCompile>
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Primitive.cpp" />
+    <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Raymond.cpp" />
+    <ClCompile Include="Sample.cpp" />
+    <ClCompile Include="SamplerGrid.cpp" />
     <ClCompile Include="Texmap.cpp" />
     <ClCompile Include="Tuple.cpp" />
     <ClCompile Include="Utilities.cpp" />

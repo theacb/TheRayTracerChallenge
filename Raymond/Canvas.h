@@ -25,7 +25,6 @@ public:
 	std::vector<Color> get_pixels() const;
 
 	// Accessors
-
 	int width() const;
 	int height() const;
 
@@ -34,7 +33,6 @@ public:
 	Color * end();
 
 private:
-
 	// Properties
 	std::vector<Color> c_pixels_;
 
