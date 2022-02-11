@@ -114,7 +114,6 @@ private:
 	void qb_null_leaf_(const Quadrant quadrant);
 	void qb_leaf_to_branch_(const Quadrant quadrant);
 	void qb_nest_branch_(const Tuple top_left, const Tuple bottom_right, const Quadrant quadrant);
-	void qb_print_leaf_name_(const Quadrant quadrant);
 
 };
 
@@ -167,25 +166,17 @@ inline QuadBranch<T>::~QuadBranch()
 template<typename T>
 inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 {
-	// Print Prefix
-	std::string prefix("");
-	prefix.insert(0, this->qb_depth_ * 4, ' ');
-
-	std::cout << prefix << "Insert Start - " << node->data.name << " Position: " << node->pos << std::endl;
-
 	Tuple tl = this->qb_top_left_;
 	Tuple br = this->qb_bottom_right_;
 
 	if (node == nullptr)
 	{
-		std::cout << prefix << "Node is nullptr" << std::endl;
 		return;
 	}
 
 	// Check if the current quad can contain this point
 	if (!this->contains_point(node->pos))
 	{
-		std::cout << prefix << "Point out of Bounds" << std::endl;
 		return;
 	}
 
@@ -196,7 +187,6 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Split into the Northwest quarter if true, Southwest quarter if false
 		if ((tl.y + br.y) / 2 >= node->pos.y)
 		{
-			std::cout << prefix << "Insert NW" << std::endl;
 			this->qb_insert_quarter_(
 				node,
 				Northwest_qb,
@@ -208,7 +198,6 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Southwest
 		else 
 		{
-			std::cout << prefix << "Insert SW" << std::endl;
 			this->qb_insert_quarter_(
 				node,
 				Southwest_qb,
@@ -223,7 +212,6 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Split into the Northeast quarter if true, Southeast quarter if false
 		if ((tl.y + br.y) / 2 >= node->pos.y)
 		{
-			std::cout << prefix << "Insert NE" << std::endl;
 			this->qb_insert_quarter_(
 				node,
 				Northeast_qb,
@@ -234,7 +222,6 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Southwest
 		else
 		{
-			std::cout << prefix << "Insert SE" << std::endl;
 			this->qb_insert_quarter_(
 				node,
 				Southeast_qb,
@@ -243,8 +230,6 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 			);
 		}
 	}
-
-	std::cout << prefix << "Insert Complete" << std::endl;
 }
 
 template<typename T>
@@ -322,37 +307,24 @@ inline bool QuadBranch<T>::contains_point(Tuple point)
 template<typename T>
 inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::get_child_nodes()
 {
-	// Print Prefix
-	std::string prefix("|");
-	prefix.insert(1, this->qb_depth_ * 4, '-');
-
-	std::cout << prefix << " Get Children: Depth:  " << this->qb_depth_ << std::endl;
 
 	// Directly assign children to indices
 	std::vector<std::shared_ptr<QuadNode<T>>> vec;
 	vec.reserve(4);
 	if (this->qb_lf_ne_ != nullptr)
 	{
-		std::cout << prefix << " |Get NE leaf node" << std::endl;
-		std::cout << prefix << "---- |" << this->qb_lf_ne_->data.name << std::endl;
 		vec.push_back(this->qb_lf_ne_);
 	}
 	if (this->qb_lf_nw_ != nullptr)
 	{
-		std::cout << prefix << " |Get NW leaf node" << std::endl;
-		std::cout << prefix << "---- |" << this->qb_lf_nw_->data.name << std::endl;
 		vec.push_back(this->qb_lf_nw_);
 	}
 	if (this->qb_lf_sw_ != nullptr)
 	{
-		std::cout << prefix << " |Get SW leaf node" << std::endl;
-		std::cout << prefix << "---- |" << this->qb_lf_sw_->data.name << std::endl;
 		vec.push_back(this->qb_lf_sw_);
 	}
 	if (this->qb_lf_se_ != nullptr)
 	{
-		std::cout << prefix << " |Get SE leaf node" << std::endl;
-		std::cout << prefix << "---- |" << this->qb_lf_se_->data.name << std::endl;
 		vec.push_back(this->qb_lf_se_);
 	}
 
@@ -368,49 +340,34 @@ inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::get_all_nodes()
 	int d = this->qb_max_depth_ - this->qb_depth_;
 	vec.reserve(((d * d) * 4) + 4);
 
-	// Print Prefix
-	std::string prefix("|");
-	prefix.insert(1, this->qb_depth_ * 4, '-');
-
-	std::cout << prefix << " Get All Nodes: Depth:  " << this->qb_depth_ << std::endl;
-
 	// declare variables
 	std::vector<std::shared_ptr<QuadNode<T>>> vec_ne, vec_se, vec_nw, vec_sw, children;
 
 	// get values from branches
 	if (this->qb_br_ne_ != nullptr)
 	{
-		std::cout << prefix << " |Get NE Branch's nodes" << std::endl;
 		vec_ne = this->qb_br_ne_->get_all_nodes();
 		vec.insert(vec.end(), vec_ne.begin(), vec_ne.end());
-		std::cout << prefix << " |Size: " << vec_ne.size() << std::endl;
 	}
 	if (this->qb_br_se_ != nullptr)
 	{
-		std::cout << prefix << " |Get SE Branch's nodes" << std::endl;
 		vec_se = this->qb_br_se_->get_all_nodes();
 		vec.insert(vec.end(), vec_se.begin(), vec_se.end());
-		std::cout << prefix << " |Size: " << vec_se.size() << std::endl;
 	}
 	if (this->qb_br_nw_ != nullptr)
 	{
-		std::cout << prefix << " |Get NW Branch's nodes" << std::endl;
 		vec_nw = this->qb_br_nw_->get_all_nodes();
 		vec.insert(vec.end(), vec_nw.begin(), vec_nw.end());
-		std::cout << prefix << " |Size: " << vec_nw.size() << std::endl;
 	}
 	if (this->qb_br_sw_ != nullptr)
 	{
-		std::cout << prefix << " |Get SW Branch's nodes" << std::endl;
 		vec_sw = this->qb_br_sw_->get_all_nodes();
 		vec.insert(vec.end(), vec_sw.begin(), vec_sw.end());
-		std::cout << prefix << " |Size: " << vec_sw.size() << std::endl;
 	}
 
 	// Get direct children as well
 	children = this->get_child_nodes();
 	if (children.size() > 0)
-		std::cout << prefix << " |Leaf Size: " << children.size() << std::endl;
 		vec.insert(vec.end(), children.begin(), children.end());
 
 	return vec;
@@ -419,43 +376,32 @@ inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::get_all_nodes()
 template<typename T>
 inline void QuadBranch<T>::qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant, const Tuple top_left, const Tuple bottom_right)
 {
-	// Print Prefix
-	std::string prefix("");
-	prefix.insert(0, this->qb_depth_ * 4, ' ');
-
-	std::cout << prefix << "Insert Quarter - Quadrant: " << quadrant << " (" << top_left << ", " << bottom_right << ")" << std::endl;
+	// empty Branches start by filling leaves, then create new branches if the node comes into conflict with the leaf
 	if (this->qb_is_branch_empty_(quadrant) && this->qb_is_leaf_empty_(quadrant))
 	{
-		std::cout << prefix << "    - Insert Quarter - Empty Quarter" << std::endl;
 		this->qb_attach_leaf_(node, quadrant);
 		return;
 	}
 	else if (this->qb_depth_ <= this->qb_max_depth_)
 	{
-		std::cout << prefix << "    - Insert Quarter - Occupied Quarter" << std::endl;
 		// If the quad is unoccupied, fill it with a new quad
 		if (this->qb_is_branch_empty_(quadrant))
 		{
-			std::cout << prefix << "    - Insert Quarter - Insert new Branch" << std::endl;
 			this->qb_nest_branch_(top_left, bottom_right, quadrant);
 		}
 
 		// If the leaf was occupied, move it's contents to the branch and declare it NULL
 		if (!this->qb_is_leaf_empty_(quadrant))
 		{
-			this->qb_print_leaf_name_(quadrant);
-			std::cout << prefix << "    - Insert Quarter - Move LEAF to BRANCH" << std::endl;
 			this->qb_leaf_to_branch_(quadrant);
 		}
 
-		std::cout << prefix << "    - Insert Quarter - Insert NODE to BRANCH" << std::endl;
 		// Recursively insert 
 		this->qb_insert_to_branch_(node, quadrant);
 		return;
 	}
 	else
 	{
-		std::cout << prefix << "    - Insert Quarter - DEPTH CHECK FAILED - Node Lost" << std::endl;
 		return;
 	}
 }
@@ -480,7 +426,6 @@ inline bool QuadBranch<T>::qb_is_branch_empty_(const Quadrant quadrant)
 	case Southwest_qb:
 		return this->qb_br_sw_ == nullptr;
 		break;
-
 	}
 
 	return false;
@@ -506,7 +451,6 @@ inline bool QuadBranch<T>::qb_is_leaf_empty_(const Quadrant quadrant)
 	case Southwest_qb:
 		return this->qb_lf_sw_ == nullptr;
 		break;
-
 	}
 
 	return false;
@@ -515,31 +459,21 @@ inline bool QuadBranch<T>::qb_is_leaf_empty_(const Quadrant quadrant)
 template<typename T>
 inline void QuadBranch<T>::qb_insert_to_branch_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant)
 {
-	// Print Prefix
-	std::string prefix("");
-	prefix.insert(0, this->qb_depth_ * 4, ' ');
-
-	std::cout << prefix << "    * Node To Branch - Quadrant: " << quadrant << std::endl;
-
 	switch (quadrant)
 	{
 	case Northeast_qb:
-		std::cout << prefix << "    *     Northeast" << std::endl;
 		this->qb_br_ne_->insert(node);
 		break;
 
 	case Northwest_qb:
-		std::cout << prefix << "    *     Northwest" << std::endl;
 		this->qb_br_nw_->insert(node);
 		break;
 
 	case Southeast_qb:
-		std::cout << prefix << "    *     Southeast" << std::endl;
 		this->qb_br_se_->insert(node);
 		break;
 
 	case Southwest_qb:
-		std::cout << prefix << "    *     Southwest" << std::endl;
 		this->qb_br_sw_->insert(node);
 		break;
 
@@ -620,34 +554,24 @@ inline void QuadBranch<T>::qb_null_leaf_(const Quadrant quadrant)
 template<typename T>
 inline void QuadBranch<T>::qb_leaf_to_branch_(const Quadrant quadrant)
 {
-	// Print Prefix
-	std::string prefix("");
-	prefix.insert(0, this->qb_depth_ * 4, ' ');
-
-	std::cout << prefix << "    * Leaf To Branch - Quadrant: " << quadrant << std::endl;
-
 	switch (quadrant)
 	{
 	case Northeast_qb:
-		std::cout << prefix << "    *     Northeast" << std::endl;
 		this->qb_br_ne_->insert(this->qb_lf_ne_);
 		this->qb_lf_ne_ = nullptr;
 		break;
 
 	case Northwest_qb:
-		std::cout << prefix << "    *     Northwest" << std::endl;
 		this->qb_br_nw_->insert(this->qb_lf_nw_);
 		this->qb_lf_nw_ = nullptr;
 		break;
 
 	case Southeast_qb:
-		std::cout << prefix << "    *     Southeast" << std::endl;
 		this->qb_br_se_->insert(this->qb_lf_se_);
 		this->qb_lf_se_ = nullptr;
 		break;
 
 	case Southwest_qb:
-		std::cout << prefix << "    *     Southwest" << std::endl;
 		this->qb_br_sw_->insert(this->qb_lf_sw_);
 		this->qb_lf_sw_ = nullptr;
 		break;
@@ -677,33 +601,6 @@ inline void QuadBranch<T>::qb_nest_branch_(const Tuple top_left, const Tuple bot
 		this->qb_br_sw_ = br;
 		break;
 
-	}
-}
-
-template<typename T>
-inline void QuadBranch<T>::qb_print_leaf_name_(const Quadrant quadrant)
-{
-	// Print Prefix
-	std::string prefix("");
-	prefix.insert(0, this->qb_depth_ * 4, ' ');
-
-	switch (quadrant)
-	{
-	case Northeast_qb:
-		std::cout << prefix << "    * Current Leaf: " << this->qb_lf_ne_->data.name << std::endl;
-		break;
-
-	case Northwest_qb:
-		std::cout << prefix << "    * Current Leaf: " << this->qb_lf_nw_->data.name << std::endl;
-		break;
-
-	case Southeast_qb:
-		std::cout << prefix << "    * Current Leaf: " << this->qb_lf_se_->data.name << std::endl;
-		break;
-
-	case Southwest_qb:
-		std::cout << prefix << "    * Current Leaf: " << this->qb_lf_sw_->data.name << std::endl;
-		break;
 	}
 }
 

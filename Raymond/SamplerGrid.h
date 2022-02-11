@@ -6,6 +6,8 @@
 #include "Color.h"
 #include "Canvas.h"
 #include "Tuple.h"
+#include "Quadtree.h"
+
 #include <vector>
 #include <fstream>
 #include <sstream> 
