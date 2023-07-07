@@ -27,7 +27,7 @@ public:
 	~SphereDefinition();
 
 	// Methods
-	virtual std::vector<double> local_intersect_t(const Ray & r) const override;
+	std::vector<double> local_intersect_t(const Ray & r) const override;
 	virtual Tuple local_normal_at(const Tuple & object_space_point) const override;
 	virtual BoundingBox bounding_box() const override;
 };
@@ -104,7 +104,7 @@ public:
 
 private:
 	void intersect_caps_(const Ray & r, std::vector<double> & xs) const;
-	bool check_caps_(const Ray & r, const double & t, const double & radius) const;
+	static bool check_caps_(const Ray & r, const double & t, const double & radius) ;
 };
 
 class NullShapeDefinition :

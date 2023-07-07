@@ -10,13 +10,11 @@
 // ------------------------------------------------------------------------
 
 PrimitiveDefinition::PrimitiveDefinition()
-{
-}
+= default;
 
 
 PrimitiveDefinition::~PrimitiveDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 //
@@ -31,8 +29,7 @@ SphereDefinition::SphereDefinition() : PrimitiveDefinition()
 }
 
 SphereDefinition::~SphereDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -79,7 +76,7 @@ Tuple SphereDefinition::local_normal_at(const Tuple & object_space_point) const
 
 BoundingBox SphereDefinition::bounding_box() const
 {
-	return BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+	return {Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0)};
 }
 
 // ------------------------------------------------------------------------
@@ -95,15 +92,14 @@ InfinitePlaneDefinition::InfinitePlaneDefinition() : PrimitiveDefinition()
 }
 
 InfinitePlaneDefinition::~InfinitePlaneDefinition()
-{
-}
+= default;
 
 std::vector<double> InfinitePlaneDefinition::local_intersect_t(const Ray & r) const
 {
 	// Parallel or coplanar rays return empty vector
 	if (abs(r.direction.y) < EPSILON)
 	{
-		return std::vector<double>();
+		return {};
 	}
 	// Assumes that the object space plane is on the X and Z axis
 	else
@@ -120,7 +116,7 @@ Tuple InfinitePlaneDefinition::local_normal_at(const Tuple & object_space_point)
 
 BoundingBox InfinitePlaneDefinition::bounding_box() const
 {
-	return BoundingBox(
+	return {
 		Tuple::Point(
 			-std::numeric_limits<double>::infinity(), 
 			-EPSILON,
@@ -131,7 +127,7 @@ BoundingBox InfinitePlaneDefinition::bounding_box() const
 			EPSILON, 
 			std::numeric_limits<double>::infinity()
 		)
-	);
+	};
 }
 
 // ------------------------------------------------------------------------
@@ -147,8 +143,7 @@ CubeDefinition::CubeDefinition() : PrimitiveDefinition()
 }
 
 CubeDefinition::~CubeDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -167,7 +162,7 @@ std::vector<double> CubeDefinition::local_intersect_t(const Ray & r) const
 	// If the ray misses, the minimum will be greater than the maximum
 	if (tmin > tmax)
 	{
-		return std::vector<double>();
+		return {};
 	}
 
 	return std::vector<double>({ tmin, tmax });
@@ -192,7 +187,7 @@ Tuple CubeDefinition::local_normal_at(const Tuple & object_space_point) const
 
 BoundingBox CubeDefinition::bounding_box() const
 {
-	return BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+	return {Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0)};
 }
 
 std::vector<double> CubeDefinition::check_axis_(const double & origin, const double & direction) const
@@ -250,8 +245,7 @@ CylinderDefinition::CylinderDefinition(double minimum, double maximum, bool clos
 }
 
 CylinderDefinition::~CylinderDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -338,7 +332,7 @@ Tuple CylinderDefinition::local_normal_at(const Tuple & object_space_point) cons
 
 BoundingBox CylinderDefinition::bounding_box() const
 {
-	return BoundingBox(Tuple::Point(-1.0, this->minimum, -1.0), Tuple::Point(1.0, this->maximum, 1.0));
+	return {Tuple::Point(-1.0, this->minimum, -1.0), Tuple::Point(1.0, this->maximum, 1.0)};
 }
 
 void CylinderDefinition::intersect_caps_(const Ray & r, std::vector<double> & xs) const
@@ -360,7 +354,7 @@ void CylinderDefinition::intersect_caps_(const Ray & r, std::vector<double> & xs
 
 bool CylinderDefinition::check_caps_(const Ray & r, const double & t) const
 {
-	// Checks to see if the intersection at 't' is within the radius of the cylinder
+	// Checks to see if the intersection at "t" is within the radius of the cylinder
 	// Prevents duplications on a corner hit
 	double x = r.origin.x + (t * r.direction.x);
 	double z = r.origin.z + (t * r.direction.z);
@@ -392,8 +386,7 @@ DoubleNappedConeDefinition::DoubleNappedConeDefinition(double minimum, double ma
 }
 
 DoubleNappedConeDefinition::~DoubleNappedConeDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -496,7 +489,7 @@ Tuple DoubleNappedConeDefinition::local_normal_at(const Tuple & object_space_poi
 
 BoundingBox DoubleNappedConeDefinition::bounding_box() const
 {
-	return BoundingBox(Tuple::Point(
+	return {Tuple::Point(
 		this->minimum, 
 		this->minimum, 
 		this->minimum
@@ -504,7 +497,7 @@ BoundingBox DoubleNappedConeDefinition::bounding_box() const
 		this->maximum,
 		this->maximum,
 		this->maximum
-	));
+	)};
 }
 
 void DoubleNappedConeDefinition::intersect_caps_(const Ray & r, std::vector<double>& xs) const
@@ -524,7 +517,7 @@ void DoubleNappedConeDefinition::intersect_caps_(const Ray & r, std::vector<doub
 		xs.push_back(t_max);
 }
 
-bool DoubleNappedConeDefinition::check_caps_(const Ray & r, const double & t, const double & radius) const
+bool DoubleNappedConeDefinition::check_caps_(const Ray & r, const double & t, const double & radius)
 {
 	// Checks to see if the intersection at 't' is within the radius of the Cone cap
 	// Prevents duplications on a corner hit
@@ -545,12 +538,10 @@ bool DoubleNappedConeDefinition::check_caps_(const Ray & r, const double & t, co
 // ------------------------------------------------------------------------
 
 NullShapeDefinition::NullShapeDefinition()
-{
-}
+= default;
 
 NullShapeDefinition::~NullShapeDefinition()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -558,7 +549,7 @@ NullShapeDefinition::~NullShapeDefinition()
 
 std::vector<double> NullShapeDefinition::local_intersect_t(const Ray & r) const
 {
-	return std::vector<double>();
+	return {};
 }
 
 Tuple NullShapeDefinition::local_normal_at(const Tuple & object_space_point) const
@@ -568,5 +559,5 @@ Tuple NullShapeDefinition::local_normal_at(const Tuple & object_space_point) con
 
 BoundingBox NullShapeDefinition::bounding_box() const
 {
-	return BoundingBox(Tuple::Point(0.0, 0.0, 0.0), Tuple::Point(0.0, 0.0, 0.0));;
+	return {Tuple::Point(0.0, 0.0, 0.0), Tuple::Point(0.0, 0.0, 0.0)};;
 }

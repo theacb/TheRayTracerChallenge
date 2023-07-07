@@ -109,10 +109,10 @@ public:
 
 	// Parenting
 	// Parents objects to this
-	void parent_children(std::vector<std::shared_ptr<ObjectBase>> & children);
-	void parent_children(std::shared_ptr<ObjectBase> & child);
+	void parent_children(std::vector<std::shared_ptr<ObjectBase>> children);
+	void parent_child(std::shared_ptr<ObjectBase> child);
 
-	// Applies the parent's transformation matrix to the children and then unparents
+	// Applies the parent's transformation matrix to the children and then un-parents
 	void freeze_children();
 
 	// Accessors

@@ -50,7 +50,7 @@ Ray Camera::ray_from_pixel(int x, int y) const
 	Tuple origin = inv_x_form * Tuple::Point(0.0, 0.0, 0.0);
 	Tuple direction = (pixel - origin).normalize();
 
-	return Ray(origin, direction);
+	return {origin, direction};
 }
 
 // ------------------------------------------------------------------------
@@ -89,7 +89,7 @@ Canvas Camera::threaded_render(const World & w) const
 		return camera->render_scanline(w, line);
 	};
 
-	// Queue up all of the lines
+	// Queue up all the lines
 	for (int y = 0; y < this->c_v_size_; y++)
 	{
 		line_results.push_back(std::async(f, this, w, y));
@@ -102,6 +102,11 @@ Canvas Camera::threaded_render(const World & w) const
 	}
 
 	return image;
+}
+
+SampleBuffer Camera::multipass_threaded_render(const World &w) const
+{
+    return {};
 }
 
 Canvas Camera::render_scanline(const World & w, int line) const
@@ -121,6 +126,11 @@ Canvas Camera::render_scanline(const World & w, int line) const
 	}
 
 	return image_line;
+}
+
+SampleBuffer Camera::multipass_render_bucket(const World & w, const AABB2D & extents) const
+{
+    return {};
 }
 
 // ------------------------------------------------------------------------

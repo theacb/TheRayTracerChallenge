@@ -4,6 +4,11 @@
 #include "Color.h"
 #include "Tuple.h"
 
+enum RE { 
+	rgb, alpha, background, depth, normal, position, diffuse, specular, lighting, 
+	globalillumination, refrlection, reflectionfilter, refraction, refractionfilter 
+};
+
 class Sample
 {
 public:
@@ -17,6 +22,7 @@ public:
 	std::string name;
 
 	// Getters
+	const Color get_channel(RE channel) const;
 
 	const Color get_rgb() const;
 	const Tuple get_origin() const;

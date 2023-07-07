@@ -70,6 +70,43 @@ Sample::~Sample()
 // Accessors
 // ------------------------------------------------------------------------
 
+const Color Sample::get_channel(RE channel) const
+{
+	switch (channel)
+	{
+	case rgb:
+		return this->s_rgb_;
+	case alpha:
+		return this->s_alpha_;
+	case background:
+		return this->s_background_;
+	case depth:
+		return this->s_depth_;
+	case normal:
+		return this->s_normal_;
+	case position:
+		return this->s_position_;
+	case diffuse:
+		return this->s_diffuse_;
+	case specular:
+		return this->s_specular_;
+	case lighting:
+		return this->s_lighting_;
+	case globalillumination:
+		return this->s_globalillumination_;
+	case refrlection:
+		return this->s_reflection_;
+	case reflectionfilter:
+		return this->s_reflectionfilter_;
+	case refraction:
+		return this->s_refraction_;
+	case refractionfilter:
+		return this->s_refractionfilter_;
+	default:
+		return this->s_rgb_;
+	}
+}
+
 const Color Sample::get_rgb() const
 {
 	return this->s_rgb_;

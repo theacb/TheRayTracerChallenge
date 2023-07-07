@@ -180,7 +180,7 @@ Intersections ObjectBase::intersect_i(const Ray & r)
 // Parenting
 // ------------------------------------------------------------------------
 
-void ObjectBase::parent_children(std::vector<std::shared_ptr<ObjectBase>> & children)
+void ObjectBase::parent_children(std::vector<std::shared_ptr<ObjectBase>> children)
 {
 	this->o_children_.insert(this->o_children_.end(), children.begin(), children.end());
 
@@ -192,7 +192,7 @@ void ObjectBase::parent_children(std::vector<std::shared_ptr<ObjectBase>> & chil
 	}
 }
 
-void ObjectBase::parent_children(std::shared_ptr<ObjectBase> & child)
+void ObjectBase::parent_child(std::shared_ptr<ObjectBase> child) // NOLINT(performance-unnecessary-value-param)
 {
 	this->o_children_.push_back(child);
 

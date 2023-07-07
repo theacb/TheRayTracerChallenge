@@ -1,6 +1,6 @@
-#include "pch.h"
+#include <gtest/gtest.h>
+#include <cmath>
 
-#include "math.h"
 #include <sstream> 
 #include <typeinfo>
 
@@ -23,7 +23,7 @@
 #include "../Raymond/Texmap.h"
 #include "../Raymond/BoundingBox.h"
 #include "../Raymond/Sample.h"
-#include "../Raymond/SamplerGrid.h"
+#include "../Raymond/SampleBuffer.h"
 #include "../Raymond/Quadtree.h"
 
 // ------------------------------------------------------------------------
@@ -322,7 +322,7 @@ TEST(Chapter02Tests, CreatingACanvas)
 
 	Color black = Color();
 
-	for (Color i : c)
+	for (const Color& i : c)
 		ASSERT_EQ(i, black);
 }
 
@@ -391,7 +391,7 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline)
 {
 	Canvas c = Canvas(10, 10);
 
-	std::string file_path = "I:\\projects\\Raymond\\frames\\_x\\PPMFilesTerminateWithNewline.ppm";
+	std::string file_path = R"(I:\projects\Raymond\frames\_x\PPMFilesTerminateWithNewline.ppm)";
 
 	canvas_to_ppm(c, file_path);
 
@@ -476,7 +476,7 @@ TEST(Chapter03Tests, MatrixSizeLimitations)
 		0.0, 1.0, 1.0
 			});
 	}
-	catch (std::out_of_range e)
+	catch (const std::out_of_range& e)
 	{
 		too_large_error_thrown = true;
 	}
@@ -489,7 +489,7 @@ TEST(Chapter03Tests, MatrixSizeLimitations)
 		-3.0, 5.0
 			});
 	}
-	catch (std::out_of_range e)
+	catch (const std::out_of_range& e)
 	{
 		too_small_error_thrown = true;
 	}
@@ -508,7 +508,7 @@ TEST(Chapter03Tests, MatrixOutOfBoundsIndices)
 	{
 		m.get(0, 10);
 	}
-	catch (std::out_of_range e)
+	catch (const std::out_of_range& e)
 	{
 		x_error_thrown = true;
 	}
@@ -519,7 +519,7 @@ TEST(Chapter03Tests, MatrixOutOfBoundsIndices)
 	{
 		m.get(10, 0);
 	}
-	catch (std::out_of_range e)
+	catch (const std::out_of_range& e)
 	{
 		y_error_thrown = true;
 	}
@@ -3565,7 +3565,7 @@ TEST(Chapter14Tests, RaysIntersectABoundingBox)
 	{
 		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
 
-		EXPECT_TRUE(box.intersect(r)) << "Test: " << i + 1 << " - " << r.origin << " --> " << r.direction << std::endl;;
+		EXPECT_TRUE(box.intersect(r)) << "Test: " << i + 1 << " - " << r.origin << " --> " << r.direction << std::endl;
 	}
 }
 
@@ -3630,7 +3630,6 @@ TEST(Quadtrees, InsertingAPoint)
 
 TEST(Quadtrees, InsertingManyPoints)
 {
-	std::cout << std::endl << std::endl;
 
 	auto qt = std::make_shared<QuadBranch<Sample>>(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0), 7);
 
@@ -3651,6 +3650,44 @@ TEST(Quadtrees, InsertingManyPoints)
 	std::vector<std::shared_ptr<QuadNode<Sample>>> vec = qt->get_all_nodes();
 
 	ASSERT_EQ(vec.size(), 200);
+}
+
+TEST(Quadtrees, QueryingARange)
+{
+	AABB2D bounds = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+	AABB2D check_range = AABB2D(Tuple::Point2D(0.2, 0.2), Tuple::Point2D(0.8, 0.8));
+	auto qt = std::make_shared<QuadBranch<Sample>>(bounds, 7);
+
+	Sample s1 = Sample();
+	s1.name = "Sample Blue";
+	s1.set_rgb(Color(0.0, 0.0, 1.0));
+
+	Sample s2 = Sample(s1);
+	Sample s3 = Sample(s1);
+	Sample s4 = Sample(s1);
+
+	Sample r = Sample();
+	r.name = "Sample Red";
+	r.set_rgb(Color(1.0, 0.0, 0.0));
+
+	auto qn1 = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.1, 0.1), s1);
+	auto qn2 = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.1, 0.9), s2);
+	auto qn3 = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.9, 0.1), s3);
+	auto qn4 = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.9, 0.9), s4);
+	auto qn_r = std::make_shared<QuadNode<Sample>>(Tuple::Point2D(0.5, 0.5), r);
+
+	qt->insert(qn1);
+	qt->insert(qn2);
+	qt->insert(qn3);
+	qt->insert(qn4);
+	qt->insert(qn_r);
+
+	std::vector<std::shared_ptr<QuadNode<Sample>>> vec = qt->query_range(check_range);
+
+	std::shared_ptr<QuadNode<Sample>> result = vec[0];
+
+	ASSERT_EQ(vec.size(), 1);
+	ASSERT_EQ(result->data.get_rgb(), Color(1.0, 0.0, 0.0));
 }
 
 // ------------------------------------------------------------------------

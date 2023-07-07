@@ -12,6 +12,31 @@ enum Quadrant { Southeast_qb, Southwest_qb, Northwest_qb, Northeast_qb };
 
 // ------------------------------------------------------------------------
 //
+// AABB
+//
+// ------------------------------------------------------------------------
+// Declaration
+// ------------------------------------------------------------------------
+
+class AABB2D
+{
+public:
+	AABB2D();
+	AABB2D(const Tuple northeast, const Tuple southwest);
+	AABB2D(const Tuple center, const double radius);
+	AABB2D(const AABB2D & src);
+	~AABB2D();
+
+	Tuple ne_corner, sw_corner, center, half;
+	double width, height;
+
+	bool intersects_aabb(const AABB2D box) const;
+	bool contains_point(const Tuple point) const;
+
+};
+
+// ------------------------------------------------------------------------
+//
 // QuadNode
 //
 // ------------------------------------------------------------------------
@@ -54,8 +79,7 @@ inline QuadNode<T>::QuadNode(const Tuple position, T data)
 
 template<typename T>
 inline QuadNode<T>::~QuadNode()
-{
-}
+= default;
 
 template<typename T>
 inline T QuadNode<T>::get_data()
@@ -84,19 +108,24 @@ public:
 	QuadBranch();
 	QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth);
 	QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth, int depth);
+	QuadBranch(const AABB2D bounds, int max_depth);
+	QuadBranch(const AABB2D bounds, int max_depth, int depth);
 	~QuadBranch();
 
 	void insert(std::shared_ptr<QuadNode<T>> node);
-	std::shared_ptr<QuadNode<T>> search(Tuple point);
-	bool contains_point(Tuple point);
+	std::shared_ptr<QuadNode<T>> closest_point_to_point(Tuple point);
+	std::vector<std::shared_ptr<QuadNode<T>>> query_range(const Tuple northeast, const Tuple southwest);
+	std::vector<std::shared_ptr<QuadNode<T>>> query_range(const AABB2D range);
+	bool contains_point(const Tuple point);
 
 	std::vector<std::shared_ptr<QuadNode<T>>> get_child_nodes();
 	std::vector<std::shared_ptr<QuadNode<T>>> get_all_nodes();
 
 private:
 	// Bounding Box Points
-	Tuple qb_top_left_, qb_bottom_right_;
+	AABB2D qb_bounds_;
 
+	//depth
 	int qb_depth_, qb_max_depth_;
 
 	// Children:
@@ -105,7 +134,7 @@ private:
 	// - Leaves - "lf" = leaf
 	std::shared_ptr<QuadNode<T>> qb_lf_ne_, qb_lf_nw_, qb_lf_sw_, qb_lf_se_;
 
-	void qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant, const Tuple top_left, const Tuple bottom_right);
+	void qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant, const AABB2D branch_AABB);
 	bool qb_is_branch_empty_(const Quadrant quadrant);
 	bool qb_is_leaf_empty_(const Quadrant quadrant);
 	void qb_insert_to_branch_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant);
@@ -113,7 +142,7 @@ private:
 	void qb_null_branch_(const Quadrant quadrant);
 	void qb_null_leaf_(const Quadrant quadrant);
 	void qb_leaf_to_branch_(const Quadrant quadrant);
-	void qb_nest_branch_(const Tuple top_left, const Tuple bottom_right, const Quadrant quadrant);
+	void qb_nest_branch_(const AABB2D branch_AABB, const Quadrant quadrant);
 
 };
 
@@ -124,20 +153,29 @@ private:
 // ------------------------------------------------------------------------
 
 template<typename T>
-inline QuadBranch<T>::QuadBranch() : QuadBranch<T>(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0), 0, 7)
+inline QuadBranch<T>::QuadBranch() : QuadBranch<T>(AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0)), 0, 7)
 {
 }
 
 template<typename T>
-inline QuadBranch<T>::QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth) : QuadBranch<T>(northeast, southwest, max_depth, 0)
+inline QuadBranch<T>::QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth) : QuadBranch<T>(AABB2D(northeast, southwest), max_depth, 0)
 {
 }
 
 template<typename T>
-inline QuadBranch<T>::QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth, int depth)
+inline QuadBranch<T>::QuadBranch(const Tuple northeast, const Tuple southwest, int max_depth, int depth) : QuadBranch<T>(AABB2D(northeast, southwest), max_depth, depth)
 {
-	this->qb_top_left_ = northeast;
-	this->qb_bottom_right_ = southwest;
+}
+
+template<typename T>
+inline QuadBranch<T>::QuadBranch(const AABB2D bounds, int max_depth) : QuadBranch<T>(bounds, max_depth, 0)
+{
+}
+
+template<typename T>
+inline QuadBranch<T>::QuadBranch(const AABB2D bounds, int max_depth, int depth)
+{
+	this->qb_bounds_ = bounds;
 
 	this->qb_depth_ = depth;
 	this->qb_max_depth_ = max_depth;
@@ -166,9 +204,6 @@ inline QuadBranch<T>::~QuadBranch()
 template<typename T>
 inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 {
-	Tuple tl = this->qb_top_left_;
-	Tuple br = this->qb_bottom_right_;
-
 	if (node == nullptr)
 	{
 		return;
@@ -180,6 +215,8 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		return;
 	}
 
+	Tuple tl = this->qb_bounds_.ne_corner;
+	Tuple br = this->qb_bounds_.sw_corner;
 	
 	// Split into the West half if true, or the East if false
 	if ((tl.x + br.x) / 2 >= node->pos.x)
@@ -187,22 +224,30 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Split into the Northwest quarter if true, Southwest quarter if false
 		if ((tl.y + br.y) / 2 >= node->pos.y)
 		{
+			AABB2D bounds = AABB2D(
+				Tuple::Point2D(tl.x, tl.y), // (0, 0) - Solved for ((0, 0), (1, 1))
+				Tuple::Point2D((tl.x + br.x) / 2, (tl.y + br.y) / 2) // (0.5, 0.5)
+			);
+
 			this->qb_insert_quarter_(
 				node,
 				Northwest_qb,
-				Tuple::Point2D(tl.x, tl.y), // (0, 0) - Solved for ((0, 0), (1, 1))
-				Tuple::Point2D((tl.x + br.x) / 2, (tl.y + br.y) / 2) // (0.5, 0.5)
+				bounds
 			);
 			
 		}
 		// Southwest
 		else 
 		{
+			AABB2D bounds = AABB2D(
+				Tuple::Point2D(tl.x, (tl.y + br.y) / 2), // (0, 0.5)
+				Tuple::Point2D((tl.x + br.x) / 2, br.y) // (0.5, 1)
+			);
+
 			this->qb_insert_quarter_(
 				node,
 				Southwest_qb,
-				Tuple::Point2D(tl.x, (tl.y + br.y) / 2), // (0, 0.5)
-				Tuple::Point2D((tl.x + br.x) / 2, br.y) // (0.5, 1)
+				bounds
 			);
 		}
 	}
@@ -212,28 +257,36 @@ inline void QuadBranch<T>::insert(std::shared_ptr<QuadNode<T>> node)
 		// Split into the Northeast quarter if true, Southeast quarter if false
 		if ((tl.y + br.y) / 2 >= node->pos.y)
 		{
+			AABB2D bounds = AABB2D(
+				Tuple::Point2D((tl.x + br.x) / 2, tl.y), // (0.5, 0.0)
+				Tuple::Point2D(br.x, (tl.y + br.y) / 2) // (1, 0.5)
+			);
+
 			this->qb_insert_quarter_(
 				node,
 				Northeast_qb,
-				Tuple::Point2D((tl.x + br.x) / 2, tl.y), // (0.5, 0.0)
-				Tuple::Point2D(br.x, (tl.y + br.y) / 2) // (1, 0.5)
+				bounds
 			);
 		}
 		// Southwest
 		else
 		{
+			AABB2D bounds = AABB2D(
+				Tuple::Point2D((tl.x + br.x) / 2, (tl.y + br.y) / 2), // (0.5, 0.5)
+				Tuple::Point2D(br.x, br.y) // (1, 1)
+			);
+
 			this->qb_insert_quarter_(
 				node,
 				Southeast_qb,
-				Tuple::Point2D((tl.x + br.x) / 2, (tl.y + br.y) / 2), // (0.5, 0.5)
-				Tuple::Point2D(br.x, br.y) // (1, 1)
+				bounds
 			);
 		}
 	}
 }
 
 template<typename T>
-inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
+inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::closest_point_to_point(Tuple point)
 {
 	// if the point isn't in the quad, return null
 	if (!this->contains_point(point))
@@ -248,7 +301,7 @@ inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
 			if (this->qb_lf_ne_ != nullptr)
 				return this->qb_lf_ne_;
 			else if (this->qb_br_ne_ != nullptr)
-				return this->qb_br_ne_->search(point);
+				return this->qb_br_ne_->closest_point_to_point(point);
 			else
 				return nullptr;
 			
@@ -259,7 +312,7 @@ inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
 			if (this->qb_lf_se_ != nullptr)
 				return this->qb_lf_se_;
 			else if (this->qb_br_se_ != nullptr)
-				return this->qb_br_se_->search(point);
+				return this->qb_br_se_->closest_point_to_point(point);
 			else
 				return nullptr;
 			
@@ -274,7 +327,7 @@ inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
 			if (this->qb_lf_nw_ != nullptr)
 				return this->qb_lf_nw_;
 			else if (this->qb_br_nw_ != nullptr)
-				return this->qb_br_nw_->search(point);
+				return this->qb_br_nw_->closest_point_to_point(point);
 			else
 				return nullptr;
 			
@@ -285,7 +338,7 @@ inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
 			if (this->qb_lf_sw_ != nullptr)
 				return this->qb_lf_sw_;
 			else if (this->qb_br_sw_ != nullptr)
-				return this->qb_br_sw_->search(point);
+				return this->qb_br_sw_->closest_point_to_point(point);
 			else
 				return nullptr;
 		}
@@ -293,15 +346,99 @@ inline std::shared_ptr<QuadNode<T>> QuadBranch<T>::search(Tuple point)
 }
 
 template<typename T>
-inline bool QuadBranch<T>::contains_point(Tuple point)
+inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::query_range(const Tuple northeast, const Tuple southwest)
 {
-	// Greater and less than are used on each dimension to determine if the point is within the quadtree
-	return (
-		point.x >= this->qb_top_left_.x &&
-		point.x <= this->qb_bottom_right_.x &&
-		point.y >= this->qb_top_left_.y &&
-		point.y <= this->qb_bottom_right_.y
-		);
+	return this->query_range(AABB2D(northeast, southwest));
+}
+
+template<typename T>
+inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::query_range(const AABB2D range)
+{
+	// Declare return vector
+	std::vector<std::shared_ptr<QuadNode<T>>> vec = std::vector<std::shared_ptr<QuadNode<T>>>();
+
+	// declare variables
+	std::vector<std::shared_ptr<QuadNode<T>>> vec_ne, vec_se, vec_nw, vec_sw;
+
+	// Abort if the quad is not within the range
+	if (!this->qb_bounds_.intersects_aabb(range))
+	{
+		// Empty vector
+		return vec;
+	}
+
+	// RESERVE
+	// Inverted depth
+	int d = this->qb_max_depth_ - this->qb_depth_;
+	vec.reserve(((d * d) * 4) + 4);
+
+	// Append Children if they exist
+	if (this->qb_lf_ne_ != nullptr)
+	{
+		Tuple point = this->qb_lf_ne_->pos;
+
+		if (range.contains_point(point))
+		{
+			vec.push_back(this->qb_lf_ne_);
+		}
+	}
+	if (this->qb_lf_nw_ != nullptr)
+	{
+		Tuple point = this->qb_lf_nw_->pos;
+
+		if (range.contains_point(point))
+		{
+			vec.push_back(this->qb_lf_nw_);
+		}
+	}
+	if (this->qb_lf_sw_ != nullptr)
+	{
+		Tuple point = this->qb_lf_sw_->pos;
+
+		if (range.contains_point(point))
+		{
+			vec.push_back(this->qb_lf_sw_);
+		}
+	}
+	if (this->qb_lf_se_ != nullptr)
+	{
+		Tuple point = this->qb_lf_se_->pos;
+
+		if (range.contains_point(point))
+		{
+			vec.push_back(this->qb_lf_se_);
+		}
+	}
+
+	// Append the children of branches recursively
+	if (this->qb_br_ne_ != nullptr)
+	{
+		vec_ne = this->qb_br_ne_->query_range(range);
+		vec.insert(vec.end(), vec_ne.begin(), vec_ne.end());
+	}
+	if (this->qb_br_se_ != nullptr)
+	{
+		vec_se = this->qb_br_se_->query_range(range);
+		vec.insert(vec.end(), vec_se.begin(), vec_se.end());
+	}
+	if (this->qb_br_nw_ != nullptr)
+	{
+		vec_nw = this->qb_br_nw_->query_range(range);
+		vec.insert(vec.end(), vec_nw.begin(), vec_nw.end());
+	}
+	if (this->qb_br_sw_ != nullptr)
+	{
+		vec_sw = this->qb_br_sw_->query_range(range);
+		vec.insert(vec.end(), vec_sw.begin(), vec_sw.end());
+	}
+
+	return vec;
+}
+
+template<typename T>
+inline bool QuadBranch<T>::contains_point(const Tuple point)
+{
+	return this->qb_bounds_.contains_point(point);
 }
 
 template<typename T>
@@ -374,7 +511,7 @@ inline std::vector<std::shared_ptr<QuadNode<T>>> QuadBranch<T>::get_all_nodes()
 }
 
 template<typename T>
-inline void QuadBranch<T>::qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant, const Tuple top_left, const Tuple bottom_right)
+inline void QuadBranch<T>::qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node, const Quadrant quadrant, const AABB2D branch_AABB)
 {
 	// empty Branches start by filling leaves, then create new branches if the node comes into conflict with the leaf
 	if (this->qb_is_branch_empty_(quadrant) && this->qb_is_leaf_empty_(quadrant))
@@ -387,7 +524,7 @@ inline void QuadBranch<T>::qb_insert_quarter_(std::shared_ptr<QuadNode<T>> node,
 		// If the quad is unoccupied, fill it with a new quad
 		if (this->qb_is_branch_empty_(quadrant))
 		{
-			this->qb_nest_branch_(top_left, bottom_right, quadrant);
+			this->qb_nest_branch_(branch_AABB, quadrant);
 		}
 
 		// If the leaf was occupied, move it's contents to the branch and declare it NULL
@@ -579,9 +716,9 @@ inline void QuadBranch<T>::qb_leaf_to_branch_(const Quadrant quadrant)
 }
 
 template<typename T>
-inline void QuadBranch<T>::qb_nest_branch_(const Tuple top_left, const Tuple bottom_right, const Quadrant quadrant)
+inline void QuadBranch<T>::qb_nest_branch_(const AABB2D branch_AABB, const Quadrant quadrant)
 {
-	auto br = std::make_shared<QuadBranch<T>>(top_left, bottom_right, this->qb_max_depth_, this->qb_depth_ + 1);
+	auto br = std::make_shared<QuadBranch<T>>(branch_AABB, this->qb_max_depth_, this->qb_depth_ + 1);
 
 	switch (quadrant)
 	{
