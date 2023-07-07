@@ -1,0 +1,265 @@
+struct Projectile
+{
+	Tuple position, velocity;
+};
+
+struct Environment
+{
+	Tuple gravity, wind;
+};
+
+Projectile tick(const Projectile & proj, const Environment & env)
+{
+	Projectile new_proj;
+	new_proj.position = proj.position + proj.velocity;
+	new_proj.velocity = proj.velocity + env.gravity + env.wind;
+	return new_proj;
+}
+
+void projectile_to_square(Canvas & canvas, const Projectile proj)
+{
+	int center_x, center_y;
+
+	Color line = Color(0.0, 1.0, 1.0);
+	Color fill = Color(0.5, 0.5, 1.0);
+
+	center_x = static_cast<int>(round(proj.position.x));
+	center_y = canvas.height() - static_cast<int>(round(proj.position.y));
+
+	canvas.write_pixel(center_x, center_y, fill);
+	canvas.write_pixel(center_x + 1, center_y, line);
+	canvas.write_pixel(center_x, center_y + 1, line);
+	canvas.write_pixel(center_x + 1, center_y + 1, line);
+	canvas.write_pixel(center_x - 1, center_y, line);
+	canvas.write_pixel(center_x, center_y - 1, line);
+	canvas.write_pixel(center_x - 1, center_y - 1, line);
+	canvas.write_pixel(center_x + 1, center_y - 1, line);
+	canvas.write_pixel(center_x - 1, center_y + 1, line);
+}
+
+int simulate_projectile()
+{
+	int width = 900;
+	Canvas c = Canvas(width, width);
+
+	std::cout << "\nProjectile:\n";
+	Projectile p;
+	Environment e;
+
+	p.position = Tuple::Point(0.1, 1.0, 0.0);
+	p.velocity = Tuple::Vector(1.0, 1.8, 0.0).normalize() * 11.25;
+
+	e.gravity = Tuple::Vector(0.0, -0.1, 0.0);
+	e.wind = Tuple::Vector(-0.01, 0.0, 0.0);
+
+	int this_tick = 0;
+	int step = 10;
+
+	while (p.position.y > 0.0)
+	{
+		if (this_tick % step == 0)
+		{
+			std::cout << this_tick << ": " << p.position << "\n";
+			projectile_to_square(c, p);
+		}
+		p = tick(p, e);
+		++this_tick;
+	}
+
+	//std::cout << c.to_ppm_lines(false).rdbuf();
+
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\ProjectileDotsCh02_tenth_02.ppm");
+
+	return 0;
+}
+
+int render_clock()
+{
+	int width = 500;
+	double clock_radius = static_cast<double>(width) * (3.0 / 8.0);
+	double center = static_cast<double>(width) * 0.5;
+
+	Canvas c = Canvas(width, width);
+	Color pen_color = Color(1.0, 1.0, 1.0);
+
+	Tuple hour_point = Tuple::Point(0.0, 0.0, clock_radius);
+
+	int hours = 0;
+
+
+	Matrix4 increment = Matrix4::Rotation_Y((2.0 * static_cast<double>(M_PI)) * (1.0 / 12.0));
+	Matrix4 view_x_form = Matrix4::Translation(center, 0.0, center);
+
+	while (hours <= 12)
+	{
+		hour_point = increment * hour_point;
+
+		Tuple pen = view_x_form * hour_point;
+
+		std::cout << "Hour Point: " << hour_point << "\nPen point: " << pen << "\n";
+
+		c.write_pixel(static_cast<int>(pen.x), static_cast<int>(pen.z), pen_color);
+
+		++hours;
+	}
+
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\ClockCh04_01.ppm");
+
+	return 0;
+}
+
+int render_sphere()
+{
+	int canvas_width = 560;
+	int canvas_height = 315;
+
+	double screen_width = 7.0 * double(canvas_width) / double(canvas_height);
+	double screen_height = screen_width * double(canvas_height) / double(canvas_width);
+
+	double pixel_size = screen_width / double(canvas_width);
+	double half_screen_width = screen_width * 0.5;
+	double half_screen_height = screen_height * 0.5;
+
+	double wall_z = 10.0;
+
+	Canvas c = Canvas(canvas_width, canvas_height);
+
+	auto s = std::make_shared<Sphere>(Sphere());
+
+	s->set_transform(
+		Matrix4::Rotation_Z(static_cast<double>(M_PI) / 2.0) *
+		Matrix4::Scaling(0.5, 1.0, 1.0)
+
+	);
+
+	auto material = std::static_pointer_cast<PhongMaterial>(s->material);
+	material->color = Color(1.0, 0.2, 1.0);
+
+	auto lgt = std::make_shared<PointLight>(Tuple::Point(-10.0, 10.0, -10.0), Color(1.0, 1.0, 1.0));
+
+	Tuple ray_origin = Tuple::Point(0.0, 0.0, -5.0);
+
+	std::cout << "Tracing...\n";
+
+	for (int y = 0; y < canvas_height; y++)
+	{
+		std::cout << "Scanline: " << y + 1 << "/" << canvas_height << "\n";
+
+		double y_pos = half_screen_height - (double(y) * pixel_size);
+
+		for (int x = 0; x < canvas_width; x++)
+		{
+
+			double x_pos = (-half_screen_width) + (double(x) * pixel_size);
+
+			Tuple ray_target = Tuple::Point(x_pos, y_pos, wall_z);
+
+			Ray r = Ray(ray_origin, (ray_target - ray_origin).normalize());
+
+
+			Intersections xs = intersect(r, s);
+
+
+			Intersection h = xs.hit();
+
+			if (h.is_valid())
+			{
+				auto obj_ptr = std::static_pointer_cast<PrimitiveBase>(h.object);
+				Tuple hit_point = r.position(h.t_value);
+
+				auto mat_ptr = std::static_pointer_cast<PhongMaterial>(obj_ptr->material);
+
+				Color col = mat_ptr->lighting(
+					lgt,
+					hit_point,
+					-(r.direction),
+					obj_ptr->get_definition()->local_normal_at(hit_point)
+				);
+
+				c.write_pixel(x, y, col);
+			}
+			else
+			{
+				auto r = double(x) / (canvas_width - 1);
+				auto g = double(canvas_height - y) / (canvas_height - 1);
+
+				c.write_pixel(x, y, Color(r, g, 1.0));
+			}
+
+		}
+	}
+
+	std::cout << "Complete\n";
+
+	canvas_to_ppm(c, "I:\\projects\\Raymond\\frames\\LightAndShading_CH06_04.ppm", false);
+
+	return 0;
+}
+
+void shadowed_test(World & w, const std::shared_ptr<Light> light, const Tuple & point, const int depth)
+{
+	// locater
+	auto locator = std::make_shared<Sphere>("locater 001");
+	auto locator_mat_phong = std::static_pointer_cast<PhongMaterial>(locator->material);
+	locator_mat_phong->ambient.set_value(Color(1.0));
+	locator_mat_phong->color.set_value(Color(1.0, 1.0, 0.0) * (1.0 - (double(depth) / 30.0)));
+	locator_mat_phong->specular.set_value(0.0);
+	locator->set_transform(Matrix4::Translation(point.x, point.y, point.z) * Matrix4::Scaling(0.05, 0.05, 0.05));
+	w.add_object(locator);
+
+	std::cout << "Placing locater: " << point << "Number " << depth << std::endl;
+
+	// Function
+	Tuple v = light->position() - point;
+	double light_distance = v.magnitude();
+	Tuple direction = v.normalize();
+
+	Ray r = Ray(point, direction, depth);
+	Intersections ix = w.intersect_world(r);
+
+	Intersection h = ix.hit();
+
+	if (h.is_valid() && h.t_value < light_distance)
+	{
+		IxComps comps = IxComps(h, r, ix);
+		auto obj_prim = std::static_pointer_cast<PrimitiveBase>(h.object);
+		auto mat_phong = std::static_pointer_cast<PhongMaterial>(obj_prim->material);
+
+		// Start transmit function
+		Color transmittance = mat_phong->refraction.sample_at(comps);
+
+		if (mat_phong->transparent_shadows && transmittance.magnitude() > Color(light->cutoff).magnitude() && comps.ray_depth < 30)
+		{
+			// light that is reflected casts shadows
+			double cos_i = Tuple::dot(comps.eye_v, comps.normal_v);
+
+			if (cos_i > 0.001)
+			{
+				// Copy Transmittance
+				Color result = Color(transmittance);
+
+				int hit_index = ix.get_hit_index();
+
+				if (hit_index + 1 < ix.size())
+				{
+					Intersection next_ix = ix[hit_index + 1];
+
+					double point_to_light_distance = (comps.point - light->position()).magnitude();
+					double distance = next_ix.t_value - comps.t_value;
+
+					if (point_to_light_distance > distance)
+					{
+						shadowed_test(w, light, comps.under_point, depth + 1);
+					}
+
+					// Clip linear attenuation to [0,1];
+					double	linear_attenuation = clip(1.0 / (fmin(distance, point_to_light_distance) * comps.n2 * 5.0), 0.0, 1.0);
+					result = result * linear_attenuation;
+				}
+
+				return;
+			}
+		}
+	}
+	return;
+}
