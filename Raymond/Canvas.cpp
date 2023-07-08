@@ -33,14 +33,13 @@ Canvas::Canvas(int canvas_width, int canvas_height)
 
 // Destructor
 Canvas::~Canvas()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
 // ------------------------------------------------------------------------
 
-void Canvas::write_pixel(int x, int y, Color color)
+void Canvas::write_pixel(int x, int y, const Color & color)
 {
 	// Check if the index is within the bounds of the matrix
 	// Out of bounds is ignored
@@ -164,7 +163,7 @@ Color Canvas::c_get_element_(int x, int y)
 	return this->c_pixels_.at(this->c_index_from_coordinates_(x, y));
 }
 
-void Canvas::c_set_element_(int x, int y, Color color)
+void Canvas::c_set_element_(int x, int y, const Color & color)
 {
 	this->c_pixels_.at(this->c_index_from_coordinates_(x, y)) = color;
 }

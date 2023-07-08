@@ -130,35 +130,35 @@ SampleBuffer::SampleBuffer() : SampleBuffer(1, 1, AABB2D(Tuple::Point2D(0.0, 0.0
 
 SampleBuffer::SampleBuffer(const SampleBuffer & src)
 {
-	this->sg_width_ = src.width();
-	this->sg_height_ = src.height();
+	this->sb_width_ = src.width();
+	this->sb_height_ = src.height();
 
-	this->sg_total_size_ = this->sg_width_ * this->sg_height_;
-	this->sg_pixels_ = src.get_pixels();
+	this->sb_total_size_ = this->sb_width_ * this->sb_height_;
+	this->sb_pixels_ = src.get_pixels();
 
-	this->sg_extents_ = src.extents();
-	this->sg_pixel_size_ = src.extents().width / static_cast<double>(src.width());
+	this->sb_extents_ = src.extents();
+	this->sb_pixel_size_ = src.extents().width / static_cast<double>(src.width());
 }
 
 SampleBuffer::SampleBuffer(int grid_width, int grid_height, const AABB2D& extents)
 {
-	this->sg_width_ = grid_width;
-	this->sg_height_ = grid_height;
-	this->sg_total_size_ = grid_width * grid_height;
+	this->sb_width_ = grid_width;
+	this->sb_height_ = grid_height;
+	this->sb_total_size_ = grid_width * grid_height;
 
-	this->sg_extents_ = extents;
+	this->sb_extents_ = extents;
 
-	this->sg_pixel_size_ = extents.width / static_cast<double>(grid_width);
+	this->sb_pixel_size_ = extents.width / static_cast<double>(grid_width);
 
-	this->sg_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
-	this->sg_pixels_.reserve(this->sg_total_size_);
+	this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
+	this->sb_pixels_.reserve(this->sb_total_size_);
 
-//	for (int i = 0; i < this->sg_total_size_; i++)
-//	{
-//		Tuple center = this->sg_pixel_center_point_();
-//		AABB2D range = AABB2D(center, this->sg_pixel_size_ * 0.5);
-//		this->sg_pixels_[i] = std::make_shared<SampledPixel>(range);
-//	}
+	for (int i = 0; i < this->sb_total_size_; i++)
+	{
+		Tuple center = this->sb_pixel_center_point_(this->sb_x_from_index_(i), sb_y_from_index_(i));
+		AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
+		this->sb_pixels_.push_back(std::make_shared<SampledPixel>(range));
+	}
 
 	// TODO: Fill with new samples
 	// TODO: Add function for noise threshold and allocating more samples
@@ -173,7 +173,7 @@ SampleBuffer::~SampleBuffer()
 
 void SampleBuffer::write_sample(int x, int y, const Sample& sample)
 {
-	std::shared_ptr<SampledPixel> sp = this->sg_get_element_(x, y);
+	std::shared_ptr<SampledPixel> sp = this->sb_get_element_(x, y);
 	sp->write_sample(sample);
 }
 
@@ -182,10 +182,10 @@ void SampleBuffer::write_sample(const Sample& sample)
 	// Hallowed are the Ori
 	Tuple ori = sample.get_origin();
 	// 
-	int x = this->sg_x_coord_from_pos_(ori);
-	int y = this->sg_y_coord_from_pos_(ori);
+	int x = this->sb_x_coord_from_pos_(ori);
+	int y = this->sb_y_coord_from_pos_(ori);
 
-	std::shared_ptr<SampledPixel> sp = this->sg_get_element_(x, y);
+	std::shared_ptr<SampledPixel> sp = this->sb_get_element_(x, y);
 	sp->write_sample(sample);
 }
 
@@ -193,18 +193,18 @@ void SampleBuffer::write_pixel(int x, int y, std::shared_ptr<SampledPixel> pixel
 {
 	// Check if the index is within the bounds of the grid
 	// Out of bounds is ignored
-	if (x >= 0 && x < sg_width_ && y >= 0 && y < sg_height_)
-		sg_set_element_(x, y, pixel);
+	if (x >= 0 && x < sb_width_ && y >= 0 && y < sb_height_)
+        sb_set_element_(x, y, pixel); // NOLINT(performance-unnecessary-value-param)
 }
 
 void SampleBuffer::write_portion_as_line(int y, const SampleBuffer & line)
 {
-	if (y >= 0 && y < this->sg_height_)
+	if (y >= 0 && y < this->sb_height_)
 	{
-		int start_index = (y * this->sg_width_);
+		int start_index = (y * this->sb_width_);
 		std::vector<std::shared_ptr<SampledPixel>> pixels = line.get_pixels();
 
-		std::copy(pixels.begin(), pixels.end(), this->sg_pixels_.begin() + start_index);
+		std::copy(pixels.begin(), pixels.end(), this->sb_pixels_.begin() + start_index);
 
 	}
 	else
@@ -219,14 +219,15 @@ void SampleBuffer::write_portion_as_line(int y, const SampleBuffer & line)
 
 void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
 {
-	if (y >= 0 && y + grid.height() < this->sg_height_ && x >= 0 && x + grid.width() < this->sg_width_)
+	if (y >= 0 && y + grid.height() < this->sb_height_ && x >= 0 && x + grid.width() < this->sb_width_)
 	{
 		std::vector<std::shared_ptr<SampledPixel>> pixels = grid.get_pixels();
 
 		for (int i = 0; i < grid.height(); i++)
 		{
-			std::vector<std::shared_ptr<SampledPixel>>::iterator this_start_index = this->sg_pixels_.begin() + (((i + y) * this->sg_width_) + x);
-			std::vector<std::shared_ptr<SampledPixel>>::iterator grid_start_index = pixels.begin() + i;
+            // Declaring std::vector<std::shared_ptr<SampledPixel>>::iterator with auto
+			auto this_start_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
+			auto grid_start_index = pixels.begin() + i;
 
 			std::copy(grid_start_index, grid_start_index + grid.width(), this_start_index);
 		}
@@ -248,8 +249,8 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
 std::shared_ptr<SampledPixel> SampleBuffer::pixel_at(int x, int y)
 {
 	// Check if the index is within the bounds of the matrix
-	if (x >= 0 && x < sg_width_ && y >= 0 && y < sg_height_)
-		return sg_get_element_(x, y);
+	if (x >= 0 && x < sb_width_ && y >= 0 && y < sb_height_)
+		return sb_get_element_(x, y);
 	else
 		// Out of bounds throws an error
 		throw std::out_of_range(
@@ -264,12 +265,12 @@ std::shared_ptr<SampledPixel> SampleBuffer::pixel_at(int x, int y)
 Canvas SampleBuffer::to_canvas(RE channel)
 {
 	// Create a canvas the same size as the sampler grid
-	Canvas c = Canvas(this->sg_width_, this->sg_height_);
+	Canvas c = Canvas(this->sb_width_, this->sb_height_);
 
 	// Iterate through grid
-	for (int y = 0; y < this->sg_height_; y++)
+	for (int y = 0; y < this->sb_height_; y++)
 	{
-		for (int x = 0; x < this->sg_width_; x++)
+		for (int x = 0; x < this->sb_width_; x++)
 		{
 			// Assign SamplerPixel color to canvas pixels
 			c.write_pixel(x, y, (this->pixel_at(x, y))->get_channel(channel));
@@ -281,7 +282,7 @@ Canvas SampleBuffer::to_canvas(RE channel)
 
 std::vector<std::shared_ptr<SampledPixel>> SampleBuffer::get_pixels() const
 {
-	return this->sg_pixels_;
+	return this->sb_pixels_;
 }
 
 // ------------------------------------------------------------------------
@@ -290,67 +291,75 @@ std::vector<std::shared_ptr<SampledPixel>> SampleBuffer::get_pixels() const
 
 int SampleBuffer::width() const
 {
-	return this->sg_width_;
+	return this->sb_width_;
 }
 
 int SampleBuffer::height() const
 {
-	return this->sg_height_;
+	return this->sb_height_;
 }
 
 AABB2D SampleBuffer::extents() const
 {
-	return this->sg_extents_;
+	return this->sb_extents_;
 }
 
 // iterators
 // Allows iteration access to the underlying vector
 std::shared_ptr<SampledPixel>* SampleBuffer::begin()
 {
-	return this->sg_pixels_.data();
+	return this->sb_pixels_.data();
 }
 
 std::shared_ptr<SampledPixel>* SampleBuffer::end()
 {
-	return this->sg_pixels_.data() + sg_pixels_.size();
+	return this->sb_pixels_.data() + sb_pixels_.size();
 }
 
 // ------------------------------------------------------------------------
 // Private Methods
 // ------------------------------------------------------------------------
 
-std::shared_ptr<SampledPixel> SampleBuffer::sg_get_element_(int x, int y)
+std::shared_ptr<SampledPixel> SampleBuffer::sb_get_element_(int x, int y)
 {
-	return this->sg_pixels_.at(this->sg_index_from_coordinates_(x, y));
+	return this->sb_pixels_.at(this->sb_index_from_coordinates_(x, y));
 }
 
-Tuple SampleBuffer::sg_pixel_center_point_(int x, int y)
+Tuple SampleBuffer::sb_pixel_center_point_(int x, int y) const
 {
-	return Tuple::Point2D(x * this->sg_pixel_size_, y * sg_pixel_size_);
+	return Tuple::Point2D(x * this->sb_pixel_size_, y * sb_pixel_size_);
 }
 
-int SampleBuffer::sg_x_coord_from_pos_(const Tuple & position)
+int SampleBuffer::sb_x_coord_from_pos_(const Tuple & position) const
 {
 	double pos_x = position.x;
-	double left_x = this->sg_extents_.ne_corner.x;
-	double right_x = this->sg_extents_.sw_corner.x;
-	return static_cast<int>((pos_x - left_x) / (right_x - left_x) * this->sg_width_);
+	double left_x = this->sb_extents_.ne_corner.x;
+	double right_x = this->sb_extents_.sw_corner.x;
+	return static_cast<int>((pos_x - left_x) / (right_x - left_x) * this->sb_width_);
 }
 
-int SampleBuffer::sg_y_coord_from_pos_(const Tuple & position)
+int SampleBuffer::sb_y_coord_from_pos_(const Tuple & position) const
 {
 	double pos_y = position.y;
-	double left_y = this->sg_extents_.ne_corner.y;
-	double right_y = this->sg_extents_.sw_corner.y;
-	return static_cast<int>((pos_y - left_y) / (right_y - left_y) * this->sg_width_);
+	double left_y = this->sb_extents_.ne_corner.y;
+	double right_y = this->sb_extents_.sw_corner.y;
+	return static_cast<int>((pos_y - left_y) / (right_y - left_y) * this->sb_width_);
 }
 
-void SampleBuffer::sg_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel)
+void SampleBuffer::sb_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel)
 {
-	this->sg_pixels_.at(this->sg_index_from_coordinates_(x, y)) = pixel;
+	this->sb_pixels_.at(this->sb_index_from_coordinates_(x, y)) = pixel; // NOLINT(performance-unnecessary-value-param)
 }
 
-int SampleBuffer::sg_index_from_coordinates_(int x, int y)
+int SampleBuffer::sb_index_from_coordinates_(int x, int y) const
 {
-	return (y * this->sg_width_) + x;
+	return (y * this->sb_width_) + x;
+}
+
+int SampleBuffer::sb_x_from_index_(int i) const {
+    return i % this->sb_width_;
+}
+
+int SampleBuffer::sb_y_from_index_(int i) const {
+    return i / this->sb_width_;
 }

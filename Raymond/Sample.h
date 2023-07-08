@@ -6,14 +6,14 @@
 
 enum RE { 
 	rgb, alpha, background, depth, normal, position, diffuse, specular, lighting, 
-	globalillumination, refrlection, reflectionfilter, refraction, refractionfilter 
+	globalillumination, reflection, reflectionfilter, refraction, refractionfilter
 };
 
 class Sample
 {
 public:
 	Sample();
-	Sample(const Tuple origin);
+	explicit Sample(const Tuple& origin);
 	Sample(const Sample & src);
 
 	~Sample();
@@ -22,41 +22,41 @@ public:
 	std::string name;
 
 	// Getters
-	const Color get_channel(RE channel) const;
+	[[nodiscard]] Color get_channel(RE channel) const;
 
-	const Color get_rgb() const;
-	const Tuple get_origin() const;
+	[[nodiscard]] Color get_rgb() const;
+	[[nodiscard]] Tuple get_origin() const;
 
-	const double get_alpha() const;
-	const Color get_background() const;
-	const double get_depth() const;
-	const Color get_normal() const;
-	const Color get_position() const;
-	const Color get_diffuse() const;
-	const Color get_specular() const;
-	const Color get_lighting() const;
-	const Color get_globalillumination() const;
-	const Color get_reflection() const;
-	const double get_reflectionfilter() const;
-	const Color get_refraction() const;
-	const double get_refractionfilter() const;
+	[[nodiscard]] double get_alpha() const;
+	[[nodiscard]] Color get_background() const;
+	[[nodiscard]] double get_depth() const;
+	[[nodiscard]] Color get_normal() const;
+	[[nodiscard]] Color get_position() const;
+	[[nodiscard]] Color get_diffuse() const;
+	[[nodiscard]] Color get_specular() const;
+	[[nodiscard]] Color get_lighting() const;
+	[[nodiscard]] Color get_globalillumination() const;
+	[[nodiscard]] Color get_reflection() const;
+	[[nodiscard]] double get_reflectionfilter() const;
+	[[nodiscard]] Color get_refraction() const;
+	[[nodiscard]] double get_refractionfilter() const;
 
 	// Setters
 
-	void set_rgb(const Color col);
-	void set_alpha(const double val);
-	void set_background(const Color col);
-	void set_depth(const double val);
-	void set_normal(const Color col);
-	void set_position(const Color col);
-	void set_diffuse(const Color col);
-	void set_specular(const Color col);
-	void set_lighting(const Color col);
-	void set_globalillumination(const Color col);
-	void set_reflection(const Color col);
-	void set_reflectionfilter(const double val);
-	void set_refraction(const Color col);
-	void set_refractionfilter(const double val);
+	void set_rgb(const Color & col);
+	void set_alpha(const double & val);
+	void set_background(const Color & col);
+	void set_depth(const double & val);
+	void set_normal(const Color & col);
+	void set_position(const Color & col);
+	void set_diffuse(const Color & col);
+	void set_specular(const Color & col);
+	void set_lighting(const Color & col);
+	void set_globalillumination(const Color & col);
+	void set_reflection(const Color & col);
+	void set_reflectionfilter(const double & val);
+	void set_refraction(const Color & col);
+	void set_refractionfilter(const double & val);
 
 	void calculate_sample();
 

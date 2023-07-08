@@ -18,7 +18,7 @@ public:
 	~Canvas();
 
 	// methods
-	void write_pixel(int x, int y, Color color);
+	void write_pixel(int x, int y, const Color& color);
 	void write_canvas_as_line(int y, const Canvas & canvas);
 	Color pixel_at(int x, int y);
 	std::stringstream to_ppm_lines(const bool convert_toSRGB);
@@ -41,7 +41,7 @@ private:
 	int c_total_size_;
 
 	Color c_get_element_(int x, int y);
-	void c_set_element_(int x, int y, Color color);
+	void c_set_element_(int x, int y, const Color& color);
 	int c_index_from_coordinates_(int x, int y);
 };
 

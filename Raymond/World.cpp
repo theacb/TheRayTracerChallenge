@@ -52,7 +52,7 @@ Intersections World::intersect_world(const Ray & r) const
 {
 	Intersections result;
 
-	for (std::shared_ptr<PrimitiveBase> obj: this->w_primitives_)
+	for (const std::shared_ptr<PrimitiveBase> & obj: this->w_primitives_)
 	{
 		// generates an intersection for each object in the scene
 		Intersections obj_xs = obj->intersect_i(r);
@@ -79,13 +79,18 @@ Intersections World::intersect_world(const Ray & r) const
 // Shade
 // ------------------------------------------------------------------------
 
-Color World::shade(IxComps & comps) const
+Sample World::shade(IxComps & comps) const
 {
-	Color sample = Color(0.0);
+    // TODO: convert this function to return a sample
+    // TODO: Break up lighting into Diffuse, Specular, and Lighting
+    // TODO: Determine Depth, Position, Normal, and Alpha
+	Sample sample = Sample();
+    sample.set_diffuse(1.0);
+    Color smp_lighting = Color(0.0);
 
 	auto obj_prim = std::static_pointer_cast<PrimitiveBase>(comps.object);
 
-	for (std::shared_ptr<Light> lgt : this->w_lights_)
+	for (std::shared_ptr<Light> lgt : this->w_lights_) // NOLINT(performance-for-range-copy)
 	{
 
 		comps.shadow_multiplier = this->shadowed(lgt, comps.over_point, comps.ray_depth);
@@ -100,14 +105,16 @@ Color World::shade(IxComps & comps) const
 			// If value is less than cutoff value, do not calculate sample
 			if (intensity > lgt->cutoff)
 			{
-				sample = sample + (obj_prim->material->lighting(lgt, comps) * intensity);
+                smp_lighting = smp_lighting + (obj_prim->material->lighting(lgt, comps) * intensity);
 			}
 		}
 		else
 		{
-			sample = sample + obj_prim->material->lighting(lgt, comps);
+            smp_lighting = smp_lighting + obj_prim->material->lighting(lgt, comps);
 		}
 	}
+
+    sample.set_lighting(smp_lighting);
 
 	// Reflection
 	Color refl = (obj_prim->material->reflect(*this, comps));
@@ -120,32 +127,43 @@ Color World::shade(IxComps & comps) const
 	{
 		double reflectance = schlick(comps);
 
-		sample = sample + (refl * reflectance) + (rafr * (1.0 - reflectance));
+        sample.set_reflectionfilter(reflectance);
+        sample.set_refractionfilter(1.0 - reflectance);
 	}
 	else
 	{
-		sample = sample + refl + rafr;
+        sample.set_reflectionfilter(1.0);
+        sample.set_refractionfilter(1.0);
 	}
-	
+
+    sample.set_reflection(refl);
+    sample.set_refraction(rafr);
+
+    sample.calculate_sample();
 	return sample;
 }
 
 Color World::color_at(const Ray & ray) const
 {
-	Intersections xs = this->intersect_world(ray);
-	if (xs.size() > 0)
-	{
-		Intersection hit = xs.hit();
-		IxComps comps = IxComps(hit, ray, xs);
+	return this->sample_at(ray).get_rgb();
+}
 
-		return this->shade(comps);
-	}
-	else
-	{
-		IxComps comps = IxComps::Background(ray);
+Sample World::sample_at(const Ray &ray) const
+{
+    Intersections xs = this->intersect_world(ray);
+    if (!xs.empty())
+    {
+        Intersection hit = xs.hit();
+        IxComps comps = IxComps(hit, ray, xs);
 
-		return this->background->sample_at(comps);
-	}
+        return this->shade(comps);
+    }
+    else
+    {
+        IxComps comps = IxComps::Background(ray);
+
+        return this->background->sample_at(comps);
+    }
 }
 
 bool World::is_shadowed(const std::shared_ptr<Light> light, const Tuple & point) const

@@ -9,6 +9,7 @@
 #include "Tuple.h"
 #include "Color.h"
 #include "Background.h"
+#include "Sample.h"
 
 class World
 {
@@ -21,13 +22,14 @@ public:
 	static World Default();
 
 	// Intersector
-	Intersections intersect_world(const Ray & ray) const;
+	[[nodiscard]] Intersections intersect_world(const Ray & ray) const;
 
 	// Shade
-	Color shade(IxComps& comps) const;
-	Color color_at(const Ray & ray) const;
-	bool is_shadowed(const std::shared_ptr<Light> light, const Tuple & point) const;
-	Color shadowed(const std::shared_ptr<Light> light, const Tuple & point, const int depth) const;
+	Sample shade(IxComps& comps) const;
+	[[nodiscard]] Color color_at(const Ray & ray) const;
+    Sample sample_at(const Ray & ray) const;
+	[[nodiscard]] bool is_shadowed(std::shared_ptr<Light> light, const Tuple & point) const;
+	[[nodiscard]] Color shadowed(std::shared_ptr<Light> light, const Tuple & point, int depth) const;
 
 	// accessors
 	const std::vector<std::shared_ptr<PrimitiveBase>> & get_primitives();

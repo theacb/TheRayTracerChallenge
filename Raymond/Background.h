@@ -2,7 +2,7 @@
 #define H_RAYMOND_BACKGROUND
 
 #include "IxComps.h"
-#include "Color.h"
+#include "Sample.h"
 
 class Background
 {
@@ -11,7 +11,7 @@ public:
 	~Background();
 
 	// Methods
-	virtual Color sample_at(IxComps & comps) const;
+	virtual Sample sample_at(IxComps & comps) const;
 };
 
 class NormalGradientBackground :
@@ -22,18 +22,18 @@ public:
 	~NormalGradientBackground();
 
 	// Methods
-	virtual Color sample_at(IxComps & comps) const override;
+	Sample sample_at(IxComps & comps) const override;
 };
 
-class HosekWilkietBackground :
+class HosekWilkieBackground :
 	public Background
 {
 public:
-	HosekWilkietBackground(const Tuple & sun_vector);
-	~HosekWilkietBackground();
+	explicit HosekWilkieBackground(const Tuple & sun_vector);
+	~HosekWilkieBackground();
 
 	// Methods
-	virtual Color sample_at(IxComps & comps) const override;
+	Sample sample_at(IxComps & comps) const override;
 
 private:
 	// Properties

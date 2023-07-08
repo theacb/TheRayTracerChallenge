@@ -22,16 +22,16 @@ class AABB2D
 {
 public:
 	AABB2D();
-	AABB2D(const Tuple northeast, const Tuple southwest);
-	AABB2D(const Tuple center, const double radius);
+	AABB2D(Tuple northeast, Tuple southwest);
+	AABB2D(Tuple center, double radius);
 	AABB2D(const AABB2D & src);
 	~AABB2D();
 
 	Tuple ne_corner, sw_corner, center, half;
 	double width, height;
 
-	bool intersects_aabb(const AABB2D box) const;
-	bool contains_point(const Tuple point) const;
+	[[nodiscard]] bool intersects_aabb(AABB2D box) const;
+	[[nodiscard]] bool contains_point(Tuple point) const;
 
 };
 
@@ -47,7 +47,7 @@ template <typename T>
 struct QuadNode
 {
 	QuadNode();
-	QuadNode(const Tuple position, T data);
+	QuadNode(Tuple position, T data);
 	~QuadNode();
 
 	T get_data();

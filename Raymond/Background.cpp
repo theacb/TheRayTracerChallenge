@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Background.h"
 
 // ------------------------------------------------------------------------
@@ -10,20 +9,22 @@
 // ------------------------------------------------------------------------
 
 Background::Background()
-{
-}
+= default;
 
 Background::~Background()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // sample_at
 // ------------------------------------------------------------------------
 
-Color Background::sample_at(IxComps & comps) const
+Sample Background::sample_at(IxComps & comps) const
 {
-	return Color(0.0, 0.0, 0.0);
+    Sample sample = Sample();
+    sample.set_background(0.0);
+    sample.set_diffuse(0.0);
+    sample.set_alpha(0.0);
+	return sample;
 }
 
 // ------------------------------------------------------------------------
@@ -35,21 +36,26 @@ Color Background::sample_at(IxComps & comps) const
 // ------------------------------------------------------------------------
 
 NormalGradientBackground::NormalGradientBackground()
-{
-}
+= default;
 
 NormalGradientBackground::~NormalGradientBackground()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // sample_at
 // ------------------------------------------------------------------------
 
-Color NormalGradientBackground::sample_at(IxComps & comps) const
+Sample NormalGradientBackground::sample_at(IxComps & comps) const
 {
+    Sample sample = Sample();
+
 	Tuple n = comps.normal_v - Tuple::Vector(0.0, 0.0, -1.0);
-	return Color(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
+	Color grad = Color(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
+
+    sample.set_background(grad);
+    sample.set_diffuse(0.0);
+    sample.set_alpha(0.0);
+    return sample;
 }
 
 // ------------------------------------------------------------------------
@@ -60,17 +66,19 @@ Color NormalGradientBackground::sample_at(IxComps & comps) const
 // Constructors
 // ------------------------------------------------------------------------
 
-HosekWilkietBackground::HosekWilkietBackground(const Tuple & sun_vector)
+HosekWilkieBackground::HosekWilkieBackground(const Tuple & sun_vector)
 {
 	this->sun_vector_ = sun_vector;
 }
 
-HosekWilkietBackground::~HosekWilkietBackground()
-{
-}
+HosekWilkieBackground::~HosekWilkieBackground()
+= default;
 
-Color HosekWilkietBackground::sample_at(IxComps & comps) const
+Sample HosekWilkieBackground::sample_at(IxComps & comps) const
 {
-	// TODO: Implement this maybe someday lol
-	return Color(1.0);
+    Sample sample = Sample();
+    sample.set_background(0.0);
+    sample.set_diffuse(0.0);
+    sample.set_alpha(0.0);
+    return sample;
 }

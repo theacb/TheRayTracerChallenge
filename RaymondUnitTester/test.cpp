@@ -1,30 +1,17 @@
 #include <gtest/gtest.h>
 #include <cmath>
 
-#include <sstream> 
-#include <typeinfo>
+#include <sstream>
 
 #include "../Raymond/Tuple.h"
 #include "../Raymond/Canvas.h"
-#include "../Raymond/Color.h"
 #include "../Raymond/Matrix.h"
 #include "../Raymond/Ray.h"
 #include "../Raymond/PrimitiveDefinition.h"
 #include "../Raymond/Object.h"
 #include "../Raymond/Primitive.h"
-#include "../Raymond/Light.h"
-#include "../Raymond/Material.h"
 #include "../Raymond/World.h"
-#include "../Raymond/IxComps.h"
-#include "../Raymond/Background.h"
 #include "../Raymond/Camera.h"
-#include "../Raymond/Constants.h"
-#include "../Raymond/Utilities.h"
-#include "../Raymond/Texmap.h"
-#include "../Raymond/BoundingBox.h"
-#include "../Raymond/Sample.h"
-#include "../Raymond/SampleBuffer.h"
-#include "../Raymond/Quadtree.h"
 
 // ------------------------------------------------------------------------
 // Constants
@@ -1679,7 +1666,7 @@ TEST(Chapter07Tests, ShadingAnIntersection)
 	Intersection i = Intersection(4.0, s);
 
 	IxComps comps = IxComps(i, r);
-	Color sample = w.shade(comps);
+	Color sample = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(sample, Color(0.38066, 0.47583, 0.2855));
 }
@@ -1698,7 +1685,7 @@ TEST(Chapter07Tests, ShadingAnIntersectionFromTheInside)
 	Intersection i = Intersection(0.5, s);
 
 	IxComps comps = IxComps(i, r);
-	Color sample = w.shade(comps);
+	Color sample = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(sample, Color(0.90498, 0.90498, 0.90498));
 }
@@ -1953,7 +1940,7 @@ TEST(Chapter08Tests, ShadeIsGivenAnIntersectionInShadow)
 
 	IxComps comps = IxComps(i, r);
 
-	Color c = w.shade(comps);
+	Color c = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(c, Color(0.1));
 }
@@ -2586,7 +2573,7 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveMaterial)
 
 	Intersection i = Intersection(sqrt(2.0), shape);
 	IxComps comps = IxComps(i, r);
-	Color ref = w.shade(comps);
+	Color ref = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(ref, Color(0.87677, 0.92436, 0.82918));
 }
@@ -2613,7 +2600,7 @@ TEST(Chapter11Tests, color_atFunctionWithMutuallyReflectiveSurfaces)
 
 	auto start = std::chrono::steady_clock::now();
 
-	w.color_at(r);
+	Color col = w.color_at(r);
 
 	auto end = std::chrono::steady_clock::now();
 
@@ -2839,7 +2826,7 @@ TEST(Chapter11Tests, shade_hit_FunctionWithATransparentMaterial)
 
 	IxComps comps = IxComps(xs[0], r, xs);
 
-	Color c = w.shade(comps);
+	Color c = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(c, Color(0.93642, 0.68642, 0.68642));
 }
@@ -2927,7 +2914,7 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveAndTransparentMaterial)
 
 	IxComps comps = IxComps(xs[0], r, xs);
 
-	Color c = w.shade(comps);
+	Color c = w.shade(comps).get_rgb();
 
 	ASSERT_EQ(c, Color(0.93391, 0.69643, 0.69243));
 }
@@ -3895,3 +3882,126 @@ TEST(Sampling, multiplyingSamplesByAScalar)
 	ASSERT_EQ(result.get_refraction(), Color(0.4, 0.4, 0.4));
 	ASSERT_EQ(result.get_refractionfilter(), 0.4);
 }
+
+// ------------------------------------------------------------------------
+// Sample Buffer
+// ------------------------------------------------------------------------
+
+TEST(SampleBuffer, CreatingABuffer)
+{
+
+    int width = 10;
+    int height = 20;
+    AABB2D extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(width, height, extents);
+
+
+    ASSERT_EQ(sb.width(), width);
+    ASSERT_EQ(sb.height(), height);
+
+
+    Color black = Color();
+
+    for (const std::shared_ptr<SampledPixel> & i : sb)
+    {
+        ASSERT_EQ(i->get_channel(rgb), black);
+    }
+}
+
+TEST(SampleBuffer, WritingPixelsToABuffer)
+{
+    int x = 2;
+    int y = 3;
+
+
+    AABB2D extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(10, 20, extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Sample smp = Sample();
+    smp.set_diffuse(red);
+
+    sb.write_sample(x, y, smp);
+
+    ASSERT_EQ(sb.pixel_at(x, y)->get_channel(diffuse), red);
+    ASSERT_EQ(sb.pixel_at(x, y)->get_channel(alpha), Color());
+    ASSERT_EQ(sb.pixel_at(x + 1, y + 1)->get_channel(diffuse), Color());
+}
+
+TEST(SampleBuffer, PastingIntoABuffer)
+{
+
+    AABB2D sb_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(10, 20, sb_extents);
+
+    AABB2D sb_small_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(0.5, 0.5));
+    SampleBuffer sb_small = SampleBuffer(5, 10, sb_small_extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Sample smp = Sample();
+    smp.set_diffuse(red);
+
+    for (const std::shared_ptr<SampledPixel> & i : sb_small)
+    {
+        i->write_sample(smp);
+    }
+
+    sb.write_portion(2, 2, sb_small);
+
+    ASSERT_EQ(sb.pixel_at(2, 2)->get_channel(diffuse), red);
+    ASSERT_EQ(sb.pixel_at(7, 12)->get_channel(diffuse), red);
+    ASSERT_EQ(sb.pixel_at(4, 4)->get_channel(alpha), Color());
+    ASSERT_EQ(sb.pixel_at(1, 1)->get_channel(diffuse), Color());
+    ASSERT_EQ(sb.pixel_at(8, 13)->get_channel(diffuse), Color());
+}
+
+TEST(SampleBuffer, ToCanvas)
+{
+    int width = 10;
+    int height = 20;
+    AABB2D extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(width, height, extents);
+
+    Color black = Color();
+
+    Canvas c = sb.to_canvas(rgb);
+
+    for (const Color& i : c)
+        ASSERT_EQ(i, black);
+}
+
+TEST(SampleBuffer, ToCanvasExtraChannel)
+{
+    int width = 10;
+    int height = 20;
+    AABB2D extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(width, height, extents);
+
+    Color lavender = Color(0.5, 0.5, 1.0);
+    Sample smp = Sample();
+    smp.set_diffuse(lavender);
+    smp.set_alpha(0.5);
+
+    for (const std::shared_ptr<SampledPixel> & i : sb)
+    {
+        i->write_sample(smp);
+    }
+
+    Canvas c_diff = sb.to_canvas(diffuse);
+    Canvas c_alpha = sb.to_canvas(diffuse);
+
+    for (const Color& i : c_diff)
+        ASSERT_EQ(i, lavender);
+
+    for (const Color& i : c_alpha)
+        ASSERT_EQ(i, Color(0.5));
+}
+
+// ------------------------------------------------------------------------
+// Multisample Rendering
+// ------------------------------------------------------------------------
+
+//TEST(MultiSample, )
+//{
+//
+//}

@@ -10,6 +10,7 @@
 #include "World.h"
 #include "Canvas.h"
 #include "SampleBuffer.h"
+#include "Utilities.h"
 
 class Camera :
 	public ObjectBase
@@ -17,20 +18,21 @@ class Camera :
 public:
 	Camera();
 	Camera(int, int, double);
-	~Camera();
+	~Camera(); // NOLINT(modernize-use-override)
 
 	// Methods
 
 	// Rays
-	Ray ray_from_pixel(int, int) const;
+	Ray ray_from_pixel(int x, int y) const;
+    Ray ray_from_pixel(int x, int y, double px_os_x, double px_os_y) const;
 
 	// Render
 	Canvas render(const World & w) const;
 	Canvas threaded_render(const World & w) const;
 	Canvas render_scanline(const World & w, int line) const;
 
-    SampleBuffer multipass_render_bucket(const World & w, const AABB2D& extents) const;
-    SampleBuffer multipass_threaded_render(const World & w) const;
+    SampleBuffer multi_sample_render_bucket(const World & w, int x, int y, int width, int height) const;
+    SampleBuffer multi_sample_threaded_render(const World & w) const;
 
 	// Accessors
 	int get_horizontal_size() const;
@@ -44,6 +46,7 @@ private:
 	double c_fov_, c_pixel_size_, c_half_width_, c_half_height_;
 
 	void pixel_size_();
+    AABB2D extent_from_bucket_(int x, int y, int w, int h) const;
 };
 
 #endif

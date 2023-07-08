@@ -81,20 +81,22 @@ public:
 
 private:
 	// Properties
-	std::vector<std::shared_ptr<SampledPixel>> sg_pixels_;
+	std::vector<std::shared_ptr<SampledPixel>> sb_pixels_;
 
-	int sg_width_;
-	int sg_height_;
-	int sg_total_size_;
-	AABB2D sg_extents_;
-	double sg_pixel_size_;
+	int sb_width_;
+	int sb_height_;
+	int sb_total_size_;
+	AABB2D sb_extents_;
+	double sb_pixel_size_;
 
-	std::shared_ptr<SampledPixel> sg_get_element_(int x, int y);
-	Tuple sg_pixel_center_point_(int x, int y);
-	int sg_x_coord_from_pos_(const Tuple &position);
-	int sg_y_coord_from_pos_(const Tuple &position);
-	void sg_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel);
-	int sg_index_from_coordinates_(int x, int y);
+	std::shared_ptr<SampledPixel> sb_get_element_(int x, int y);
+	[[nodiscard]] Tuple sb_pixel_center_point_(int x, int y) const;
+	[[nodiscard]] int sb_x_coord_from_pos_(const Tuple &position) const;
+	[[nodiscard]] int sb_y_coord_from_pos_(const Tuple &position) const;
+	void sb_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel);
+	[[nodiscard]] int sb_index_from_coordinates_(int x, int y) const;
+    [[nodiscard]] int sb_x_from_index_(int i) const;
+    [[nodiscard]] int sb_y_from_index_(int i) const;
 };
 
 #endif

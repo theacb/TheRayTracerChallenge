@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Camera.h"
 
 // ------------------------------------------------------------------------
@@ -22,8 +21,7 @@ Camera::Camera(int width, int height, double fov)
 }
 
 Camera::~Camera()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Rays
@@ -31,26 +29,33 @@ Camera::~Camera()
 
 Ray Camera::ray_from_pixel(int x, int y) const
 {
-	// Offset from the edge of the canvas to the pixel's center
-	double x_offset = (double(x) + 0.5) * this->c_pixel_size_;
-	double y_offset = (double(y) + 0.5) * this->c_pixel_size_;
+    // Offset from the edge of the canvas to the pixel's center
+    return this->ray_from_pixel(x, y, 0.5, 0.5);
+}
 
-	// The untransformed coordinates of the pixel in world space
-	// Camera looks towards -z, so +x is to the left
-	double world_x = this->c_half_width_ - x_offset;
-	double world_y = this->c_half_height_ - y_offset;
+Ray Camera::ray_from_pixel(int x, int y, double px_os_x, double px_os_y) const
+{
+    // px_os: pixel offset: A value between 0.0 and 1.0 that controls where in the pixel the ray is generated
+    // Offset from the edge of the canvas to the pixel's center
+    double x_offset = (double(x) + px_os_x) * this->c_pixel_size_;
+    double y_offset = (double(y) + px_os_y) * this->c_pixel_size_;
 
-	// Pre invert matrix so this is only done once
-	Matrix4 inv_x_form = this->get_transform().inverse();
+    // The untransformed coordinates of the pixel in world space
+    // Camera looks towards -z, so +x is to the left
+    double world_x = this->c_half_width_ - x_offset;
+    double world_y = this->c_half_height_ - y_offset;
 
-	// Using the camera's matrix, transform the canvas point and the origin 
-	// and then compute the ray's direction vector
-	// The camera is at z=-1.0
-	Tuple pixel = inv_x_form * Tuple::Point(world_x, world_y, -1.0);
-	Tuple origin = inv_x_form * Tuple::Point(0.0, 0.0, 0.0);
-	Tuple direction = (pixel - origin).normalize();
+    // Pre invert matrix so this is only done once
+    Matrix4 inv_x_form = this->get_transform().inverse();
 
-	return {origin, direction};
+    // Using the camera's matrix, transform the canvas point and the origin
+    // and then compute the ray's direction vector
+    // The camera is at z=-1.0
+    Tuple pixel = inv_x_form * Tuple::Point(world_x, world_y, -1.0);
+    Tuple origin = inv_x_form * Tuple::Point(0.0, 0.0, 0.0);
+    Tuple direction = (pixel - origin).normalize();
+
+    return {origin, direction};
 }
 
 // ------------------------------------------------------------------------
@@ -104,7 +109,7 @@ Canvas Camera::threaded_render(const World & w) const
 	return image;
 }
 
-SampleBuffer Camera::multipass_threaded_render(const World &w) const
+SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
 {
     return {};
 }
@@ -128,9 +133,29 @@ Canvas Camera::render_scanline(const World & w, int line) const
 	return image_line;
 }
 
-SampleBuffer Camera::multipass_render_bucket(const World & w, const AABB2D & extents) const
+SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, int width, int height) const
 {
-    return {};
+    // Generate extents
+    AABB2D extents = this->extent_from_bucket_(x, y, width, height);
+    // Create new sample buffer to place buckets into
+    SampleBuffer bucket = SampleBuffer(width, height, extents);
+
+    // Iterate through the pixels of the sample buffer
+    for (int ys = 0; ys < height; ys++)
+    {
+        std::cout << "Bucket: " << "(" << x << ", " << y << ") - [" << width << ", " << height << "]\n";
+
+        for (int xs = 0; xs < width; xs++)
+        {
+            // std::cout << "Pixel: (" << xs << ", " << y << ")\n";
+            // Casts ray to
+            Ray r = this->ray_from_pixel(x + xs, y + ys, 0.0, 0.0);
+            Sample sample = w.sample_at(r);
+            bucket.write_sample(xs, ys, sample);
+        }
+    }
+
+    return bucket;
 }
 
 // ------------------------------------------------------------------------
@@ -179,3 +204,22 @@ void Camera::pixel_size_()
 
 	this->c_pixel_size_ = (this->c_half_width_ * 2.0) / double(this->c_h_size_);
 }
+
+AABB2D Camera::extent_from_bucket_(const int x, const int y, const int w, const int h) const {
+    // AABB2Ds are square, so the largest dimension sets the square size
+    int size = (w > h) ? w : h;
+
+    // Offset from the edge of the canvas to the pixel's NE (Northeast) corner
+    double ne_x_offset = (double(x)) * this->c_pixel_size_;
+    double ne_y_offset = (double(y)) * this->c_pixel_size_;
+
+    // SW (Southwest) corner
+    double sw_x_offset = (double(x + size)) * this->c_pixel_size_;
+    double sw_y_offset = (double(y + size)) * this->c_pixel_size_;
+
+    return {Tuple::Point2D(ne_x_offset, ne_y_offset), Tuple::Point2D(sw_x_offset, sw_y_offset)};
+}
+
+
+
+

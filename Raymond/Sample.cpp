@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Sample.h"
 
 // ------------------------------------------------------------------------
@@ -13,7 +12,7 @@ Sample::Sample() : Sample(Tuple::Point(0.0, 0.0, 0.0))
 {
 }
 
-Sample::Sample(const Tuple origin)
+Sample::Sample(const Tuple & origin)
 {
 	this->name = "default sample";
 
@@ -63,14 +62,13 @@ Sample::Sample(const Sample & src)
 }
 
 Sample::~Sample()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Accessors
 // ------------------------------------------------------------------------
 
-const Color Sample::get_channel(RE channel) const
+Color Sample::get_channel(RE channel) const
 {
 	switch (channel)
 	{
@@ -94,7 +92,7 @@ const Color Sample::get_channel(RE channel) const
 		return this->s_lighting_;
 	case globalillumination:
 		return this->s_globalillumination_;
-	case refrlection:
+	case reflection:
 		return this->s_reflection_;
 	case reflectionfilter:
 		return this->s_reflectionfilter_;
@@ -107,147 +105,147 @@ const Color Sample::get_channel(RE channel) const
 	}
 }
 
-const Color Sample::get_rgb() const
+Color Sample::get_rgb() const
 {
 	return this->s_rgb_;
 }
 
-const Tuple Sample::get_origin() const
+Tuple Sample::get_origin() const
 {
 	return this->s_origin_pt_;
 }
 
-const double Sample::get_alpha() const
+double Sample::get_alpha() const
 {
 	return this->s_alpha_;
 }
 
-const Color Sample::get_background() const
+Color Sample::get_background() const
 {
 	return this->s_background_;
 }
 
-const double Sample::get_depth() const
+double Sample::get_depth() const
 {
 	return this->s_depth_;
 }
 
-const Color Sample::get_normal() const
+Color Sample::get_normal() const
 {
 	return this->s_normal_;
 }
 
-const Color Sample::get_position() const
+Color Sample::get_position() const
 {
 	return this->s_position_;
 }
 
-const Color Sample::get_diffuse() const
+Color Sample::get_diffuse() const
 {
 	return this->s_diffuse_;
 }
 
-const Color Sample::get_specular() const
+Color Sample::get_specular() const
 {
 	return this->s_specular_;
 }
 
-const Color Sample::get_lighting() const
+Color Sample::get_lighting() const
 {
 	return this->s_lighting_;
 }
 
-const Color Sample::get_globalillumination() const
+Color Sample::get_globalillumination() const
 {
 	return this->s_globalillumination_;
 }
 
-const Color Sample::get_reflection() const
+Color Sample::get_reflection() const
 {
 	return this->s_reflection_;
 }
 
-const double Sample::get_reflectionfilter() const
+double Sample::get_reflectionfilter() const
 {
 	return this->s_reflectionfilter_;
 }
 
-const Color Sample::get_refraction() const
+Color Sample::get_refraction() const
 {
 	return this->s_refraction_;
 }
 
-const double Sample::get_refractionfilter() const
+double Sample::get_refractionfilter() const
 {
 	return this->s_refractionfilter_;
 }
 
-void Sample::set_rgb(const Color col)
+void Sample::set_rgb(const Color & col)
 {
 	this->s_rgb_ = col;
 }
 
-void Sample::set_alpha(const double val)
+void Sample::set_alpha(const double & val)
 {
 	this->s_alpha_ = val;
 }
 
-void Sample::set_background(const Color col)
+void Sample::set_background(const Color & col)
 {
 	this->s_background_ = col;
 }
 
-void Sample::set_depth(const double val)
+void Sample::set_depth(const double & val)
 {
 	this->s_depth_ = val;
 }
 
-void Sample::set_normal(const Color col)
+void Sample::set_normal(const Color & col)
 {
 	this->s_normal_ = col;
 }
 
-void Sample::set_position(const Color col)
+void Sample::set_position(const Color & col)
 {
 	this->s_position_ = col;
 }
 
-void Sample::set_diffuse(const Color col)
+void Sample::set_diffuse(const Color & col)
 {
 	this->s_diffuse_ = col;
 }
 
-void Sample::set_specular(const Color col)
+void Sample::set_specular(const Color & col)
 {
 	this->s_specular_ = col;
 }
 
-void Sample::set_lighting(const Color col)
+void Sample::set_lighting(const Color & col)
 {
 	this->s_lighting_ = col;
 }
 
-void Sample::set_globalillumination(const Color col)
+void Sample::set_globalillumination(const Color & col)
 {
 	this->s_globalillumination_ = col;
 }
 
-void Sample::set_reflection(const Color col)
+void Sample::set_reflection(const Color & col)
 {
 	this->s_reflection_ = col;
 }
 
-void Sample::set_reflectionfilter(const double val)
+void Sample::set_reflectionfilter(const double & val)
 {
 	this->s_reflectionfilter_ = val;
 }
 
-void Sample::set_refraction(const Color col)
+void Sample::set_refraction(const Color & col)
 {
 	this->s_refraction_ = col;
 }
 
-void Sample::set_refractionfilter(const double val)
+void Sample::set_refractionfilter(const double & val)
 {
 	this->s_refractionfilter_ = val;
 }
