@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include <cmath>
 
+#include <cmath>
 #include <sstream>
+#include <filesystem>
 
 #include "../Raymond/Tuple.h"
 #include "../Raymond/Canvas.h"
@@ -378,9 +379,13 @@ TEST(Chapter02Tests, PPMFilesTerminateWithNewline)
 {
 	Canvas c = Canvas(10, 10);
 
-	std::string file_path = R"(I:\projects\Raymond\frames\_x\PPMFilesTerminateWithNewline.ppm)";
+	std::filesystem::path file_path = std::filesystem::temp_directory_path();
+    file_path /= R"(Raymond\frames\_x\)";
+    std::filesystem::create_directories(file_path);
 
-	canvas_to_ppm(c, file_path);
+    file_path /= R"(PPMFilesTerminateWithNewline.ppm)";
+
+	canvas_to_ppm(c, file_path.string());
 
 	std::ifstream input_file;
 
@@ -3779,8 +3784,6 @@ TEST(Sampling, AddingSamples)
 
 	s1.calculate_sample();
 
-	std::cout << s1.get_rgb() << std::endl;
-
 	Sample s2 = Sample(s1);
 
 	result = s1 + s2;
@@ -3884,6 +3887,67 @@ TEST(Sampling, multiplyingSamplesByAScalar)
 }
 
 // ------------------------------------------------------------------------
+// Sample Pixel
+// ------------------------------------------------------------------------
+
+TEST(SamplePixel, CreatingASamplePixel)
+{
+    auto px_1 = std::make_shared<SampledPixel>();
+
+    Sample smp = Sample(Tuple::Point(0.5, 0.5, 0.0));
+
+    px_1->write_sample(smp);
+
+    std::vector<Sample> samples_vec = px_1->get_samples();
+
+    ASSERT_EQ(samples_vec.size(), 1);
+}
+
+TEST(SamplePixel, CreatingASamplePixelWithData)
+{
+    Color gray = Color(0.5, 0.5, 0.5);
+
+    auto px_1 = std::make_shared<SampledPixel>();
+
+    Sample smp = Sample(Tuple::Point(0.5, 0.5, 0.0));
+    smp.set_background(gray);
+
+    px_1->write_sample(smp);
+    px_1->full_average();
+
+    ASSERT_EQ(px_1->get_channel(background), gray);
+}
+
+TEST(SamplePixel, AveragingASamplePixel)
+{
+    auto px_1 = std::make_shared<SampledPixel>();
+
+    Sample smp_1 = Sample(Tuple::Point(0.5, 0.5, 0.0));
+    smp_1.set_background(Color(1.0, 1.0, 0.5));
+
+    Sample smp_2 = Sample(Tuple::Point(0.25, 0.25, 0.0));
+    smp_2.set_background(Color(1.0, 0.5, 0.25));
+
+    Sample smp_3 = Sample(Tuple::Point(0.25, 0.75, 0.0));
+    smp_3.set_background(Color(0.5, 0.25, 1.0));
+
+    Sample smp_4 = Sample(Tuple::Point(0.75, 0.25, 0.0));
+    smp_4.set_background(Color(0.25, 1.0, 1.0));
+
+    Sample smp_5 = Sample(Tuple::Point(0.75, 0.75, 0.0));
+    smp_5.set_background(Color(1.0, 1.0, 1.0));
+
+    px_1->write_sample(smp_1);
+    px_1->write_sample(smp_2);
+    px_1->write_sample(smp_3);
+    px_1->write_sample(smp_4);
+    px_1->write_sample(smp_5);
+    px_1->full_average();
+
+    ASSERT_EQ(px_1->get_channel(background), Color(0.75, 0.75, 0.75));
+}
+
+// ------------------------------------------------------------------------
 // Sample Buffer
 // ------------------------------------------------------------------------
 
@@ -3908,6 +3972,26 @@ TEST(SampleBuffer, CreatingABuffer)
     }
 }
 
+TEST(SampleBuffer, PixelBoundsAlign)
+{
+
+    int width = 10;
+    int height = 20;
+    AABB2D extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(width, height, extents);
+
+
+    for (int x = 0; x < width; ++x)
+    {
+        for (int y = 0; y < height; ++y)
+        {
+            Tuple point = sb.coordinates_from_pixel(x, y);
+            AABB2D box = sb.pixel_at(x, y)->get_bounds();
+            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point;
+        }
+    }
+}
+
 TEST(SampleBuffer, WritingPixelsToABuffer)
 {
     int x = 2;
@@ -3918,10 +4002,14 @@ TEST(SampleBuffer, WritingPixelsToABuffer)
     SampleBuffer sb = SampleBuffer(10, 20, extents);
 
     Color red = Color(1.0, 0.0, 0.0);
-    Sample smp = Sample();
+    Sample smp = Sample(sb.coordinates_from_pixel(x, y));
     smp.set_diffuse(red);
 
     sb.write_sample(x, y, smp);
+
+    sb.pixel_at(x, y)->full_average();
+
+    ASSERT_EQ(sb.pixel_at(x, y)->get_samples().size(), 1);
 
     ASSERT_EQ(sb.pixel_at(x, y)->get_channel(diffuse), red);
     ASSERT_EQ(sb.pixel_at(x, y)->get_channel(alpha), Color());
@@ -3944,6 +4032,7 @@ TEST(SampleBuffer, PastingIntoABuffer)
     for (const std::shared_ptr<SampledPixel> & i : sb_small)
     {
         i->write_sample(smp);
+        i->full_average();
     }
 
     sb.write_portion(2, 2, sb_small);
@@ -3967,7 +4056,7 @@ TEST(SampleBuffer, ToCanvas)
     Canvas c = sb.to_canvas(rgb);
 
     for (const Color& i : c)
-        ASSERT_EQ(i, black);
+        EXPECT_EQ(i, black);
 }
 
 TEST(SampleBuffer, ToCanvasExtraChannel)
@@ -3985,16 +4074,17 @@ TEST(SampleBuffer, ToCanvasExtraChannel)
     for (const std::shared_ptr<SampledPixel> & i : sb)
     {
         i->write_sample(smp);
+        i->full_average();
     }
 
     Canvas c_diff = sb.to_canvas(diffuse);
     Canvas c_alpha = sb.to_canvas(diffuse);
 
     for (const Color& i : c_diff)
-        ASSERT_EQ(i, lavender);
+        EXPECT_EQ(i, lavender);
 
     for (const Color& i : c_alpha)
-        ASSERT_EQ(i, Color(0.5));
+        EXPECT_EQ(i, Color(0.5));
 }
 
 // ------------------------------------------------------------------------

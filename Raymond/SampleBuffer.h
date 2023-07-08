@@ -7,6 +7,7 @@
 #include "Canvas.h"
 #include "Tuple.h"
 #include "Quadtree.h"
+#include "Utilities.h"
 
 #include <vector>
 #include <cstddef>
@@ -22,27 +23,30 @@ class SampledPixel
 {
 public:
 	SampledPixel();
-	SampledPixel(Tuple top_left, Tuple bottom_right);
-	explicit SampledPixel(AABB2D range);
+	SampledPixel(const Tuple& top_left, const Tuple& bottom_right);
+	explicit SampledPixel(const AABB2D& range);
 	~SampledPixel();
 
 	// Methods
-	void write_sample(Sample sample);
-	void quick_average(std::vector<Sample> sample_group);
-	void full_average(std::vector<Sample> sample_group);
+	void write_sample(const Sample& sample);
+	void quick_average();
+    void quick_average(const std::vector<Sample>& sample_group);
+    void full_average();
+	void full_average(const std::vector<Sample>& sample_group);
 
 	// Accessors
 	[[nodiscard]] Color get_channel(RE channel) const;
 	[[nodiscard]] Sample get_calculated_average() const;
 	[[nodiscard]] std::vector<Sample> get_samples() const;
 	[[nodiscard]] std::vector<Sample> query_range(const AABB2D &range) const;
+    [[nodiscard]] AABB2D get_bounds() const;
 
 	// Static
-	static std::vector<Sample> nodes_to_samples(std::vector<std::shared_ptr<QuadNode<Sample>>> nodes);
+	static std::vector<Sample> nodes_to_samples(const std::vector<std::shared_ptr<QuadNode<Sample>>>& nodes);
 	
 private:
 	// Properties
-	std::shared_ptr<QuadBranch<Sample>> sp_sub_samples_;
+	QuadBranch<Sample> sp_sub_samples_;
 	int sp_subdivs_;
 
 	Sample sp_average_;
@@ -67,6 +71,8 @@ public:
 	void write_portion_as_line(int y, const SampleBuffer & line);
 	void write_portion(int x, int y, const SampleBuffer & grid);
 	std::shared_ptr<SampledPixel> pixel_at(int x, int y);
+    [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y) const;
+    [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y, const double & px_os_x, const double & px_os_y) const;
 	Canvas to_canvas(RE channel);
 	[[nodiscard]] std::vector<std::shared_ptr<SampledPixel>> get_pixels() const;
 

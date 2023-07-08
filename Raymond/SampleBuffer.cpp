@@ -13,30 +13,30 @@ SampledPixel::SampledPixel() : SampledPixel(AABB2D(Tuple::Point2D(0.0, 0.0), Tup
 {
 }
 
-SampledPixel::SampledPixel(const Tuple top_left, const Tuple bottom_right) : SampledPixel(AABB2D(top_left, bottom_right))
+SampledPixel::SampledPixel(const Tuple& top_left, const Tuple& bottom_right) : SampledPixel(AABB2D(top_left, bottom_right))
 {
 }
 
-SampledPixel::SampledPixel(AABB2D range)
+SampledPixel::SampledPixel(const AABB2D& range)
 {
 	this->sp_subdivs_ = 1;
-	this->sp_sub_samples_ = std::make_shared<QuadBranch<Sample>>(range, 4);
+	this->sp_sub_samples_ = QuadBranch<Sample>(range, 4);
 
 	this->sp_average_ = Sample();
 }
 
 SampledPixel::~SampledPixel()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
 // ------------------------------------------------------------------------
 
-void SampledPixel::write_sample(Sample sample)
+void SampledPixel::write_sample(const Sample& sample)
 {
 	auto qn = std::make_shared<QuadNode<Sample>>(sample.get_origin(), sample);
-	this->sp_sub_samples_->insert(qn);
+
+	this->sp_sub_samples_.insert(qn);
 }
 
 
@@ -56,15 +56,24 @@ Sample SampledPixel::get_calculated_average() const
 
 std::vector<Sample> SampledPixel::get_samples() const
 {
-	return SampledPixel::nodes_to_samples(this->sp_sub_samples_->get_all_nodes());
+	return SampledPixel::nodes_to_samples(this->sp_sub_samples_.get_all_nodes());
 }
 
 std::vector<Sample> SampledPixel::query_range(const AABB2D &range) const
 {
-	return SampledPixel::nodes_to_samples(this->sp_sub_samples_->query_range(range));
+	return SampledPixel::nodes_to_samples(this->sp_sub_samples_.query_range(range));
 }
 
-void SampledPixel::quick_average(std::vector<Sample> sample_group)
+void SampledPixel::quick_average()
+{
+    this->quick_average(this->get_samples());
+}
+
+AABB2D SampledPixel::get_bounds() const {
+    return this->sp_sub_samples_.get_bounds();
+}
+
+void SampledPixel::quick_average(const std::vector<Sample> & sample_group)
 {
 	// Because this is a quick average, it only averages the RGB color channel.
 	// This is then placed into a copy of the first sample in the list
@@ -73,9 +82,9 @@ void SampledPixel::quick_average(std::vector<Sample> sample_group)
 	Color mean = Color(0.0);
 
 	// Add up colors
-	for (size_t i = 0; i < sample_group.size(); i++)
+	for (const auto & i : sample_group)
 	{
-		mean = mean + sample_group[i].get_rgb();
+		mean = mean + i.get_rgb();
 	}
 
 	mean = mean / static_cast<double>(sample_group.size());
@@ -85,16 +94,21 @@ void SampledPixel::quick_average(std::vector<Sample> sample_group)
 	this->sp_average_ = base;
 }
 
-void SampledPixel::full_average(std::vector<Sample> sample_group)
+void SampledPixel::full_average()
+{
+    this->full_average(this->get_samples());
+}
+
+void SampledPixel::full_average(const std::vector<Sample>& sample_group)
 {
 	// This averages every channel, so it is much slower than quick average
 	// Use for final channel calculation
 	Sample mean;
 
 	// Add up samples
-	for (size_t i = 0; i < sample_group.size(); i++)
+	for (const auto & i : sample_group)
 	{
-		mean = mean + sample_group[i];
+		mean = mean + i;
 	}
 
 	mean = mean / static_cast<double>(sample_group.size());
@@ -102,18 +116,20 @@ void SampledPixel::full_average(std::vector<Sample> sample_group)
 	this->sp_average_ = mean;
 }
 
-std::vector<Sample> SampledPixel::nodes_to_samples(const std::vector<std::shared_ptr<QuadNode<Sample>>> nodes)
+std::vector<Sample> SampledPixel::nodes_to_samples(const std::vector<std::shared_ptr<QuadNode<Sample>>>& nodes)
 {
 	std::vector<Sample> sample_vec = std::vector<Sample>();
 	sample_vec.reserve(nodes.size());
 
-	for (size_t i = 0; i < nodes.size(); i++)
+	for (const auto & node : nodes)
 	{
-		sample_vec.push_back(nodes[i]->data);
+		sample_vec.push_back(node->data);
 	}
 
 	return sample_vec;
 }
+
+
 
 
 // ------------------------------------------------------------------------
@@ -160,7 +176,7 @@ SampleBuffer::SampleBuffer(int grid_width, int grid_height, const AABB2D& extent
 		this->sb_pixels_.push_back(std::make_shared<SampledPixel>(range));
 	}
 
-	// TODO: Fill with new samples
+	// TODO: Make sure pixel centers are the proper centers and not the corners
 	// TODO: Add function for noise threshold and allocating more samples
 }
 
@@ -285,6 +301,19 @@ std::vector<std::shared_ptr<SampledPixel>> SampleBuffer::get_pixels() const
 	return this->sb_pixels_;
 }
 
+Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y) const {
+    return this->sb_pixel_center_point_(x, y);
+}
+
+Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y, const double &px_os_x, const double &px_os_y) const {
+    Tuple center = this->sb_pixel_center_point_(x, y);
+    // Allows offsetting the position of the pixel using a value from 0.0 to 1.0 representing the size of the pixel
+    return center + Tuple::Point2D(
+            remap(px_os_x, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_,
+            remap(px_os_y, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_
+            );
+}
+
 // ------------------------------------------------------------------------
 // Accessors
 // ------------------------------------------------------------------------
@@ -363,3 +392,4 @@ int SampleBuffer::sb_x_from_index_(int i) const {
 int SampleBuffer::sb_y_from_index_(int i) const {
     return i / this->sb_width_;
 }
+
