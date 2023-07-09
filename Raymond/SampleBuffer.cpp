@@ -149,6 +149,9 @@ SampleBuffer::SampleBuffer(const SampleBuffer & src)
 	this->sb_width_ = src.width();
 	this->sb_height_ = src.height();
 
+    this->sb_x_pos_ = src.x_position();
+    this->sb_y_pos_ = src.y_position();
+
 	this->sb_total_size_ = this->sb_width_ * this->sb_height_;
 	this->sb_pixels_ = src.get_pixels();
 
@@ -156,29 +159,31 @@ SampleBuffer::SampleBuffer(const SampleBuffer & src)
 	this->sb_pixel_size_ = src.extents().width / static_cast<double>(src.width());
 }
 
-SampleBuffer::SampleBuffer(int grid_width, int grid_height, const AABB2D& extents)
+SampleBuffer::SampleBuffer(int grid_width, int grid_height, const AABB2D& extents) : SampleBuffer(0, 0, grid_width, grid_height, extents)
 {
-	this->sb_width_ = grid_width;
-	this->sb_height_ = grid_height;
-	this->sb_total_size_ = grid_width * grid_height;
+}
 
-	this->sb_extents_ = extents;
+SampleBuffer::SampleBuffer(int x, int y, int grid_width, int grid_height, const AABB2D &extents) {
+    this->sb_width_ = grid_width;
+    this->sb_height_ = grid_height;
+    this->sb_x_pos_ = x;
+    this->sb_y_pos_ = y;
+    this->sb_total_size_ = grid_width * grid_height;
 
-	this->sb_pixel_size_ = extents.width / static_cast<double>(grid_width);
+    this->sb_extents_ = extents;
 
-	this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
-	this->sb_pixels_.resize(this->sb_total_size_);
+    this->sb_pixel_size_ = extents.width / static_cast<double>(grid_width);
+
+    this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
+    this->sb_pixels_.resize(this->sb_total_size_);
 
     // Fill the buffer with SamplePixels that have had their areas initialized to their pixel's AABB
-	for (int i = 0; i < this->sb_total_size_; i++)
-	{
-		Tuple center = this->sb_pixel_center_point_(this->sb_x_from_index_(i), sb_y_from_index_(i));
-		AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
-		this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
-	}
-
-	// TODO: Make sure pixel centers are the proper centers and not the corners
-	// TODO: Add function for noise threshold and allocating more samples
+    for (int i = 0; i < this->sb_total_size_; i++)
+    {
+        Tuple center = this->coordinates_from_index(i);
+        AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
+        this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
+    }
 }
 
 SampleBuffer::~SampleBuffer()
@@ -330,9 +335,18 @@ bool SampleBuffer::test_noise_threshold(const int &i, const double &noise_thresh
 
 Tuple SampleBuffer::request_new_sample_point(const int & i) const
 {
-    // TODO: Return an origin point for a sample randomly from within the pixel
+    // Return an origin point for a sample randomly from within the pixel
     // This will be sent to be converted to a ray.
-    return {};
+    Tuple center = this->coordinates_from_index(i);
+
+    double px_os_x = random_double();
+    double px_os_y = random_double();
+
+    // Allows offsetting the position of the pixel using a value from 0.0 to 1.0 representing the size of the pixel
+    return center + Tuple::Point2D(
+            remap(px_os_x, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_,
+            remap(px_os_y, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_
+    );
 }
 
 // ------------------------------------------------------------------------
@@ -347,6 +361,14 @@ int SampleBuffer::width() const
 int SampleBuffer::height() const
 {
 	return this->sb_height_;
+}
+
+int SampleBuffer::x_position() const {
+    return this->sb_x_pos_;
+}
+
+int SampleBuffer::y_position() const {
+    return this->sb_y_pos_;
 }
 
 AABB2D SampleBuffer::extents() const
@@ -377,7 +399,8 @@ std::shared_ptr<SampledPixel> SampleBuffer::sb_get_element_(int x, int y)
 
 Tuple SampleBuffer::sb_pixel_center_point_(int x, int y) const
 {
-	return Tuple::Point2D((x + 0.5) * this->sb_pixel_size_, (y + 0.5) * sb_pixel_size_);
+	Tuple raw = Tuple::Point2D((x + 0.5) * this->sb_pixel_size_, (y + 0.5) * sb_pixel_size_);
+    return raw + this->extents().ne_corner;
 }
 
 int SampleBuffer::sb_x_coord_from_pos_(const Tuple & position) const

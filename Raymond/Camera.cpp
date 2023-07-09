@@ -138,7 +138,7 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
     // Generate extents
     AABB2D extents = this->extent_from_bucket_(x, y, width, height);
     // Create new sample buffer to place buckets into
-    SampleBuffer bucket = SampleBuffer(width, height, extents);
+    SampleBuffer bucket = SampleBuffer(x, y, width, height, extents);
 
     // Iterate through the pixels of the sample buffer
     for (int ys = 0; ys < height; ys++)
@@ -149,7 +149,7 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
         {
             // std::cout << "Pixel: (" << xs << ", " << y << ")\n";
             // Casts ray to
-            Ray r = this->ray_from_pixel(x + xs, y + ys, 0.0, 0.0);
+            Ray r = this->ray_from_pixel(xs, ys, 0.0, 0.0);
             Sample sample = w.sample_at(r);
             bucket.write_sample(xs, ys, sample);
         }

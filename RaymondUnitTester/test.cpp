@@ -3987,7 +3987,7 @@ TEST(SampleBuffer, PixelBoundsAlign)
         {
             Tuple point = sb.coordinates_from_pixel(x, y);
             AABB2D box = sb.pixel_at(x, y)->get_bounds();
-            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point;
+            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point << std::endl;
         }
     }
 }
@@ -4097,6 +4097,47 @@ TEST(SampleBuffer, ToCanvasExtraChannel)
 
     for (const Color& i : c_alpha)
         EXPECT_EQ(i, Color(0.5));
+}
+
+TEST(SampleBuffer, PixelBoundsAlignForAnOffsetBuffer)
+{
+
+    int width = 20;
+    int height = 10;
+
+    int x_offset = 57;
+    int y_offset = 376;
+
+    double  pixel_size = 0.001;
+
+    // Offset from the edge of the canvas to the pixel's NE (Northeast) corner
+    double ne_x_offset = (double(x_offset)) * pixel_size;
+    double ne_y_offset = (double(y_offset)) * pixel_size;
+
+    // SW (Southwest) corner
+    double sw_x_offset = (double(x_offset + width)) * pixel_size;
+    double sw_y_offset = (double(y_offset + height)) * pixel_size;
+
+    AABB2D extents = AABB2D(Tuple::Point2D(ne_x_offset, ne_y_offset), Tuple::Point2D(sw_x_offset, sw_y_offset));
+    SampleBuffer sb = SampleBuffer(x_offset, y_offset, width, height, extents);
+
+    // Check if pixels are bound correctly
+    for (int x = 0; x < width; ++x)
+    {
+        for (int y = 0; y < height; ++y)
+        {
+            Tuple point = sb.coordinates_from_pixel(x, y);
+            AABB2D box = sb.pixel_at(x, y)->get_bounds();
+            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point << std::endl;
+        }
+    }
+
+    Sample smp = Sample(Tuple::Point2D(ne_x_offset + (pixel_size * 0.5), ne_y_offset + (pixel_size * 0.5)));
+
+    sb.write_sample(smp);
+
+    // Checks if the pixel was written into and retained by the PixelSample Quadtree
+    ASSERT_EQ(sb.pixel_at(0, 0)->get_samples().size(), 1);
 }
 
 // ------------------------------------------------------------------------

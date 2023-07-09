@@ -60,6 +60,7 @@ public:
 	SampleBuffer();
 	SampleBuffer(const SampleBuffer & src);
 	SampleBuffer(int grid_width, int grid_height, const AABB2D & extents);
+    SampleBuffer(int x, int y, int grid_width, int grid_height, const AABB2D & extents);
 
 	// Destructor
 	~SampleBuffer();
@@ -77,12 +78,14 @@ public:
 	Canvas to_canvas(RE channel);
 	[[nodiscard]] std::vector<std::shared_ptr<SampledPixel>> get_pixels() const;
 
-    bool test_noise_threshold(const int & i, const double & noise_threshold) const;
-    Tuple request_new_sample_point(const int & i) const;
+    [[nodiscard]] bool test_noise_threshold(const int & i, const double & noise_threshold) const;
+    [[nodiscard]] Tuple request_new_sample_point(const int & i) const;
 
 	// Accessors
 	[[nodiscard]] int width() const;
 	[[nodiscard]] int height() const;
+    [[nodiscard]] int x_position() const;
+    [[nodiscard]] int y_position() const;
 	[[nodiscard]] AABB2D extents() const;
 
 	// iterators
@@ -95,6 +98,8 @@ private:
 
 	int sb_width_;
 	int sb_height_;
+    int sb_x_pos_;
+    int sb_y_pos_;
 	int sb_total_size_;
 	AABB2D sb_extents_;
 	double sb_pixel_size_;
