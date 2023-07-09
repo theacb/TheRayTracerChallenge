@@ -3694,16 +3694,16 @@ TEST(Sampling, ADefaultSample)
 	ASSERT_EQ(s.get_alpha(), 0.0);
 	ASSERT_EQ(s.get_depth(), 0.0);
 	ASSERT_EQ(s.get_background(), Color(0.0));
-	ASSERT_EQ(s.get_normal(), Color(0.5, 0.5, 1.0));
+	ASSERT_EQ(s.get_normal(), Color(0.0, 0.0, 0.0));
 	ASSERT_EQ(s.get_position(), Color(0.0));
-	ASSERT_EQ(s.get_diffuse(), Color(1.0));
+	ASSERT_EQ(s.get_diffuse(), Color(0.0));
 	ASSERT_EQ(s.get_specular(), Color(0.0));
 	ASSERT_EQ(s.get_lighting(), Color(0.0));
 	ASSERT_EQ(s.get_globalillumination(), Color(0.0));
 	ASSERT_EQ(s.get_reflection(), Color(0.0));
-	ASSERT_EQ(s.get_reflectionfilter(), 1.0);
+	ASSERT_EQ(s.get_reflectionfilter(), 0.0);
 	ASSERT_EQ(s.get_refraction(), Color(0.0));
-	ASSERT_EQ(s.get_refractionfilter(), 1.0);
+	ASSERT_EQ(s.get_refractionfilter(), 0.0);
 }
 
 TEST(Sampling, SettingSampleValues)
@@ -4011,6 +4011,10 @@ TEST(SampleBuffer, WritingPixelsToABuffer)
 
     ASSERT_EQ(sb.pixel_at(x, y)->get_samples().size(), 1);
 
+//    for (const Sample & i:sb.pixel_at(x, y)->get_samples()) {
+//        std::cout << "Sample: " << i << std::endl;
+//    }
+
     ASSERT_EQ(sb.pixel_at(x, y)->get_channel(diffuse), red);
     ASSERT_EQ(sb.pixel_at(x, y)->get_channel(alpha), Color());
     ASSERT_EQ(sb.pixel_at(x + 1, y + 1)->get_channel(diffuse), Color());
@@ -4026,22 +4030,26 @@ TEST(SampleBuffer, PastingIntoABuffer)
     SampleBuffer sb_small = SampleBuffer(5, 10, sb_small_extents);
 
     Color red = Color(1.0, 0.0, 0.0);
-    Sample smp = Sample();
-    smp.set_diffuse(red);
 
-    for (const std::shared_ptr<SampledPixel> & i : sb_small)
+    int i = 0;
+    for (const std::shared_ptr<SampledPixel> & p : sb_small)
     {
-        i->write_sample(smp);
-        i->full_average();
+        Sample smp = Sample(sb_small.coordinates_from_index(i));
+        smp.set_diffuse(red);
+
+        p->write_sample(smp);
+        p->full_average();
+
+        i++;
     }
 
     sb.write_portion(2, 2, sb_small);
 
     ASSERT_EQ(sb.pixel_at(2, 2)->get_channel(diffuse), red);
-    ASSERT_EQ(sb.pixel_at(7, 12)->get_channel(diffuse), red);
+    ASSERT_EQ(sb.pixel_at(6, 11)->get_channel(diffuse), red);
     ASSERT_EQ(sb.pixel_at(4, 4)->get_channel(alpha), Color());
     ASSERT_EQ(sb.pixel_at(1, 1)->get_channel(diffuse), Color());
-    ASSERT_EQ(sb.pixel_at(8, 13)->get_channel(diffuse), Color());
+    ASSERT_EQ(sb.pixel_at(7, 12)->get_channel(diffuse), Color());
 }
 
 TEST(SampleBuffer, ToCanvas)
@@ -4067,18 +4075,22 @@ TEST(SampleBuffer, ToCanvasExtraChannel)
     SampleBuffer sb = SampleBuffer(width, height, extents);
 
     Color lavender = Color(0.5, 0.5, 1.0);
-    Sample smp = Sample();
-    smp.set_diffuse(lavender);
-    smp.set_alpha(0.5);
 
-    for (const std::shared_ptr<SampledPixel> & i : sb)
+    int ind = 0;
+    for (const std::shared_ptr<SampledPixel> & p : sb)
     {
-        i->write_sample(smp);
-        i->full_average();
+        Sample smp = Sample(sb.coordinates_from_index(ind));
+        smp.set_diffuse(lavender);
+        smp.set_alpha(0.5);
+
+        p->write_sample(smp);
+        p->full_average();
+
+        ind++;
     }
 
     Canvas c_diff = sb.to_canvas(diffuse);
-    Canvas c_alpha = sb.to_canvas(diffuse);
+    Canvas c_alpha = sb.to_canvas(alpha);
 
     for (const Color& i : c_diff)
         EXPECT_EQ(i, lavender);

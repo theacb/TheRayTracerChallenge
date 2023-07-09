@@ -23,18 +23,18 @@ Sample::Sample(const Tuple & origin)
 	this->s_background_ = Color(0.0);
 
 	this->s_depth_ = 0.0;
-	this->s_normal_ = Color(0.5, 0.5, 1.0);
+	this->s_normal_ = Color(0.0, 0.0, 0.0);
 	this->s_position_ = Color(0.0);
 
-	this->s_diffuse_ = Color(1.0);
+	this->s_diffuse_ = Color(0.0);
 	this->s_specular_ = Color(0.0);
 	this->s_lighting_ = Color(0.0);
 	this->s_globalillumination_ = Color(0.0);
 
 	this->s_reflection_ = Color(0.0);
-	this->s_reflectionfilter_ = 1.0;
+	this->s_reflectionfilter_ = 0.0;
 	this->s_refraction_ = Color(0.0);
-	this->s_refractionfilter_ = 1.0;
+	this->s_refractionfilter_ = 0.0;
 }
 
 Sample::Sample(const Sample & src)

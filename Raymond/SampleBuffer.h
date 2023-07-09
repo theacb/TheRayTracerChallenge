@@ -73,8 +73,12 @@ public:
 	std::shared_ptr<SampledPixel> pixel_at(int x, int y);
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y) const;
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y, const double & px_os_x, const double & px_os_y) const;
+    [[nodiscard]] Tuple coordinates_from_index(const int & i) const;
 	Canvas to_canvas(RE channel);
 	[[nodiscard]] std::vector<std::shared_ptr<SampledPixel>> get_pixels() const;
+
+    bool test_noise_threshold(const int & i, const double & noise_threshold) const;
+    Tuple request_new_sample_point(const int & i) const;
 
 	// Accessors
 	[[nodiscard]] int width() const;

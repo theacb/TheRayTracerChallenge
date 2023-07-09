@@ -167,13 +167,14 @@ SampleBuffer::SampleBuffer(int grid_width, int grid_height, const AABB2D& extent
 	this->sb_pixel_size_ = extents.width / static_cast<double>(grid_width);
 
 	this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
-	this->sb_pixels_.reserve(this->sb_total_size_);
+	this->sb_pixels_.resize(this->sb_total_size_);
 
+    // Fill the buffer with SamplePixels that have had their areas initialized to their pixel's AABB
 	for (int i = 0; i < this->sb_total_size_; i++)
 	{
 		Tuple center = this->sb_pixel_center_point_(this->sb_x_from_index_(i), sb_y_from_index_(i));
 		AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
-		this->sb_pixels_.push_back(std::make_shared<SampledPixel>(range));
+		this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
 	}
 
 	// TODO: Make sure pixel centers are the proper centers and not the corners
@@ -301,17 +302,37 @@ std::vector<std::shared_ptr<SampledPixel>> SampleBuffer::get_pixels() const
 	return this->sb_pixels_;
 }
 
-Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y) const {
+Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y) const
+{
     return this->sb_pixel_center_point_(x, y);
 }
 
-Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y, const double &px_os_x, const double &px_os_y) const {
+Tuple SampleBuffer::coordinates_from_pixel(const int &x, const int &y, const double &px_os_x, const double &px_os_y) const
+{
     Tuple center = this->sb_pixel_center_point_(x, y);
     // Allows offsetting the position of the pixel using a value from 0.0 to 1.0 representing the size of the pixel
     return center + Tuple::Point2D(
             remap(px_os_x, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_,
             remap(px_os_y, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_
             );
+}
+
+Tuple SampleBuffer::coordinates_from_index(const int &i) const
+{
+    return this->sb_pixel_center_point_(this->sb_x_from_index_(i), sb_y_from_index_(i));
+}
+
+bool SampleBuffer::test_noise_threshold(const int &i, const double &noise_threshold) const
+{
+    // TODO: Implement a noise test function
+    return false;
+}
+
+Tuple SampleBuffer::request_new_sample_point(const int & i) const
+{
+    // TODO: Return an origin point for a sample randomly from within the pixel
+    // This will be sent to be converted to a ray.
+    return {};
 }
 
 // ------------------------------------------------------------------------
@@ -356,7 +377,7 @@ std::shared_ptr<SampledPixel> SampleBuffer::sb_get_element_(int x, int y)
 
 Tuple SampleBuffer::sb_pixel_center_point_(int x, int y) const
 {
-	return Tuple::Point2D(x * this->sb_pixel_size_, y * sb_pixel_size_);
+	return Tuple::Point2D((x + 0.5) * this->sb_pixel_size_, (y + 0.5) * sb_pixel_size_);
 }
 
 int SampleBuffer::sb_x_coord_from_pos_(const Tuple & position) const
@@ -392,4 +413,5 @@ int SampleBuffer::sb_x_from_index_(int i) const {
 int SampleBuffer::sb_y_from_index_(int i) const {
     return i / this->sb_width_;
 }
+
 
