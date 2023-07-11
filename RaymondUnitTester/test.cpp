@@ -1671,7 +1671,7 @@ TEST(Chapter07Tests, ShadingAnIntersection)
 	Intersection i = Intersection(4.0, s);
 
 	IxComps comps = IxComps(i, r);
-	Color sample = w.shade(comps).get_rgb();
+	Color sample = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(sample, Color(0.38066, 0.47583, 0.2855));
 }
@@ -1690,7 +1690,7 @@ TEST(Chapter07Tests, ShadingAnIntersectionFromTheInside)
 	Intersection i = Intersection(0.5, s);
 
 	IxComps comps = IxComps(i, r);
-	Color sample = w.shade(comps).get_rgb();
+	Color sample = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(sample, Color(0.90498, 0.90498, 0.90498));
 }
@@ -1945,7 +1945,7 @@ TEST(Chapter08Tests, ShadeIsGivenAnIntersectionInShadow)
 
 	IxComps comps = IxComps(i, r);
 
-	Color c = w.shade(comps).get_rgb();
+	Color c = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(c, Color(0.1));
 }
@@ -2578,7 +2578,7 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveMaterial)
 
 	Intersection i = Intersection(sqrt(2.0), shape);
 	IxComps comps = IxComps(i, r);
-	Color ref = w.shade(comps).get_rgb();
+	Color ref = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(ref, Color(0.87677, 0.92436, 0.82918));
 }
@@ -2831,7 +2831,7 @@ TEST(Chapter11Tests, shade_hit_FunctionWithATransparentMaterial)
 
 	IxComps comps = IxComps(xs[0], r, xs);
 
-	Color c = w.shade(comps).get_rgb();
+	Color c = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(c, Color(0.93642, 0.68642, 0.68642));
 }
@@ -2919,7 +2919,7 @@ TEST(Chapter11Tests, shade_hit_WithAReflectiveAndTransparentMaterial)
 
 	IxComps comps = IxComps(xs[0], r, xs);
 
-	Color c = w.shade(comps).get_rgb();
+	Color c = w.shade(comps).get_calculated_rgb();
 
 	ASSERT_EQ(c, Color(0.93391, 0.69643, 0.69243));
 }
@@ -3615,9 +3615,9 @@ TEST(Quadtrees, InsertingAPoint)
 	Sample result = vec[0]->get_data();
 
 	std::cout << typeid(result).name() << std::endl;
-	std::cout << result.get_rgb() << std::endl;
+	std::cout << result.get_current_rgb() << std::endl;
 
-	ASSERT_EQ(result.get_rgb(), s.get_rgb());
+	ASSERT_EQ(result.get_calculated_rgb(), s.get_calculated_rgb());
 }
 
 TEST(Quadtrees, InsertingManyPoints)
@@ -3679,7 +3679,7 @@ TEST(Quadtrees, QueryingARange)
 	std::shared_ptr<QuadNode<Sample>> result = vec[0];
 
 	ASSERT_EQ(vec.size(), 1);
-	ASSERT_EQ(result->data.get_rgb(), Color(1.0, 0.0, 0.0));
+	ASSERT_EQ(result->data.get_calculated_rgb(), Color(1.0, 0.0, 0.0));
 }
 
 // ------------------------------------------------------------------------
@@ -3690,7 +3690,7 @@ TEST(Sampling, ADefaultSample)
 {
 	Sample s = Sample();
 
-	ASSERT_EQ(s.get_rgb(), Color(0.0));
+	ASSERT_EQ(s.get_calculated_rgb(), Color(0.0));
 	ASSERT_EQ(s.Alpha, 0.0);
 	ASSERT_EQ(s.Depth, 0.0);
 	ASSERT_EQ(s.Background, Color(0.0));
@@ -3724,7 +3724,8 @@ TEST(Sampling, SettingSampleValues)
 	s.Refraction =Color(0.01, 0.01, 0.01);
 	s.RefractionFilter =0.1;
 
-	ASSERT_EQ(s.get_rgb(), Color(0.0));
+	ASSERT_EQ(s.get_current_rgb(), Color(0.0));
+    ASSERT_EQ(s.get_calculated_rgb(), Color(0.731, 0.754, 1.0414));
 	ASSERT_EQ(s.Alpha, 1.0);
 	ASSERT_EQ(s.Depth, 33.567);
 	ASSERT_EQ(s.Background, Color(0.1, 0.1, 0.7));
@@ -3760,7 +3761,7 @@ TEST(Sampling, CalculatingSampleValues)
 
 	s.calculate_sample();
 
-	ASSERT_EQ(s.get_rgb(), Color(0.716, 0.723, 0.9813));
+	ASSERT_EQ(s.get_calculated_rgb(), Color(0.716, 0.723, 0.9813));
 }
 
 TEST(Sampling, AddingSamples)
@@ -3788,7 +3789,7 @@ TEST(Sampling, AddingSamples)
 
 	result = s1 + s2;
 
-	ASSERT_EQ(result.get_rgb(), Color(1.39 + 1.39, 1.11 + 1.11, 1.67 + 1.67));
+	ASSERT_EQ(result.get_calculated_rgb(), Color(1.39 + 1.39, 1.11 + 1.11, 1.67 + 1.67));
 	ASSERT_EQ(result.Alpha, 1.0);
 	ASSERT_EQ(result.Depth, 20.0);
 	ASSERT_EQ(result.Background, Color(1.0, 1.0, 1.0));
@@ -3825,11 +3826,11 @@ TEST(Sampling, dividingSamplesByAScalar)
 
 	s1.calculate_sample();
 
-	//std::cout << s1.get_rgb() << std::endl;
+	//std::cout << s1.get_calculated_rgb() << std::endl;
 
 	result = s1 / 2.0;
 
-	ASSERT_EQ(result.get_rgb(), Color(1.39 / 2.0, 1.11 / 2.0, 1.67 / 2.0));
+	ASSERT_EQ(result.get_calculated_rgb(), Color(1.39 / 2.0, 1.11 / 2.0, 1.67 / 2.0));
 	ASSERT_EQ(result.Alpha, 0.25);
 	ASSERT_EQ(result.Depth, 5.0);
 	ASSERT_EQ(result.Background, Color(0.25, 0.25, 0.25));
@@ -3866,11 +3867,11 @@ TEST(Sampling, multiplyingSamplesByAScalar)
 
 	s1.calculate_sample();
 
-	//std::cout << s1.get_rgb() << std::endl;
+	//std::cout << s1.get_calculated_rgb() << std::endl;
 
 	result = s1 * 4.0;
 
-	ASSERT_EQ(result.get_rgb(), Color(1.39 * 4.0, 1.11 * 4.0, 1.67 * 4.0));
+	ASSERT_EQ(result.get_calculated_rgb(), Color(1.39 * 4.0, 1.11 * 4.0, 1.67 * 4.0));
 	ASSERT_EQ(result.Alpha, 2.0);
 	ASSERT_EQ(result.Depth, 40.0);
 	ASSERT_EQ(result.Background, Color(2.0, 2.0, 2.0));

@@ -82,9 +82,9 @@ void SampledPixel::quick_average(const std::vector<Sample> & sample_group)
 	Color mean = Color(0.0);
 
 	// Add up colors
-	for (const auto & i : sample_group)
+	for (Sample i : sample_group)
 	{
-		mean = mean + i.get_rgb();
+		mean = mean + i.get_calculated_rgb();
 	}
 
 	mean = mean / static_cast<double>(sample_group.size());

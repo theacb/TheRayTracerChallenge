@@ -36,6 +36,8 @@ Sample::Sample(const Tuple & canvas_origin)
 	this->ReflectionFilter = 0.0;
 	this->Refraction = Color(0.0);
 	this->RefractionFilter = 0.0;
+
+    this->s_calculated_ = false;
 }
 
 Sample::Sample(const Sample & src)
@@ -44,7 +46,8 @@ Sample::Sample(const Sample & src)
 
 	this->CanvasOrigin = src.CanvasOrigin;
     this->WorldOrigin = src.WorldOrigin;
-	this->s_rgb_ = src.get_rgb();
+
+	this->s_rgb_ = src.get_current_rgb();
 	this->Alpha = src.Alpha;
 	this->Background = src.Background;
 
@@ -61,6 +64,8 @@ Sample::Sample(const Sample & src)
 	this->ReflectionFilter = src.ReflectionFilter;
 	this->Refraction = src.Refraction;
 	this->RefractionFilter = src.RefractionFilter;
+
+    this->s_calculated_ = src.has_been_calculated();
 }
 
 Sample::~Sample()
@@ -107,13 +112,29 @@ Color Sample::get_channel(RE channel) const
 	}
 }
 
-Color Sample::get_rgb() const
+Color Sample::get_calculated_rgb()
 {
+    if (! this->s_calculated_)
+    {
+        this->calculate_sample();
+    }
+
 	return this->s_rgb_;
+}
+
+Color Sample::get_current_rgb() const
+{
+    return this->s_rgb_;
+}
+
+bool Sample::has_been_calculated() const
+{
+    return this->s_calculated_;
 }
 
 void Sample::set_rgb(const Color & col)
 {
+    this->s_calculated_ = true;
 	this->s_rgb_ = col;
 }
 
@@ -127,6 +148,8 @@ void Sample::calculate_sample()
 	rgb = rgb + (this->Refraction * this->RefractionFilter);
 	rgb = rgb + this->Specular;
 	this->s_rgb_ = rgb;
+
+    this->s_calculated_ = true;
 }
 
 Sample Sample::operator*(const Sample & right_sample) const
@@ -135,7 +158,7 @@ Sample Sample::operator*(const Sample & right_sample) const
 
     result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->s_rgb_ * right_sample.get_rgb());
+	result.set_rgb(this->s_rgb_ * right_sample.get_current_rgb());
 	result.Alpha = this->Alpha * right_sample.Alpha;
 	result.Background = this->Background * right_sample.Background;
 
@@ -162,7 +185,7 @@ Sample Sample::operator/(const Sample & right_sample) const
 
     result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->s_rgb_ / right_sample.get_rgb());
+	result.set_rgb(this->s_rgb_ / right_sample.get_current_rgb());
 	result.Alpha = safe_comp_divide(this->Alpha, right_sample.Alpha);
 	result.Background = this->Background / right_sample.Background;
 
@@ -189,7 +212,7 @@ Sample Sample::operator+(const Sample & right_sample) const
 
     result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->s_rgb_ + right_sample.get_rgb());
+	result.set_rgb(this->s_rgb_ + right_sample.get_current_rgb());
 	result.Alpha = this->Alpha + right_sample.Alpha;
 	result.Background = this->Background + right_sample.Background;
 
@@ -216,7 +239,7 @@ Sample Sample::operator-(const Sample & right_sample) const
 
     result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->s_rgb_ - right_sample.get_rgb());
+	result.set_rgb(this->s_rgb_ - right_sample.get_current_rgb());
 	result.Alpha = this->Alpha - right_sample.Alpha;
 	result.Background = this->Background - right_sample.Background;
 
@@ -297,7 +320,7 @@ Sample Sample::operator+(const double & scalar) const
 
     result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->get_rgb() + scalar);
+	result.set_rgb(this->get_current_rgb() + scalar);
 	result.Alpha = this->Alpha + scalar;
 	result.Background = this->Background + scalar;
 
@@ -347,7 +370,7 @@ Sample Sample::operator-(const double & scalar) const
 
 std::ostream & operator<<(std::ostream & os, const Sample & s)
 {
-	os << "[ Sample: RGB: " << s.get_rgb()
+	os << "[ Sample: RGB: " << s.get_current_rgb()
 		<< ", Alpha: " << s.Alpha
 		<< ", Background: " << s.Background
 		<< ", Depth: " << s.Depth

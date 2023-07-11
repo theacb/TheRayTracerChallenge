@@ -155,7 +155,7 @@ Color World::color_at(const Ray & ray) const
     Sample sample = this->sample_at(ray);
     sample.calculate_sample();
 
-	return sample.get_rgb();
+	return sample.get_calculated_rgb();
 }
 
 Sample World::sample_at(const Ray &ray) const

@@ -23,7 +23,10 @@ public:
 
 	// Accessors
 	[[nodiscard]] Color get_channel(RE channel) const;
-	[[nodiscard]] Color get_rgb() const;
+	[[nodiscard]] Color get_calculated_rgb();
+    [[nodiscard]] Color get_current_rgb() const;
+    [[nodiscard]] bool has_been_calculated() const;
+
 	void set_rgb(const Color & col);
 
 	void calculate_sample();
@@ -61,6 +64,7 @@ public:
 private:
 	// Properties
 	Color s_rgb_;
+    bool s_calculated_;
 
 };
 
