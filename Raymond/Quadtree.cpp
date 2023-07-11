@@ -84,3 +84,10 @@ bool AABB2D::contains_point(const Tuple& point) const
 		point.y <= this->sw_corner.y
 		);
 }
+
+std::ostream & operator<<(std::ostream & os, const AABB2D & bb) {
+    os << "[ AABB2D: " << bb.ne_corner
+       << ", " << bb.sw_corner
+       << " ]";
+    return os;
+}

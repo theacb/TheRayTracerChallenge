@@ -42,7 +42,9 @@ public:
 
 private:
 	// Private Properties
+    // dimensions
 	int c_h_size_, c_v_size_;
+
 	double c_fov_, c_pixel_size_, c_half_width_, c_half_height_;
 
 	void pixel_size_();

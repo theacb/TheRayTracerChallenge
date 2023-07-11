@@ -18,7 +18,7 @@ public:
 	~World();
 
 	// METHODS
-	// static
+	// Factory
 	static World Default();
 
 	// Intersector
@@ -27,9 +27,9 @@ public:
 	// Shade
 	Sample shade(IxComps& comps) const;
 	[[nodiscard]] Color color_at(const Ray & ray) const;
-    Sample sample_at(const Ray & ray) const;
-	[[nodiscard]] bool is_shadowed(std::shared_ptr<Light> light, const Tuple & point) const;
-	[[nodiscard]] Color shadowed(std::shared_ptr<Light> light, const Tuple & point, int depth) const;
+    [[nodiscard]] Sample sample_at(const Ray & ray) const;
+	[[nodiscard]] bool is_shadowed(const std::shared_ptr<Light>& light, const Tuple & point) const;
+	[[nodiscard]] Color shadowed(const std::shared_ptr<Light>& light, const Tuple & point, int depth) const;
 
 	// accessors
 	const std::vector<std::shared_ptr<PrimitiveBase>> & get_primitives();
@@ -38,11 +38,13 @@ public:
 	void remove_primitive(int index);
 	void remove_light(int index);
 
-	void add_object(std::shared_ptr<PrimitiveBase> obj);
-	void add_object(std::shared_ptr<Light> obj);
+	void add_object(const std::shared_ptr<PrimitiveBase>& obj);
+	void add_object(const std::shared_ptr<Light>& obj);
 
 	// Public Properties
 	std::shared_ptr<Background> background;
+    // Sampling
+    int sample_min, bucket_size;
 
 private:
 	// private properties

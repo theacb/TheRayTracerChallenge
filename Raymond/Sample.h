@@ -13,7 +13,7 @@ class Sample
 {
 public:
 	Sample();
-	explicit Sample(const Tuple& origin);
+	explicit Sample(const Tuple& canvas_origin);
 	Sample(const Sample & src);
 
 	~Sample();
@@ -25,7 +25,8 @@ public:
 	[[nodiscard]] Color get_channel(RE channel) const;
 
 	[[nodiscard]] Color get_rgb() const;
-	[[nodiscard]] Tuple get_origin() const;
+	[[nodiscard]] Tuple get_canvas_origin() const;
+    [[nodiscard]] Tuple get_world_origin() const;
 
 	[[nodiscard]] double get_alpha() const;
 	[[nodiscard]] Color get_background() const;
@@ -44,6 +45,9 @@ public:
 	// Setters
 
 	void set_rgb(const Color & col);
+    void set_world_origin(const Tuple & pt);
+    void set_canvas_origin(const Tuple & pt);
+
 	void set_alpha(const double & val);
 	void set_background(const Color & col);
 	void set_depth(const double & val);
@@ -90,7 +94,8 @@ private:
 	Color s_refraction_;
 	double s_refractionfilter_;
 
-	Tuple s_origin_pt_;
+	Tuple s_world_origin_pt_;
+    Tuple s_canvas_origin_pt_;
 };
 
 // Overloaded Operators

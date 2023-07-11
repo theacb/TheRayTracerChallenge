@@ -12,11 +12,12 @@ Sample::Sample() : Sample(Tuple::Point(0.0, 0.0, 0.0))
 {
 }
 
-Sample::Sample(const Tuple & origin)
+Sample::Sample(const Tuple & canvas_origin)
 {
 	this->name = "default sample";
 
-	this->s_origin_pt_ = origin;
+	this->s_canvas_origin_pt_ = canvas_origin;
+    this->s_world_origin_pt_ = Tuple::Point(0.0, 0.0, 0.0);
 
 	this->s_rgb_ = Color(0.0);
 	this->s_alpha_ = 0.0;
@@ -41,7 +42,8 @@ Sample::Sample(const Sample & src)
 {
 	this->name = src.name;
 
-	this->s_origin_pt_ = src.get_origin();
+	this->s_canvas_origin_pt_ = src.get_canvas_origin();
+    this->s_world_origin_pt_ = src.get_world_origin();
 	this->s_rgb_ = src.get_rgb();
 	this->s_alpha_ = src.get_alpha();
 	this->s_background_ = src.get_background();
@@ -66,6 +68,8 @@ Sample::~Sample()
 
 // ------------------------------------------------------------------------
 // Accessors
+// ------------------------------------------------------------------------
+// Getters
 // ------------------------------------------------------------------------
 
 Color Sample::get_channel(RE channel) const
@@ -110,9 +114,14 @@ Color Sample::get_rgb() const
 	return this->s_rgb_;
 }
 
-Tuple Sample::get_origin() const
+Tuple Sample::get_canvas_origin() const
 {
-	return this->s_origin_pt_;
+	return this->s_canvas_origin_pt_;
+}
+
+Tuple Sample::get_world_origin() const
+{
+    return this->s_world_origin_pt_;
 }
 
 double Sample::get_alpha() const
@@ -178,6 +187,19 @@ Color Sample::get_refraction() const
 double Sample::get_refractionfilter() const
 {
 	return this->s_refractionfilter_;
+}
+
+// Setters
+// ------------------------------------------------------------------------
+
+void Sample::set_world_origin(const Tuple &pt)
+{
+    this->s_world_origin_pt_ = pt;
+}
+
+void Sample::set_canvas_origin(const Tuple &pt)
+{
+    this->s_canvas_origin_pt_ = pt;
 }
 
 void Sample::set_rgb(const Color & col)
@@ -264,7 +286,9 @@ void Sample::calculate_sample()
 
 Sample Sample::operator*(const Sample & right_sample) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ * right_sample.get_rgb());
 	result.set_alpha(this->s_alpha_ * right_sample.get_alpha());
@@ -289,7 +313,9 @@ Sample Sample::operator*(const Sample & right_sample) const
 
 Sample Sample::operator/(const Sample & right_sample) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ / right_sample.get_rgb());
 	result.set_alpha(safe_comp_divide(this->s_alpha_, right_sample.get_alpha()));
@@ -314,7 +340,9 @@ Sample Sample::operator/(const Sample & right_sample) const
 
 Sample Sample::operator+(const Sample & right_sample) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ + right_sample.get_rgb());
 	result.set_alpha(this->s_alpha_ + right_sample.get_alpha());
@@ -339,7 +367,9 @@ Sample Sample::operator+(const Sample & right_sample) const
 
 Sample Sample::operator-(const Sample & right_sample) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ - right_sample.get_rgb());
 	result.set_alpha(this->s_alpha_ - right_sample.get_alpha());
@@ -364,7 +394,9 @@ Sample Sample::operator-(const Sample & right_sample) const
 
 Sample Sample::operator*(const double & scalar) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ * scalar);
 	result.set_alpha(this->s_alpha_ * scalar);
@@ -389,7 +421,9 @@ Sample Sample::operator*(const double & scalar) const
 
 Sample Sample::operator/(const double & scalar) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ / scalar);
 	result.set_alpha(safe_comp_divide(this->s_alpha_, scalar));
@@ -414,7 +448,9 @@ Sample Sample::operator/(const double & scalar) const
 
 Sample Sample::operator+(const double & scalar) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ + scalar);
 	result.set_alpha(this->s_alpha_ + scalar);
@@ -439,7 +475,9 @@ Sample Sample::operator+(const double & scalar) const
 
 Sample Sample::operator-(const double & scalar) const
 {
-	Sample result = Sample();
+	Sample result = Sample(this->s_canvas_origin_pt_);
+
+    result.set_world_origin(this->s_world_origin_pt_);
 
 	result.set_rgb(this->s_rgb_ - scalar);
 	result.set_alpha(this->s_alpha_ - scalar);

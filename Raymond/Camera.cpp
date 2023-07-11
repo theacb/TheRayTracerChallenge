@@ -17,6 +17,11 @@ Camera::Camera(int width, int height, double fov)
 	this->c_h_size_ = width;
 	this->c_v_size_ = height;
 	this->c_fov_ = fov;
+
+    this->c_pixel_size_= 0.0;
+    this->c_half_width_ = 0.0;
+    this->c_half_height_ = 0.0;
+
 	this->pixel_size_();
 }
 
@@ -111,7 +116,99 @@ Canvas Camera::threaded_render(const World & w) const
 
 SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
 {
-    return {};
+    int horizontal_buckets = std::ceil(double(this->c_h_size_) / double(w.bucket_size));
+    int vertical_buckets = std::ceil(double(this->c_v_size_) / double(w.bucket_size));
+
+    int num_buckets = horizontal_buckets * vertical_buckets;
+
+    unsigned int c = std::thread::hardware_concurrency();
+
+    auto bucket_results = std::vector<std::future<SampleBuffer>>();
+
+    // lambda to execute rendering of the line
+    auto f = [](const Camera * camera, const World & w, int x, int y, int width, int height, int bucket_number, int total_buckets)
+            {
+                std::ostringstream oss;
+                oss << "Starting Bucket: " << bucket_number << "/" << total_buckets
+                << " - Start Coordinates: (" << x << ", "<< y << ") - Dimensions ["
+                << width << ", " << height << "]" << std::endl;
+
+                std::cout << oss.str();
+                return camera->multi_sample_render_bucket(w, x, y, width, height);
+            };
+
+    // Queue up all the lines
+    for (int x = 0; x < horizontal_buckets; x++)
+    {
+        for (int y = 0; y < vertical_buckets; y++)
+        {
+            // Default Bucket Size
+            int width = w.bucket_size;
+            int height = w.bucket_size;
+
+            // On the edges of the image, the buckets may not be square.
+            // This ensures that the overflow is not rendered, as that may result in thousands of discarded pixels
+            if (x == horizontal_buckets - 1)
+            {
+                width = int(fmod(double(this->c_h_size_), double(w.bucket_size))) - 1;
+            }
+            if (y == vertical_buckets - 1)
+            {
+                height = int(fmod(double(this->c_v_size_), double(w.bucket_size))) - 1;
+            }
+
+            if (width >= 0 && height >= 0)
+            {
+                // Offset of the bucket from top left (0, 0)
+                int x_offset = x * w.bucket_size;
+                int y_offset = y * w.bucket_size;
+
+                int number = (x * vertical_buckets) + y;
+
+                // Adds bucket to the queue
+                bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, number, num_buckets));
+            }
+        }
+    }
+
+    std::cout << "Stitching final image from " << bucket_results.size() << " buckets.\n";
+
+    // Create bounding box and final SampleBuffer
+    AABB2D extents = this->extent_from_bucket_(0, 0, this->c_h_size_, this->c_v_size_);
+    SampleBuffer image = SampleBuffer(0, 0, this->c_h_size_, this->c_v_size_, extents);
+
+    std::cout << image << std::endl;
+
+//    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
+//    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
+//    int i = 0;
+//    for (auto & br : bucket_results)
+//    {
+//        SampleBuffer bucket = br.get();
+//
+//        std::cout << "Bucket " << i << " - " << bucket << " - [";
+//
+//        for (const auto & px: bucket)
+//        {
+//            std::cout << px->get_samples().size() << ", ";
+//        }
+//
+//        std::cout << "]" << std::endl;
+//
+//        canvas_to_ppm(bucket.to_canvas(background), folder + std::to_string(i) + ".ppm", true);
+//
+//        i++;
+//    }
+
+    // stitch them back together
+    for (auto & br : bucket_results)
+    {
+        image.write_portion(br.get());
+    }
+
+    std::cout << "Imaged stitched!\n";
+
+    return image;
 }
 
 Canvas Camera::render_scanline(const World & w, int line) const
@@ -119,7 +216,10 @@ Canvas Camera::render_scanline(const World & w, int line) const
 	// Create a canvas with the full image width but only 1 height
 	Canvas image_line = Canvas(this->c_h_size_, 1);
 
-	//std::cout << "Scanline: " << line + 1 << "/" << this->c_v_size_ << std::endl;
+    std::ostringstream oss;
+	oss << "Scanline: " << line + 1 << "/" << this->c_v_size_ << std::endl;
+    std::cout << oss.str();
+
 
 	for (int x = 0; x < this->c_h_size_; x++)
 	{
@@ -143,16 +243,37 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
     // Iterate through the pixels of the sample buffer
     for (int ys = 0; ys < height; ys++)
     {
-        std::cout << "Bucket: " << "(" << x << ", " << y << ") - [" << width << ", " << height << "]\n";
 
         for (int xs = 0; xs < width; xs++)
         {
-            // std::cout << "Pixel: (" << xs << ", " << y << ")\n";
-            // Casts ray to
-            Ray r = this->ray_from_pixel(xs, ys, 0.0, 0.0);
-            Sample sample = w.sample_at(r);
-            bucket.write_sample(xs, ys, sample);
+            // Multi Sample
+            for (int s = 0; s < w.sample_min; s++)
+            {
+
+                // Random between 0.0 and 1.0 that translates to a pixel offset
+                double px_os_x = random_double();
+                double px_os_y = random_double();
+
+                int this_x = xs;
+                int this_y = ys;
+
+                // Casts ray to a random point within the pixel
+                Ray r = this->ray_from_pixel(this_x, this_y, px_os_x, px_os_y);
+                // Samples at the Ray
+                Sample sample = w.sample_at(r);
+                // Assign origin coordinate
+                sample.set_canvas_origin(bucket.coordinates_from_pixel(this_x, this_y, px_os_x, px_os_y));
+                sample.calculate_sample();
+
+                // Write to bucket
+                bucket.write_sample(this_x, this_y, sample);
+            }
         }
+    }
+
+    for (std::shared_ptr<SampledPixel> & s: bucket)
+    {
+        s->full_average();
     }
 
     return bucket;

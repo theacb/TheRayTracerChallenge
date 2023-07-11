@@ -35,6 +35,8 @@ public:
 
 };
 
+std::ostream & operator<<(std::ostream & os, const AABB2D & s);
+
 // ------------------------------------------------------------------------
 //
 // QuadNode

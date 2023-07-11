@@ -12,11 +12,14 @@
 World::World()
 {
 	this->background = std::make_shared<Background>();
+
+    // Render Settings
+    this->sample_min = 1;
+    this->bucket_size = 32;
 }
 
 World::~World()
-{
-}
+= default;
 
 // Factory
 
@@ -84,8 +87,13 @@ Sample World::shade(IxComps & comps) const
     // TODO: convert this function to return a sample
     // TODO: Break up lighting into Diffuse, Specular, and Lighting
     // TODO: Determine Depth, Position, Normal, and Alpha
-	Sample sample = Sample();
-    sample.set_diffuse(1.0);
+    Sample sample = Sample();
+    sample.set_position(comps.point);
+    sample.set_normal(comps.normal_v);
+    sample.set_depth(comps.ray_depth);
+
+    sample.set_diffuse(Color(1.0));
+    sample.set_alpha(1.0);
     Color smp_lighting = Color(0.0);
 
 	auto obj_prim = std::static_pointer_cast<PrimitiveBase>(comps.object);
@@ -139,13 +147,15 @@ Sample World::shade(IxComps & comps) const
     sample.set_reflection(refl);
     sample.set_refraction(rafr);
 
-    sample.calculate_sample();
 	return sample;
 }
 
 Color World::color_at(const Ray & ray) const
 {
-	return this->sample_at(ray).get_rgb();
+    Sample sample = this->sample_at(ray);
+    sample.calculate_sample();
+
+	return sample.get_rgb();
 }
 
 Sample World::sample_at(const Ray &ray) const
@@ -166,7 +176,7 @@ Sample World::sample_at(const Ray &ray) const
     }
 }
 
-bool World::is_shadowed(const std::shared_ptr<Light> light, const Tuple & point) const
+bool World::is_shadowed(const std::shared_ptr<Light>& light, const Tuple & point) const
 {
 	Tuple v = light->position() - point;
 	double distance = v.magnitude();
@@ -180,7 +190,7 @@ bool World::is_shadowed(const std::shared_ptr<Light> light, const Tuple & point)
 	return (h.is_valid() && h.t_value < distance);
 }
 
-Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, const int depth) const
+Color World::shadowed(const std::shared_ptr<Light>& light, const Tuple & point, const int depth) const
 {
 	Tuple v = light->position() - point;
 	double distance = v.magnitude();
@@ -198,7 +208,7 @@ Color World::shadowed(const std::shared_ptr<Light> light, const Tuple & point, c
 
 		return obj_prim->material->transmit(light, *this, comps, ix);
 	}
-	return Color(1.0);
+	return {1.0};
 }
 
 // ------------------------------------------------------------------------
@@ -225,12 +235,12 @@ void World::remove_light(int index)
 	this->w_lights_.erase(this->w_lights_.begin() + index);
 }
 
-void World::add_object(std::shared_ptr<PrimitiveBase> obj)
+void World::add_object(const std::shared_ptr<PrimitiveBase>& obj)
 {
 	this->w_primitives_.push_back(obj);
 }
 
-void World::add_object(std::shared_ptr<Light> obj)
+void World::add_object(const std::shared_ptr<Light>& obj)
 {
 	this->w_lights_.push_back(obj);
 }

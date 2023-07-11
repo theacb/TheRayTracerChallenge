@@ -3563,6 +3563,8 @@ TEST(Chapter14Tests, RaysIntersectABoundingBox)
 
 TEST(Chapter14Tests, RaysMissABoundingBox)
 {
+    BoundingBox box = BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
+
 	auto ray_origins = std::vector<Tuple>({
 		Tuple::Point(1.1, 1.0, -5.0),
 		Tuple::Point(0.0, 0.0, -5.0),
@@ -3580,8 +3582,6 @@ TEST(Chapter14Tests, RaysMissABoundingBox)
 
 	for (size_t i = 0; i < ray_origins.size(); i++)
 	{
-		BoundingBox box = BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0));
-
 		Ray r = Ray(ray_origins[i], ray_directions[i].normalize());
 
 		EXPECT_FALSE(box.intersect(r)) << "Test: " << i + 1 << " - " << r.origin << " --> " << r.direction << " inverse: " << r.dir_mult_inv << std::endl;
@@ -3987,7 +3987,7 @@ TEST(SampleBuffer, PixelBoundsAlign)
         {
             Tuple point = sb.coordinates_from_pixel(x, y);
             AABB2D box = sb.pixel_at(x, y)->get_bounds();
-            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point << std::endl;
+            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box << "] - Point: " << point << std::endl;
         }
     }
 }
@@ -4105,18 +4105,20 @@ TEST(SampleBuffer, PixelBoundsAlignForAnOffsetBuffer)
     int width = 20;
     int height = 10;
 
+    int longest_side = (width > height) ? width : height;
+
     int x_offset = 57;
     int y_offset = 376;
 
     double  pixel_size = 0.001;
 
     // Offset from the edge of the canvas to the pixel's NE (Northeast) corner
-    double ne_x_offset = (double(x_offset)) * pixel_size;
-    double ne_y_offset = (double(y_offset)) * pixel_size;
+    double ne_x_offset = double(x_offset) * pixel_size;
+    double ne_y_offset = double(y_offset) * pixel_size;
 
     // SW (Southwest) corner
-    double sw_x_offset = (double(x_offset + width)) * pixel_size;
-    double sw_y_offset = (double(y_offset + height)) * pixel_size;
+    double sw_x_offset = double(x_offset + longest_side) * pixel_size;
+    double sw_y_offset = double(y_offset + longest_side) * pixel_size;
 
     AABB2D extents = AABB2D(Tuple::Point2D(ne_x_offset, ne_y_offset), Tuple::Point2D(sw_x_offset, sw_y_offset));
     SampleBuffer sb = SampleBuffer(x_offset, y_offset, width, height, extents);
@@ -4128,16 +4130,74 @@ TEST(SampleBuffer, PixelBoundsAlignForAnOffsetBuffer)
         {
             Tuple point = sb.coordinates_from_pixel(x, y);
             AABB2D box = sb.pixel_at(x, y)->get_bounds();
-            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box.ne_corner << ", " << box.sw_corner << "] - Point: " << point << std::endl;
+            EXPECT_TRUE(box.contains_point(point)) << "Bounds: [" << box << "] - Point: " << point << std::endl;
         }
     }
+}
 
-    Sample smp = Sample(Tuple::Point2D(ne_x_offset + (pixel_size * 0.5), ne_y_offset + (pixel_size * 0.5)));
+TEST(SampleBuffer, SamplesAlignForAnOffsetBuffer)
+{
 
-    sb.write_sample(smp);
+    int width = 20;
+    int height = 10;
+
+    int longest_side = (width > height) ? width : height;
+
+    int x_offset = 2;
+    int y_offset = 9;
+
+    double  pixel_size = 1.0 / 2048.0;
+
+    // Offset from the edge of the canvas to the pixel's NE (Northeast) corner
+    double ne_x_offset = double(x_offset) * pixel_size;
+    double ne_y_offset = double(y_offset) * pixel_size;
+
+    // SW (Southwest) corner
+    double sw_x_offset = double(x_offset + longest_side) * pixel_size;
+    double sw_y_offset = double(y_offset + longest_side) * pixel_size;
+
+    AABB2D extents = AABB2D(Tuple::Point2D(ne_x_offset, ne_y_offset), Tuple::Point2D(sw_x_offset, sw_y_offset));
+    SampleBuffer sb = SampleBuffer(x_offset, y_offset, width, height, extents);
+
+    // Defines an origin point that should align to the center of Pixel (0, 0)
+    Tuple pixel_0_0_origin = Tuple::Point2D(ne_x_offset + (pixel_size * 0.5), ne_y_offset + (pixel_size * 0.5));
+    Tuple pixel_5_7_origin = Tuple::Point2D(ne_x_offset + (pixel_size * 5.5), ne_y_offset + (pixel_size * 7.5));
+
+    Sample smp_0_0 = Sample(pixel_0_0_origin);
+    Sample smp_5_7 = Sample(pixel_5_7_origin);
+
+    sb.write_sample(smp_0_0);
+    sb.write_sample(smp_5_7);
+
+    std::shared_ptr<SampledPixel> px_0_0 = sb.pixel_at(0, 0);
+    AABB2D box_0_0 = px_0_0->get_bounds();
+
+    std::shared_ptr<SampledPixel> px_5_7 = sb.pixel_at(5, 7);
+    AABB2D box_5_7 = px_5_7->get_bounds();
 
     // Checks if the pixel was written into and retained by the PixelSample Quadtree
-    ASSERT_EQ(sb.pixel_at(0, 0)->get_samples().size(), 1);
+    ASSERT_TRUE(box_0_0.contains_point(pixel_0_0_origin)) << "Bounds: [" << box_0_0 << "] - Point: " << pixel_0_0_origin << std::endl;
+    ASSERT_EQ(px_0_0->get_samples().size(), 1) << "Bounds: [" << box_0_0 << "] - Point: " << pixel_0_0_origin << std::endl;
+
+    ASSERT_TRUE(box_5_7.contains_point(pixel_5_7_origin)) << "Bounds: [" << box_5_7 << "] - Point: " << pixel_5_7_origin << std::endl;
+    ASSERT_EQ(px_5_7->get_samples().size(), 1) << "Bounds: [" << box_5_7 << "] - Point: " << pixel_5_7_origin << std::endl;
+
+    // Check Adjacent Pixels for (0, 0)
+    EXPECT_EQ(sb.pixel_at(0, 1)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(1, 0)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(1, 1)->get_samples().size(), 0);
+
+    // Check Adjacent Pixels for (5, 7)
+    EXPECT_EQ(sb.pixel_at(4, 8)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(5, 8)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(6, 8)->get_samples().size(), 0);
+
+    EXPECT_EQ(sb.pixel_at(4, 7)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(6, 7)->get_samples().size(), 0);
+
+    EXPECT_EQ(sb.pixel_at(4, 6)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(5, 6)->get_samples().size(), 0);
+    EXPECT_EQ(sb.pixel_at(6, 6)->get_samples().size(), 0);
 }
 
 // ------------------------------------------------------------------------

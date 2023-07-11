@@ -71,6 +71,7 @@ public:
 	void write_pixel(int x, int y, std::shared_ptr<SampledPixel> pixel);
 	void write_portion_as_line(int y, const SampleBuffer & line);
 	void write_portion(int x, int y, const SampleBuffer & grid);
+    void write_portion(const SampleBuffer & grid);
 	std::shared_ptr<SampledPixel> pixel_at(int x, int y);
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y) const;
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y, const double & px_os_x, const double & px_os_y) const;
@@ -79,7 +80,6 @@ public:
 	[[nodiscard]] std::vector<std::shared_ptr<SampledPixel>> get_pixels() const;
 
     [[nodiscard]] bool test_noise_threshold(const int & i, const double & noise_threshold) const;
-    [[nodiscard]] Tuple request_new_sample_point(const int & i) const;
 
 	// Accessors
 	[[nodiscard]] int width() const;
@@ -98,6 +98,7 @@ private:
 
 	int sb_width_;
 	int sb_height_;
+    int sb_longest_side_;
     int sb_x_pos_;
     int sb_y_pos_;
 	int sb_total_size_;
@@ -106,12 +107,14 @@ private:
 
 	std::shared_ptr<SampledPixel> sb_get_element_(int x, int y);
 	[[nodiscard]] Tuple sb_pixel_center_point_(int x, int y) const;
-	[[nodiscard]] int sb_x_coord_from_pos_(const Tuple &position) const;
-	[[nodiscard]] int sb_y_coord_from_pos_(const Tuple &position) const;
+	[[nodiscard]] int sb_x_from_pos_(const Tuple &position) const;
+	[[nodiscard]] int sb_y_from_pos_(const Tuple &position) const;
 	void sb_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel);
 	[[nodiscard]] int sb_index_from_coordinates_(int x, int y) const;
     [[nodiscard]] int sb_x_from_index_(int i) const;
     [[nodiscard]] int sb_y_from_index_(int i) const;
 };
+
+std::ostream & operator<<(std::ostream & os, const SampleBuffer & s);
 
 #endif

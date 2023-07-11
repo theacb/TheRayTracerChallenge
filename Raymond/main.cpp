@@ -210,8 +210,8 @@ int render_still()
 
 	// 560 x 315
 
-	int width = 1920;
-	int height = 1080;
+	int width = 256;
+	int height = 128;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
@@ -223,8 +223,10 @@ int render_still()
 	std::cout << "Building World...\n";
 	World w = render_ch13_world();
 
+    w.sample_min = 4;
+
 	// Execution
-	Canvas image;
+	SampleBuffer image;
 
 	Camera c = Camera(width, height, deg_to_rad(fov));
 
@@ -239,7 +241,7 @@ int render_still()
 		std::cout << "Tracing...\n";
 
 
-		image = c.threaded_render(w);
+		image = c.multi_sample_threaded_render(w);
 		//image = c.render(w);
 
 		//image = c.render_scanline(w, 160);
@@ -273,7 +275,7 @@ int render_still()
 
 	std::cout << "Writing file: " << file_path << std::endl;
 
-	canvas_to_ppm(image, file_path);
+	canvas_to_ppm(image.to_canvas(diffuse), file_path);
 	std::cout << "Complete" << std::endl;
 
 	return 0;

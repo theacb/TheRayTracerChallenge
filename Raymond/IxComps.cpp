@@ -69,27 +69,27 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray, const Intersections &
 	// Find n1 and n2
 
 	// Temp vector
-	// Can be sized to xs.size() as that is it's maximum possible size
+	// Can be sized to xs.size() as that is its maximum possible size
 	auto containers = std::vector<std::shared_ptr<ObjectBase>>();
 	containers.reserve(xs.size());
 
 	// Iterate over intersections
-	for (size_t j = 0; j < xs.size(); j++)
+	for (const auto & x : xs)
 	{
 		// If the current object is the hit, set n1
-		if (xs[j] == ix)
+		if (x == ix)
 		{
 			// If container is empty, assume medium is air and give IOR as 1.0
 			// If container is not empty, give IOR as a sampled texture on the 
 			// surface of the last intersection's object
 
-			if (containers.size() == 0)
+			if (containers.empty())
 			{
 				this->n1 = 1.0;
 			}
 			else
 			{
-				this->n1 = std::static_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
+				this->n1 = std::static_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(x, ray));
 			}
 		}
 
@@ -100,7 +100,7 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray, const Intersections &
 
 		for (int i = 0; i < containers.size(); i++)
 		{
-			if (containers[i] == xs[j].object)
+			if (containers[i] == x.object)
 			{
 				location = i;
 			}
@@ -112,22 +112,22 @@ IxComps::IxComps(const Intersection & ix, const Ray & ray, const Intersections &
 		}
 		else
 		{
-			containers.push_back(xs[j].object);
+			containers.push_back(x.object);
 		}
 
 		// If the current object is the hit, set n2, then break
-		if (xs[j] == ix)
+		if (x == ix)
 		{
 			// If container is empty, assume medium is air and give IOR as 1.0
 			// If container is not empty, give IOR as a sampled texture on the 
 			// surface of the last intersection's object
-			if (containers.size() == 0)
+			if (containers.empty())
 			{
 				this->n2 = 1.0;
 			}
 			else
 			{
-				this->n2 = std::static_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(xs[j], ray));
+				this->n2 = std::static_pointer_cast<PrimitiveBase>(containers.back())->material->ior.sample_at(IxComps(x, ray));
 			}
 
 			break;
@@ -158,8 +158,7 @@ IxComps::IxComps(const IxComps & src)
 }
 
 IxComps::~IxComps()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Factories

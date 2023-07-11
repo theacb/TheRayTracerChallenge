@@ -34,7 +34,7 @@ SampledPixel::~SampledPixel()
 
 void SampledPixel::write_sample(const Sample& sample)
 {
-	auto qn = std::make_shared<QuadNode<Sample>>(sample.get_origin(), sample);
+	auto qn = std::make_shared<QuadNode<Sample>>(sample.get_canvas_origin(), sample);
 
 	this->sp_sub_samples_.insert(qn);
 }
@@ -153,6 +153,8 @@ SampleBuffer::SampleBuffer(const SampleBuffer & src)
     this->sb_y_pos_ = src.y_position();
 
 	this->sb_total_size_ = this->sb_width_ * this->sb_height_;
+    this->sb_longest_side_ = (this->sb_width_ > this->sb_height_) ? this->sb_width_ : this->sb_height_;
+
 	this->sb_pixels_ = src.get_pixels();
 
 	this->sb_extents_ = src.extents();
@@ -168,7 +170,9 @@ SampleBuffer::SampleBuffer(int x, int y, int grid_width, int grid_height, const 
     this->sb_height_ = grid_height;
     this->sb_x_pos_ = x;
     this->sb_y_pos_ = y;
+
     this->sb_total_size_ = grid_width * grid_height;
+    this->sb_longest_side_ = (this->sb_width_ > this->sb_height_) ? this->sb_width_ : this->sb_height_;
 
     this->sb_extents_ = extents;
 
@@ -202,12 +206,16 @@ void SampleBuffer::write_sample(int x, int y, const Sample& sample)
 void SampleBuffer::write_sample(const Sample& sample)
 {
 	// Hallowed are the Ori
-	Tuple ori = sample.get_origin();
-	// 
-	int x = this->sb_x_coord_from_pos_(ori);
-	int y = this->sb_y_coord_from_pos_(ori);
+	Tuple ori = sample.get_canvas_origin();
+
+
+	int x = this->sb_x_from_pos_(ori);
+	int y = this->sb_y_from_pos_(ori);
 
 	std::shared_ptr<SampledPixel> sp = this->sb_get_element_(x, y);
+
+    AABB2D box = sp->get_bounds();
+
 	sp->write_sample(sample);
 }
 
@@ -239,8 +247,14 @@ void SampleBuffer::write_portion_as_line(int y, const SampleBuffer & line)
 	}
 }
 
+void SampleBuffer::write_portion(const SampleBuffer & grid)
+{
+    this->write_portion(grid.x_position(), grid.y_position(), grid);
+}
+
 void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
 {
+    // TODO: Update the pixel bounds
 	if (y >= 0 && y + grid.height() < this->sb_height_ && x >= 0 && x + grid.width() < this->sb_width_)
 	{
 		std::vector<std::shared_ptr<SampledPixel>> pixels = grid.get_pixels();
@@ -333,22 +347,6 @@ bool SampleBuffer::test_noise_threshold(const int &i, const double &noise_thresh
     return false;
 }
 
-Tuple SampleBuffer::request_new_sample_point(const int & i) const
-{
-    // Return an origin point for a sample randomly from within the pixel
-    // This will be sent to be converted to a ray.
-    Tuple center = this->coordinates_from_index(i);
-
-    double px_os_x = random_double();
-    double px_os_y = random_double();
-
-    // Allows offsetting the position of the pixel using a value from 0.0 to 1.0 representing the size of the pixel
-    return center + Tuple::Point2D(
-            remap(px_os_x, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_,
-            remap(px_os_y, 0.0, 1.0, -0.5, 0.5) * this->sb_pixel_size_
-    );
-}
-
 // ------------------------------------------------------------------------
 // Accessors
 // ------------------------------------------------------------------------
@@ -403,20 +401,22 @@ Tuple SampleBuffer::sb_pixel_center_point_(int x, int y) const
     return raw + this->extents().ne_corner;
 }
 
-int SampleBuffer::sb_x_coord_from_pos_(const Tuple & position) const
+int SampleBuffer::sb_x_from_pos_(const Tuple & position) const
 {
 	double pos_x = position.x;
 	double left_x = this->sb_extents_.ne_corner.x;
 	double right_x = this->sb_extents_.sw_corner.x;
-	return static_cast<int>((pos_x - left_x) / (right_x - left_x) * this->sb_width_);
+    double result = ((pos_x - left_x) / (right_x - left_x)) * double(this->sb_longest_side_);
+	return static_cast<int>(result);
 }
 
-int SampleBuffer::sb_y_coord_from_pos_(const Tuple & position) const
+int SampleBuffer::sb_y_from_pos_(const Tuple & position) const
 {
 	double pos_y = position.y;
 	double left_y = this->sb_extents_.ne_corner.y;
 	double right_y = this->sb_extents_.sw_corner.y;
-	return static_cast<int>((pos_y - left_y) / (right_y - left_y) * this->sb_width_);
+    double result = ((pos_y - left_y) / (right_y - left_y)) * double(this->sb_longest_side_);
+	return static_cast<int>(result);
 }
 
 void SampleBuffer::sb_set_element_(int x, int y, std::shared_ptr<SampledPixel> pixel)
@@ -437,4 +437,12 @@ int SampleBuffer::sb_y_from_index_(int i) const {
     return i / this->sb_width_;
 }
 
-
+std::ostream & operator<<(std::ostream & os, const SampleBuffer & s) {
+    os << "[ SampleBuffer: Width: " << s.width()
+       << ", Height: " << s.height()
+       << ", x position: " << s.x_position()
+       << ", y position: " << s.y_position()
+       << ", extents: " << s.extents()
+       << " ]";
+    return os;
+}
