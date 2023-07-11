@@ -88,12 +88,12 @@ Sample World::shade(IxComps & comps) const
     // TODO: Break up lighting into Diffuse, Specular, and Lighting
     // TODO: Determine Depth, Position, Normal, and Alpha
     Sample sample = Sample();
-    sample.set_position(comps.point);
-    sample.set_normal(comps.normal_v);
-    sample.set_depth(comps.ray_depth);
+    sample.Position = comps.point;
+    sample.Normal = comps.normal_v;
+    sample.Depth = comps.ray_depth;
 
-    sample.set_diffuse(Color(1.0));
-    sample.set_alpha(1.0);
+    sample.Diffuse = Color(1.0);
+    sample.Alpha = 1.0;
     Color smp_lighting = Color(0.0);
 
 	auto obj_prim = std::static_pointer_cast<PrimitiveBase>(comps.object);
@@ -122,7 +122,7 @@ Sample World::shade(IxComps & comps) const
 		}
 	}
 
-    sample.set_lighting(smp_lighting);
+    sample.Lighting = smp_lighting;
 
 	// Reflection
 	Color refl = (obj_prim->material->reflect(*this, comps));
@@ -135,17 +135,17 @@ Sample World::shade(IxComps & comps) const
 	{
 		double reflectance = schlick(comps);
 
-        sample.set_reflectionfilter(reflectance);
-        sample.set_refractionfilter(1.0 - reflectance);
+        sample.ReflectionFilter = reflectance;
+        sample.RefractionFilter = 1.0 - reflectance;
 	}
 	else
 	{
-        sample.set_reflectionfilter(1.0);
-        sample.set_refractionfilter(1.0);
+        sample.ReflectionFilter = 1.0;
+        sample.RefractionFilter = 1.0;
 	}
 
-    sample.set_reflection(refl);
-    sample.set_refraction(rafr);
+    sample.Reflection = refl;
+    sample.Refraction = rafr;
 
 	return sample;
 }

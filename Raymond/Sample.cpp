@@ -16,51 +16,51 @@ Sample::Sample(const Tuple & canvas_origin)
 {
 	this->name = "default sample";
 
-	this->s_canvas_origin_pt_ = canvas_origin;
-    this->s_world_origin_pt_ = Tuple::Point(0.0, 0.0, 0.0);
+	this->CanvasOrigin = canvas_origin;
+    this->WorldOrigin = Tuple::Point(0.0, 0.0, 0.0);
 
 	this->s_rgb_ = Color(0.0);
-	this->s_alpha_ = 0.0;
-	this->s_background_ = Color(0.0);
+	this->Alpha = 0.0;
+	this->Background = Color(0.0);
 
-	this->s_depth_ = 0.0;
-	this->s_normal_ = Color(0.0, 0.0, 0.0);
-	this->s_position_ = Color(0.0);
+	this->Depth = 0.0;
+	this->Normal = Color(0.0, 0.0, 0.0);
+	this->Position = Color(0.0);
 
-	this->s_diffuse_ = Color(0.0);
-	this->s_specular_ = Color(0.0);
-	this->s_lighting_ = Color(0.0);
-	this->s_globalillumination_ = Color(0.0);
+	this->Diffuse = Color(0.0);
+	this->Specular = Color(0.0);
+	this->Lighting = Color(0.0);
+	this->GlobalIllumination = Color(0.0);
 
-	this->s_reflection_ = Color(0.0);
-	this->s_reflectionfilter_ = 0.0;
-	this->s_refraction_ = Color(0.0);
-	this->s_refractionfilter_ = 0.0;
+	this->Reflection = Color(0.0);
+	this->ReflectionFilter = 0.0;
+	this->Refraction = Color(0.0);
+	this->RefractionFilter = 0.0;
 }
 
 Sample::Sample(const Sample & src)
 {
 	this->name = src.name;
 
-	this->s_canvas_origin_pt_ = src.get_canvas_origin();
-    this->s_world_origin_pt_ = src.get_world_origin();
+	this->CanvasOrigin = src.CanvasOrigin;
+    this->WorldOrigin = src.WorldOrigin;
 	this->s_rgb_ = src.get_rgb();
-	this->s_alpha_ = src.get_alpha();
-	this->s_background_ = src.get_background();
+	this->Alpha = src.Alpha;
+	this->Background = src.Background;
 
-	this->s_depth_ = src.get_depth();
-	this->s_normal_ = src.get_normal();
-	this->s_position_ = src.get_position();
+	this->Depth = src.Depth;
+	this->Normal = src.Normal;
+	this->Position = src.Position;
 
-	this->s_diffuse_ = src.get_diffuse();
-	this->s_specular_ = src.get_specular();
-	this->s_lighting_ = src.get_lighting();
-	this->s_globalillumination_ = src.get_globalillumination();
+	this->Diffuse = src.Diffuse;
+	this->Specular = src.Specular;
+	this->Lighting = src.Lighting;
+	this->GlobalIllumination = src.GlobalIllumination;
 
-	this->s_reflection_ = src.get_reflection();
-	this->s_reflectionfilter_ = src.get_reflectionfilter();
-	this->s_refraction_ = src.get_refraction();
-	this->s_refractionfilter_ = src.get_refractionfilter();
+	this->Reflection = src.Reflection;
+	this->ReflectionFilter = src.ReflectionFilter;
+	this->Refraction = src.Refraction;
+	this->RefractionFilter = src.RefractionFilter;
 }
 
 Sample::~Sample()
@@ -68,8 +68,6 @@ Sample::~Sample()
 
 // ------------------------------------------------------------------------
 // Accessors
-// ------------------------------------------------------------------------
-// Getters
 // ------------------------------------------------------------------------
 
 Color Sample::get_channel(RE channel) const
@@ -79,31 +77,31 @@ Color Sample::get_channel(RE channel) const
 	case rgb:
 		return this->s_rgb_;
 	case alpha:
-		return this->s_alpha_;
+		return this->Alpha;
 	case background:
-		return this->s_background_;
+		return this->Background;
 	case depth:
-		return this->s_depth_;
+		return this->Depth;
 	case normal:
-		return this->s_normal_;
+		return this->Normal;
 	case position:
-		return this->s_position_;
+		return this->Position;
 	case diffuse:
-		return this->s_diffuse_;
+		return this->Diffuse;
 	case specular:
-		return this->s_specular_;
+		return this->Specular;
 	case lighting:
-		return this->s_lighting_;
+		return this->Lighting;
 	case globalillumination:
-		return this->s_globalillumination_;
+		return this->GlobalIllumination;
 	case reflection:
-		return this->s_reflection_;
+		return this->Reflection;
 	case reflectionfilter:
-		return this->s_reflectionfilter_;
+		return this->ReflectionFilter;
 	case refraction:
-		return this->s_refraction_;
+		return this->Refraction;
 	case refractionfilter:
-		return this->s_refractionfilter_;
+		return this->RefractionFilter;
 	default:
 		return this->s_rgb_;
 	}
@@ -114,388 +112,235 @@ Color Sample::get_rgb() const
 	return this->s_rgb_;
 }
 
-Tuple Sample::get_canvas_origin() const
-{
-	return this->s_canvas_origin_pt_;
-}
-
-Tuple Sample::get_world_origin() const
-{
-    return this->s_world_origin_pt_;
-}
-
-double Sample::get_alpha() const
-{
-	return this->s_alpha_;
-}
-
-Color Sample::get_background() const
-{
-	return this->s_background_;
-}
-
-double Sample::get_depth() const
-{
-	return this->s_depth_;
-}
-
-Color Sample::get_normal() const
-{
-	return this->s_normal_;
-}
-
-Color Sample::get_position() const
-{
-	return this->s_position_;
-}
-
-Color Sample::get_diffuse() const
-{
-	return this->s_diffuse_;
-}
-
-Color Sample::get_specular() const
-{
-	return this->s_specular_;
-}
-
-Color Sample::get_lighting() const
-{
-	return this->s_lighting_;
-}
-
-Color Sample::get_globalillumination() const
-{
-	return this->s_globalillumination_;
-}
-
-Color Sample::get_reflection() const
-{
-	return this->s_reflection_;
-}
-
-double Sample::get_reflectionfilter() const
-{
-	return this->s_reflectionfilter_;
-}
-
-Color Sample::get_refraction() const
-{
-	return this->s_refraction_;
-}
-
-double Sample::get_refractionfilter() const
-{
-	return this->s_refractionfilter_;
-}
-
-// Setters
-// ------------------------------------------------------------------------
-
-void Sample::set_world_origin(const Tuple &pt)
-{
-    this->s_world_origin_pt_ = pt;
-}
-
-void Sample::set_canvas_origin(const Tuple &pt)
-{
-    this->s_canvas_origin_pt_ = pt;
-}
-
 void Sample::set_rgb(const Color & col)
 {
 	this->s_rgb_ = col;
 }
 
-void Sample::set_alpha(const double & val)
-{
-	this->s_alpha_ = val;
-}
-
-void Sample::set_background(const Color & col)
-{
-	this->s_background_ = col;
-}
-
-void Sample::set_depth(const double & val)
-{
-	this->s_depth_ = val;
-}
-
-void Sample::set_normal(const Color & col)
-{
-	this->s_normal_ = col;
-}
-
-void Sample::set_position(const Color & col)
-{
-	this->s_position_ = col;
-}
-
-void Sample::set_diffuse(const Color & col)
-{
-	this->s_diffuse_ = col;
-}
-
-void Sample::set_specular(const Color & col)
-{
-	this->s_specular_ = col;
-}
-
-void Sample::set_lighting(const Color & col)
-{
-	this->s_lighting_ = col;
-}
-
-void Sample::set_globalillumination(const Color & col)
-{
-	this->s_globalillumination_ = col;
-}
-
-void Sample::set_reflection(const Color & col)
-{
-	this->s_reflection_ = col;
-}
-
-void Sample::set_reflectionfilter(const double & val)
-{
-	this->s_reflectionfilter_ = val;
-}
-
-void Sample::set_refraction(const Color & col)
-{
-	this->s_refraction_ = col;
-}
-
-void Sample::set_refractionfilter(const double & val)
-{
-	this->s_refractionfilter_ = val;
-}
-
 void Sample::calculate_sample()
 {
 	Color rgb = Color(0.0);
-	rgb = rgb + (this->s_lighting_ * this->s_diffuse_);
-	rgb = rgb + (this->s_globalillumination_ * this->s_diffuse_);
-	rgb = rgb + this->s_background_;
-	rgb = rgb + (this->s_reflection_ * this->s_reflectionfilter_);
-	rgb = rgb + (this->s_refraction_ * this->s_refractionfilter_);
-	rgb = rgb + this->s_specular_;
+	rgb = rgb + (this->Lighting * this->Diffuse);
+	rgb = rgb + (this->GlobalIllumination * this->Diffuse);
+	rgb = rgb + this->Background;
+	rgb = rgb + (this->Reflection * this->ReflectionFilter);
+	rgb = rgb + (this->Refraction * this->RefractionFilter);
+	rgb = rgb + this->Specular;
 	this->s_rgb_ = rgb;
 }
 
 Sample Sample::operator*(const Sample & right_sample) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ * right_sample.get_rgb());
-	result.set_alpha(this->s_alpha_ * right_sample.get_alpha());
-	result.set_background(this->s_background_ * right_sample.get_background());
+	result.Alpha = this->Alpha * right_sample.Alpha;
+	result.Background = this->Background * right_sample.Background;
 
-	result.set_depth(this->s_depth_ * right_sample.get_depth());
-	result.set_normal(this->s_normal_ * right_sample.get_normal());
-	result.set_position(this->s_position_ * right_sample.get_position());
+	result.Depth = this->Depth * right_sample.Depth;
+	result.Normal = this->Normal * right_sample.Normal;
+	result.Position = this->Position * right_sample.Position;
 
-	result.set_diffuse(this->s_diffuse_ * right_sample.get_diffuse());
-	result.set_specular(this->s_specular_ * right_sample.get_specular());
-	result.set_lighting(this->s_lighting_ * right_sample.get_lighting());
-	result.set_globalillumination(this->s_globalillumination_ * right_sample.get_globalillumination());
+	result.Diffuse = this->Diffuse * right_sample.Diffuse;
+	result.Specular = this->Specular * right_sample.Specular;
+	result.Lighting = this->Lighting * right_sample.Lighting;
+	result.GlobalIllumination = this->GlobalIllumination * right_sample.GlobalIllumination;
 
-	result.set_reflection(this->s_reflection_ * right_sample.get_reflection());
-	result.set_reflectionfilter(this->s_reflectionfilter_ * right_sample.get_reflectionfilter());
-	result.set_refraction(this->s_refraction_ * right_sample.get_refraction());
-	result.set_refractionfilter(this->s_refractionfilter_ * right_sample.get_refractionfilter());
+	result.Reflection = this->Reflection * right_sample.Reflection;
+	result.ReflectionFilter = this->ReflectionFilter * right_sample.ReflectionFilter;
+	result.Refraction = this->Refraction * right_sample.Refraction;
+	result.RefractionFilter = this->RefractionFilter * right_sample.RefractionFilter;
 
 	return result;
 }
 
 Sample Sample::operator/(const Sample & right_sample) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ / right_sample.get_rgb());
-	result.set_alpha(safe_comp_divide(this->s_alpha_, right_sample.get_alpha()));
-	result.set_background(this->s_background_ / right_sample.get_background());
+	result.Alpha = safe_comp_divide(this->Alpha, right_sample.Alpha);
+	result.Background = this->Background / right_sample.Background;
 
-	result.set_depth(safe_comp_divide(this->s_depth_, right_sample.get_depth()));
-	result.set_normal(this->s_normal_ / right_sample.get_normal());
-	result.set_position(this->s_position_ / right_sample.get_position());
+	result.Depth = safe_comp_divide(this->Depth, right_sample.Depth);
+	result.Normal = this->Normal / right_sample.Normal;
+	result.Position = this->Position / right_sample.Position;
 
-	result.set_diffuse(this->s_diffuse_ / right_sample.get_diffuse());
-	result.set_specular(this->s_specular_ / right_sample.get_specular());
-	result.set_lighting(this->s_lighting_ / right_sample.get_lighting());
-	result.set_globalillumination(this->s_globalillumination_ / right_sample.get_globalillumination());
+	result.Diffuse = this->Diffuse / right_sample.Diffuse;
+	result.Specular = this->Specular / right_sample.Specular;
+	result.Lighting = this->Lighting / right_sample.Lighting;
+	result.GlobalIllumination = this->GlobalIllumination / right_sample.GlobalIllumination;
 
-	result.set_reflection(this->s_reflection_ / right_sample.get_reflection());
-	result.set_reflectionfilter(safe_comp_divide(this->s_reflectionfilter_, right_sample.get_reflectionfilter()));
-	result.set_refraction(this->s_refraction_ / right_sample.get_refraction());
-	result.set_refractionfilter(safe_comp_divide(this->s_refractionfilter_, right_sample.get_refractionfilter()));
+	result.Reflection = this->Reflection / right_sample.Reflection;
+	result.ReflectionFilter = safe_comp_divide(this->ReflectionFilter, right_sample.ReflectionFilter);
+	result.Refraction = this->Refraction / right_sample.Refraction;
+	result.RefractionFilter = safe_comp_divide(this->RefractionFilter, right_sample.RefractionFilter);
 
 	return result;
 }
 
 Sample Sample::operator+(const Sample & right_sample) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ + right_sample.get_rgb());
-	result.set_alpha(this->s_alpha_ + right_sample.get_alpha());
-	result.set_background(this->s_background_ + right_sample.get_background());
+	result.Alpha = this->Alpha + right_sample.Alpha;
+	result.Background = this->Background + right_sample.Background;
 
-	result.set_depth(this->s_depth_ + right_sample.get_depth());
-	result.set_normal(this->s_normal_ + right_sample.get_normal());
-	result.set_position(this->s_position_ + right_sample.get_position());
+	result.Depth = this->Depth + right_sample.Depth;
+	result.Normal = this->Normal + right_sample.Normal;
+	result.Position = this->Position + right_sample.Position;
 
-	result.set_diffuse(this->s_diffuse_ + right_sample.get_diffuse());
-	result.set_specular(this->s_specular_ + right_sample.get_specular());
-	result.set_lighting(this->s_lighting_ + right_sample.get_lighting());
-	result.set_globalillumination(this->s_globalillumination_ + right_sample.get_globalillumination());
+	result.Diffuse = this->Diffuse + right_sample.Diffuse;
+	result.Specular = this->Specular + right_sample.Specular;
+	result.Lighting = this->Lighting + right_sample.Lighting;
+	result.GlobalIllumination = this->GlobalIllumination + right_sample.GlobalIllumination;
 
-	result.set_reflection(this->s_reflection_ + right_sample.get_reflection());
-	result.set_reflectionfilter(this->s_reflectionfilter_ + right_sample.get_reflectionfilter());
-	result.set_refraction(this->s_refraction_ + right_sample.get_refraction());
-	result.set_refractionfilter(this->s_refractionfilter_ + right_sample.get_refractionfilter());
+	result.Reflection = this->Reflection + right_sample.Reflection;
+	result.ReflectionFilter = this->ReflectionFilter + right_sample.ReflectionFilter;
+	result.Refraction = this->Refraction + right_sample.Refraction;
+	result.RefractionFilter = this->RefractionFilter + right_sample.RefractionFilter;
 
 	return result;
 }
 
 Sample Sample::operator-(const Sample & right_sample) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ - right_sample.get_rgb());
-	result.set_alpha(this->s_alpha_ - right_sample.get_alpha());
-	result.set_background(this->s_background_ - right_sample.get_background());
+	result.Alpha = this->Alpha - right_sample.Alpha;
+	result.Background = this->Background - right_sample.Background;
 
-	result.set_depth(this->s_depth_ - right_sample.get_depth());
-	result.set_normal(this->s_normal_ - right_sample.get_normal());
-	result.set_position(this->s_position_ - right_sample.get_position());
+	result.Depth = this->Depth - right_sample.Depth;
+	result.Normal = this->Normal - right_sample.Normal;
+	result.Position = this->Position - right_sample.Position;
 
-	result.set_diffuse(this->s_diffuse_ - right_sample.get_diffuse());
-	result.set_specular(this->s_specular_ - right_sample.get_specular());
-	result.set_lighting(this->s_lighting_ - right_sample.get_lighting());
-	result.set_globalillumination(this->s_globalillumination_ - right_sample.get_globalillumination());
+	result.Diffuse = this->Diffuse - right_sample.Diffuse;
+	result.Specular = this->Specular - right_sample.Specular;
+	result.Lighting = this->Lighting - right_sample.Lighting;
+	result.GlobalIllumination = this->GlobalIllumination - right_sample.GlobalIllumination;
 
-	result.set_reflection(this->s_reflection_ - right_sample.get_reflection());
-	result.set_reflectionfilter(this->s_reflectionfilter_ - right_sample.get_reflectionfilter());
-	result.set_refraction(this->s_refraction_ - right_sample.get_refraction());
-	result.set_refractionfilter(this->s_refractionfilter_ - right_sample.get_refractionfilter());
+	result.Reflection = this->Reflection - right_sample.Reflection;
+	result.ReflectionFilter = this->ReflectionFilter - right_sample.ReflectionFilter;
+	result.Refraction = this->Refraction - right_sample.Refraction;
+	result.RefractionFilter = this->RefractionFilter - right_sample.RefractionFilter;
 
 	return result;
 }
 
 Sample Sample::operator*(const double & scalar) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ * scalar);
-	result.set_alpha(this->s_alpha_ * scalar);
-	result.set_background(this->s_background_ * scalar);
+	result.Alpha = this->Alpha * scalar;
+	result.Background = this->Background * scalar;
 
-	result.set_depth(this->s_depth_ * scalar);
-	result.set_normal(this->s_normal_ * scalar);
-	result.set_position(this->s_position_ * scalar);
+	result.Depth = this->Depth * scalar;
+	result.Normal = this->Normal * scalar;
+	result.Position = this->Position * scalar;
 
-	result.set_diffuse(this->s_diffuse_ * scalar);
-	result.set_specular(this->s_specular_ * scalar);
-	result.set_lighting(this->s_lighting_ * scalar);
-	result.set_globalillumination(this->s_globalillumination_ * scalar);
+	result.Diffuse = this->Diffuse * scalar;
+	result.Specular = this->Specular * scalar;
+	result.Lighting = this->Lighting * scalar;
+	result.GlobalIllumination = this->GlobalIllumination * scalar;
 
-	result.set_reflection(this->s_reflection_ * scalar);
-	result.set_reflectionfilter(this->s_reflectionfilter_ * scalar);
-	result.set_refraction(this->s_refraction_ * scalar);
-	result.set_refractionfilter(this->s_refractionfilter_ * scalar);
+	result.Reflection = this->Reflection * scalar;
+	result.ReflectionFilter = this->ReflectionFilter * scalar;
+	result.Refraction = this->Refraction * scalar;
+	result.RefractionFilter = this->RefractionFilter * scalar;
 
 	return result;
 }
 
 Sample Sample::operator/(const double & scalar) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ / scalar);
-	result.set_alpha(safe_comp_divide(this->s_alpha_, scalar));
-	result.set_background(this->s_background_ / scalar);
+	result.Alpha = safe_comp_divide(this->Alpha, scalar);
+	result.Background = this->Background / scalar;
 
-	result.set_depth(safe_comp_divide(this->s_depth_, scalar));
-	result.set_normal(this->s_normal_ / scalar);
-	result.set_position(this->s_position_ / scalar);
+	result.Depth = safe_comp_divide(this->Depth, scalar);
+	result.Normal = this->Normal / scalar;
+	result.Position = this->Position / scalar;
 
-	result.set_diffuse(this->s_diffuse_ / scalar);
-	result.set_specular(this->s_specular_ / scalar);
-	result.set_lighting(this->s_lighting_ / scalar);
-	result.set_globalillumination(this->s_globalillumination_ / scalar);
+	result.Diffuse = this->Diffuse / scalar;
+	result.Specular = this->Specular / scalar;
+	result.Lighting = this->Lighting / scalar;
+	result.GlobalIllumination = this->GlobalIllumination / scalar;
 
-	result.set_reflection(this->s_reflection_ / scalar);
-	result.set_reflectionfilter(safe_comp_divide(this->s_reflectionfilter_, scalar));
-	result.set_refraction(this->s_refraction_ / scalar);
-	result.set_refractionfilter(safe_comp_divide(this->s_refractionfilter_, scalar));
+	result.Reflection = this->Reflection / scalar;
+	result.ReflectionFilter = safe_comp_divide(this->ReflectionFilter, scalar);
+	result.Refraction = this->Refraction / scalar;
+	result.RefractionFilter = safe_comp_divide(this->RefractionFilter, scalar);
 
 	return result;
 }
 
 Sample Sample::operator+(const double & scalar) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
-	result.set_rgb(this->s_rgb_ + scalar);
-	result.set_alpha(this->s_alpha_ + scalar);
-	result.set_background(this->s_background_ + scalar);
+	result.set_rgb(this->get_rgb() + scalar);
+	result.Alpha = this->Alpha + scalar;
+	result.Background = this->Background + scalar;
 
-	result.set_depth(this->s_depth_ + scalar);
-	result.set_normal(this->s_normal_ + scalar);
-	result.set_position(this->s_position_ + scalar);
+	result.Depth = this->Depth + scalar;
+	result.Normal = this->Normal + scalar;
+	result.Position = this->Position + scalar;
 
-	result.set_diffuse(this->s_diffuse_ + scalar);
-	result.set_specular(this->s_specular_ + scalar);
-	result.set_lighting(this->s_lighting_ + scalar);
-	result.set_globalillumination(this->s_globalillumination_ + scalar);
+	result.Diffuse = this->Diffuse + scalar;
+	result.Specular = this->Specular + scalar;
+	result.Lighting = this->Lighting + scalar;
+	result.GlobalIllumination = this->GlobalIllumination + scalar;
 
-	result.set_reflection(this->s_reflection_ + scalar);
-	result.set_reflectionfilter(this->s_reflectionfilter_ + scalar);
-	result.set_refraction(this->s_refraction_ + scalar);
-	result.set_refractionfilter(this->s_refractionfilter_ + scalar);
+	result.Reflection = this->Reflection + scalar;
+	result.ReflectionFilter = this->ReflectionFilter + scalar;
+	result.Refraction = this->Refraction + scalar;
+	result.RefractionFilter = this->RefractionFilter + scalar;
 
 	return result;
 }
 
 Sample Sample::operator-(const double & scalar) const
 {
-	Sample result = Sample(this->s_canvas_origin_pt_);
+	Sample result = Sample(this->CanvasOrigin);
 
-    result.set_world_origin(this->s_world_origin_pt_);
+    result.WorldOrigin = this->WorldOrigin;
 
 	result.set_rgb(this->s_rgb_ - scalar);
-	result.set_alpha(this->s_alpha_ - scalar);
-	result.set_background(this->s_background_ - scalar);
+	result.Alpha = this->Alpha - scalar;
+	result.Background = this->Background - scalar;
 
-	result.set_depth(this->s_depth_ - scalar);
-	result.set_normal(this->s_normal_ - scalar);
-	result.set_position(this->s_position_ - scalar);
+	result.Depth = this->Depth - scalar;
+	result.Normal = this->Normal - scalar;
+	result.Position = this->Position - scalar;
 
-	result.set_diffuse(this->s_diffuse_ - scalar);
-	result.set_specular(this->s_specular_ - scalar);
-	result.set_lighting(this->s_lighting_ - scalar);
-	result.set_globalillumination(this->s_globalillumination_ - scalar);
+	result.Diffuse = this->Diffuse - scalar;
+	result.Specular = this->Specular - scalar;
+	result.Lighting = this->Lighting - scalar;
+	result.GlobalIllumination = this->GlobalIllumination - scalar;
 
-	result.set_reflection(this->s_reflection_ - scalar);
-	result.set_reflectionfilter(this->s_reflectionfilter_ - scalar);
-	result.set_refraction(this->s_refraction_ - scalar);
-	result.set_refractionfilter(this->s_refractionfilter_ - scalar);
+	result.Reflection = this->Reflection - scalar;
+	result.ReflectionFilter = this->ReflectionFilter - scalar;
+	result.Refraction = this->Refraction - scalar;
+	result.RefractionFilter = this->RefractionFilter - scalar;
 
 	return result;
 }
@@ -503,19 +348,19 @@ Sample Sample::operator-(const double & scalar) const
 std::ostream & operator<<(std::ostream & os, const Sample & s)
 {
 	os << "[ Sample: RGB: " << s.get_rgb()
-		<< ", Alpha: " << s.get_alpha()
-		<< ", Background: " << s.get_background()
-		<< ", Depth: " << s.get_depth()
-		<< ", Normal: " << s.get_normal()
-		<< ", Position: " << s.get_position()
-		<< ", Diffuse: " << s.get_diffuse()
-		<< ", Specular: " << s.get_specular()
-		<< ", Lighting: " << s.get_lighting()
-		<< ", GI: " << s.get_globalillumination()
-		<< ", Reflection: " << s.get_reflection()
-		<< ", Refl Filter: " << s.get_reflectionfilter()
-		<< ", Refraction: " << s.get_refraction()
-		<< ", Rafr Filter: " << s.get_refractionfilter()
+		<< ", Alpha: " << s.Alpha
+		<< ", Background: " << s.Background
+		<< ", Depth: " << s.Depth
+		<< ", Normal: " << s.Normal
+		<< ", Position: " << s.Position
+		<< ", Diffuse: " << s.Diffuse
+		<< ", Specular: " << s.Specular
+		<< ", Lighting: " << s.Lighting
+		<< ", GI: " << s.GlobalIllumination
+		<< ", Reflection: " << s.Reflection
+		<< ", Refl Filter: " << s.ReflectionFilter
+		<< ", Refraction: " << s.Refraction
+		<< ", Rafr Filter: " << s.RefractionFilter
 		<< " ]";
 	return os;
 }

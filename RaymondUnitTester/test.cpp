@@ -3691,72 +3691,72 @@ TEST(Sampling, ADefaultSample)
 	Sample s = Sample();
 
 	ASSERT_EQ(s.get_rgb(), Color(0.0));
-	ASSERT_EQ(s.get_alpha(), 0.0);
-	ASSERT_EQ(s.get_depth(), 0.0);
-	ASSERT_EQ(s.get_background(), Color(0.0));
-	ASSERT_EQ(s.get_normal(), Color(0.0, 0.0, 0.0));
-	ASSERT_EQ(s.get_position(), Color(0.0));
-	ASSERT_EQ(s.get_diffuse(), Color(0.0));
-	ASSERT_EQ(s.get_specular(), Color(0.0));
-	ASSERT_EQ(s.get_lighting(), Color(0.0));
-	ASSERT_EQ(s.get_globalillumination(), Color(0.0));
-	ASSERT_EQ(s.get_reflection(), Color(0.0));
-	ASSERT_EQ(s.get_reflectionfilter(), 0.0);
-	ASSERT_EQ(s.get_refraction(), Color(0.0));
-	ASSERT_EQ(s.get_refractionfilter(), 0.0);
+	ASSERT_EQ(s.Alpha, 0.0);
+	ASSERT_EQ(s.Depth, 0.0);
+	ASSERT_EQ(s.Background, Color(0.0));
+	ASSERT_EQ(s.Normal, Color(0.0, 0.0, 0.0));
+	ASSERT_EQ(s.Position, Color(0.0));
+	ASSERT_EQ(s.Diffuse, Color(0.0));
+	ASSERT_EQ(s.Specular, Color(0.0));
+	ASSERT_EQ(s.Lighting, Color(0.0));
+	ASSERT_EQ(s.GlobalIllumination, Color(0.0));
+	ASSERT_EQ(s.Reflection, Color(0.0));
+	ASSERT_EQ(s.ReflectionFilter, 0.0);
+	ASSERT_EQ(s.Refraction, Color(0.0));
+	ASSERT_EQ(s.RefractionFilter, 0.0);
 }
 
 TEST(Sampling, SettingSampleValues)
 {
 	Sample s = Sample();
 
-	s.set_alpha(1.0);
-	s.set_depth(33.567);
-	s.set_background(Color(0.1, 0.1, 0.7));
-	s.set_normal(Color(0.6, 0.4, 1.0));
-	s.set_position(Color(22.0, 11.0, 8.5));
-	s.set_diffuse(Color(0.2, 0.3, 0.4));
-	s.set_specular(Color(0.1, 0.12, 0.15));
-	s.set_lighting(Color(0.1, 0.05, 0.1));
-	s.set_globalillumination(Color(0.05, 0.06, 0.001));
-	s.set_reflection(Color(1.0, 1.0, 0.3));
-	s.set_reflectionfilter(0.5);
-	s.set_refraction(Color(0.01, 0.01, 0.01));
-	s.set_refractionfilter(0.1);
+	s.Alpha = 1.0;
+	s.Depth = 33.567;
+	s.Background = Color(0.1, 0.1, 0.7);
+	s.Normal = Color(0.6, 0.4, 1.0);
+	s.Position = Color(22.0, 11.0, 8.5);
+	s.Diffuse = Color(0.2, 0.3, 0.4);
+	s.Specular = Color(0.1, 0.12, 0.15);
+	s.Lighting = Color(0.1, 0.05, 0.1);
+	s.GlobalIllumination = Color(0.05, 0.06, 0.001);
+	s.Reflection = Color(1.0, 1.0, 0.3);
+	s.ReflectionFilter = 0.5;
+	s.Refraction =Color(0.01, 0.01, 0.01);
+	s.RefractionFilter =0.1;
 
 	ASSERT_EQ(s.get_rgb(), Color(0.0));
-	ASSERT_EQ(s.get_alpha(), 1.0);
-	ASSERT_EQ(s.get_depth(), 33.567);
-	ASSERT_EQ(s.get_background(), Color(0.1, 0.1, 0.7));
-	ASSERT_EQ(s.get_normal(), Color(0.6, 0.4, 1.0));
-	ASSERT_EQ(s.get_position(), Color(22.0, 11.0, 8.5));
-	ASSERT_EQ(s.get_diffuse(), Color(0.2, 0.3, 0.4));
-	ASSERT_EQ(s.get_specular(), Color(0.1, 0.12, 0.15));
-	ASSERT_EQ(s.get_lighting(), Color(0.1, 0.05, 0.1));
-	ASSERT_EQ(s.get_globalillumination(), Color(0.05, 0.06, 0.001));
-	ASSERT_EQ(s.get_reflection(), Color(1.0, 1.0, 0.3));
-	ASSERT_EQ(s.get_reflectionfilter(), 0.5);
-	ASSERT_EQ(s.get_refraction(), Color(0.01, 0.01, 0.01));
-	ASSERT_EQ(s.get_refractionfilter(), 0.1);
+	ASSERT_EQ(s.Alpha, 1.0);
+	ASSERT_EQ(s.Depth, 33.567);
+	ASSERT_EQ(s.Background, Color(0.1, 0.1, 0.7));
+	ASSERT_EQ(s.Normal, Color(0.6, 0.4, 1.0));
+	ASSERT_EQ(s.Position, Color(22.0, 11.0, 8.5));
+	ASSERT_EQ(s.Diffuse, Color(0.2, 0.3, 0.4));
+	ASSERT_EQ(s.Specular, Color(0.1, 0.12, 0.15));
+	ASSERT_EQ(s.Lighting, Color(0.1, 0.05, 0.1));
+	ASSERT_EQ(s.GlobalIllumination, Color(0.05, 0.06, 0.001));
+	ASSERT_EQ(s.Reflection, Color(1.0, 1.0, 0.3));
+	ASSERT_EQ(s.ReflectionFilter, 0.5);
+	ASSERT_EQ(s.Refraction, Color(0.01, 0.01, 0.01));
+	ASSERT_EQ(s.RefractionFilter, 0.1);
 }
 
 TEST(Sampling, CalculatingSampleValues)
 {
 	Sample s = Sample();
 
-	s.set_alpha(1.0);
-	s.set_depth(33.567);
-	s.set_background(Color(0.1, 0.1, 0.7));
-	s.set_normal(Color(0.6, 0.4, 1.0));
-	s.set_position(Color(22.0, 11.0, 8.5));
-	s.set_diffuse(Color(0.1, 0.2, 0.3));
-	s.set_specular(Color(0.1, 0.1, 0.1));
-	s.set_lighting(Color(0.1, 0.05, 0.1));
-	s.set_globalillumination(Color(0.05, 0.06, 0.001));
-	s.set_reflection(Color(1.0, 1.0, 0.3));
-	s.set_reflectionfilter(0.5);
-	s.set_refraction(Color(0.01, 0.01, 0.01));
-	s.set_refractionfilter(0.1);
+	s.Alpha = 1.0;
+	s.Depth = 33.567;
+	s.Background = Color(0.1, 0.1, 0.7);
+	s.Normal = Color(0.6, 0.4, 1.0);
+	s.Position = Color(22.0, 11.0, 8.5);
+	s.Diffuse = Color(0.1, 0.2, 0.3);
+	s.Specular = Color(0.1, 0.1, 0.1);
+	s.Lighting = Color(0.1, 0.05, 0.1);
+	s.GlobalIllumination = Color(0.05, 0.06, 0.001);
+	s.Reflection = Color(1.0, 1.0, 0.3);
+	s.ReflectionFilter = 0.5;
+	s.Refraction =Color(0.01, 0.01, 0.01);
+	s.RefractionFilter =0.1;
 
 	s.calculate_sample();
 
@@ -3768,19 +3768,19 @@ TEST(Sampling, AddingSamples)
 	Sample s1 = Sample();
 	Sample result = Sample();
 
-	s1.set_alpha(0.5);
-	s1.set_depth(10.0);
-	s1.set_background(Color(0.5, 0.5, 0.5));
-	s1.set_normal(Color(0.6, 0.4, 1.0));
-	s1.set_position(Color(10.0, 10.0, 10.0));
-	s1.set_diffuse(Color(0.4, 0.0, 0.8));
-	s1.set_specular(Color(0.1, 0.1, 0.1));
-	s1.set_lighting(Color(0.5, 0.5, 0.5));
-	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
-	s1.set_reflection(Color(1.0, 1.0, 1.0));
-	s1.set_reflectionfilter(0.5);
-	s1.set_refraction(Color(0.1, 0.1, 0.1));
-	s1.set_refractionfilter(0.1);
+	s1.Alpha = 0.5;
+	s1.Depth = 10.0;
+	s1.Background = Color(0.5, 0.5, 0.5);
+	s1.Normal = Color(0.6, 0.4, 1.0);
+	s1.Position = Color(10.0, 10.0, 10.0);
+	s1.Diffuse = Color(0.4, 0.0, 0.8);
+	s1.Specular = Color(0.1, 0.1, 0.1);
+	s1.Lighting = Color(0.5, 0.5, 0.5);
+	s1.GlobalIllumination = Color(0.2, 0.2, 0.2);
+	s1.Reflection = Color(1.0, 1.0, 1.0);
+	s1.ReflectionFilter = 0.5;
+	s1.Refraction =Color(0.1, 0.1, 0.1);
+	s1.RefractionFilter =0.1;
 
 	s1.calculate_sample();
 
@@ -3789,19 +3789,19 @@ TEST(Sampling, AddingSamples)
 	result = s1 + s2;
 
 	ASSERT_EQ(result.get_rgb(), Color(1.39 + 1.39, 1.11 + 1.11, 1.67 + 1.67));
-	ASSERT_EQ(result.get_alpha(), 1.0);
-	ASSERT_EQ(result.get_depth(), 20.0);
-	ASSERT_EQ(result.get_background(), Color(1.0, 1.0, 1.0));
-	ASSERT_EQ(result.get_normal(), Color(1.2, 0.8, 2.0));
-	ASSERT_EQ(result.get_position(), Color(20.0, 20.0, 20.0));
-	ASSERT_EQ(result.get_diffuse(), Color(0.8, 0.0, 1.6));
-	ASSERT_EQ(result.get_specular(), Color(0.2, 0.2, 0.2));
-	ASSERT_EQ(result.get_lighting(), Color(1.0, 1.0, 1.0));
-	ASSERT_EQ(result.get_globalillumination(), Color(0.4, 0.4, 0.4));
-	ASSERT_EQ(result.get_reflection(), Color(2.0, 2.0, 2.0));
-	ASSERT_EQ(result.get_reflectionfilter(), 1.0);
-	ASSERT_EQ(result.get_refraction(), Color(0.2, 0.2, 0.2));
-	ASSERT_EQ(result.get_refractionfilter(), 0.2);
+	ASSERT_EQ(result.Alpha, 1.0);
+	ASSERT_EQ(result.Depth, 20.0);
+	ASSERT_EQ(result.Background, Color(1.0, 1.0, 1.0));
+	ASSERT_EQ(result.Normal, Color(1.2, 0.8, 2.0));
+	ASSERT_EQ(result.Position, Color(20.0, 20.0, 20.0));
+	ASSERT_EQ(result.Diffuse, Color(0.8, 0.0, 1.6));
+	ASSERT_EQ(result.Specular, Color(0.2, 0.2, 0.2));
+	ASSERT_EQ(result.Lighting, Color(1.0, 1.0, 1.0));
+	ASSERT_EQ(result.GlobalIllumination, Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.Reflection, Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.ReflectionFilter, 1.0);
+	ASSERT_EQ(result.Refraction, Color(0.2, 0.2, 0.2));
+	ASSERT_EQ(result.RefractionFilter, 0.2);
 }
 
 TEST(Sampling, dividingSamplesByAScalar)
@@ -3809,19 +3809,19 @@ TEST(Sampling, dividingSamplesByAScalar)
 	Sample s1 = Sample();
 	Sample result = Sample();
 
-	s1.set_alpha(0.5);
-	s1.set_depth(10.0);
-	s1.set_background(Color(0.5, 0.5, 0.5));
-	s1.set_normal(Color(0.6, 0.4, 1.0));
-	s1.set_position(Color(10.0, 10.0, 10.0));
-	s1.set_diffuse(Color(0.4, 0.0, 0.8));
-	s1.set_specular(Color(0.1, 0.1, 0.1));
-	s1.set_lighting(Color(0.5, 0.5, 0.5));
-	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
-	s1.set_reflection(Color(1.0, 1.0, 1.0));
-	s1.set_reflectionfilter(0.5);
-	s1.set_refraction(Color(0.1, 0.1, 0.1));
-	s1.set_refractionfilter(0.1);
+	s1.Alpha = 0.5;
+	s1.Depth = 10.0;
+	s1.Background = Color(0.5, 0.5, 0.5);
+	s1.Normal = Color(0.6, 0.4, 1.0);
+	s1.Position = Color(10.0, 10.0, 10.0);
+	s1.Diffuse = Color(0.4, 0.0, 0.8);
+	s1.Specular = Color(0.1, 0.1, 0.1);
+	s1.Lighting = Color(0.5, 0.5, 0.5);
+	s1.GlobalIllumination = Color(0.2, 0.2, 0.2);
+	s1.Reflection = Color(1.0, 1.0, 1.0);
+	s1.ReflectionFilter = 0.5;
+	s1.Refraction =Color(0.1, 0.1, 0.1);
+	s1.RefractionFilter =0.1;
 
 	s1.calculate_sample();
 
@@ -3830,19 +3830,19 @@ TEST(Sampling, dividingSamplesByAScalar)
 	result = s1 / 2.0;
 
 	ASSERT_EQ(result.get_rgb(), Color(1.39 / 2.0, 1.11 / 2.0, 1.67 / 2.0));
-	ASSERT_EQ(result.get_alpha(), 0.25);
-	ASSERT_EQ(result.get_depth(), 5.0);
-	ASSERT_EQ(result.get_background(), Color(0.25, 0.25, 0.25));
-	ASSERT_EQ(result.get_normal(), Color(0.3, 0.2, 0.5));
-	ASSERT_EQ(result.get_position(), Color(5.0, 5.0, 5.0));
-	ASSERT_EQ(result.get_diffuse(), Color(0.2, 0.0, 0.4));
-	ASSERT_EQ(result.get_specular(), Color(0.05, 0.05, 0.05));
-	ASSERT_EQ(result.get_lighting(), Color(0.25, 0.25, 0.25));
-	ASSERT_EQ(result.get_globalillumination(), Color(0.1, 0.1, 0.1));
-	ASSERT_EQ(result.get_reflection(), Color(0.5, 0.5, 0.5));
-	ASSERT_EQ(result.get_reflectionfilter(), 0.25);
-	ASSERT_EQ(result.get_refraction(), Color(0.05, 0.05, 0.05));
-	ASSERT_EQ(result.get_refractionfilter(), 0.05);
+	ASSERT_EQ(result.Alpha, 0.25);
+	ASSERT_EQ(result.Depth, 5.0);
+	ASSERT_EQ(result.Background, Color(0.25, 0.25, 0.25));
+	ASSERT_EQ(result.Normal, Color(0.3, 0.2, 0.5));
+	ASSERT_EQ(result.Position, Color(5.0, 5.0, 5.0));
+	ASSERT_EQ(result.Diffuse, Color(0.2, 0.0, 0.4));
+	ASSERT_EQ(result.Specular, Color(0.05, 0.05, 0.05));
+	ASSERT_EQ(result.Lighting, Color(0.25, 0.25, 0.25));
+	ASSERT_EQ(result.GlobalIllumination, Color(0.1, 0.1, 0.1));
+	ASSERT_EQ(result.Reflection, Color(0.5, 0.5, 0.5));
+	ASSERT_EQ(result.ReflectionFilter, 0.25);
+	ASSERT_EQ(result.Refraction, Color(0.05, 0.05, 0.05));
+	ASSERT_EQ(result.RefractionFilter, 0.05);
 }
 
 TEST(Sampling, multiplyingSamplesByAScalar)
@@ -3850,19 +3850,19 @@ TEST(Sampling, multiplyingSamplesByAScalar)
 	Sample s1 = Sample();
 	Sample result = Sample();
 
-	s1.set_alpha(0.5);
-	s1.set_depth(10.0);
-	s1.set_background(Color(0.5, 0.5, 0.5));
-	s1.set_normal(Color(0.6, 0.4, 1.0));
-	s1.set_position(Color(10.0, 10.0, 10.0));
-	s1.set_diffuse(Color(0.4, 0.0, 0.8));
-	s1.set_specular(Color(0.1, 0.1, 0.1));
-	s1.set_lighting(Color(0.5, 0.5, 0.5));
-	s1.set_globalillumination(Color(0.2, 0.2, 0.2));
-	s1.set_reflection(Color(1.0, 1.0, 1.0));
-	s1.set_reflectionfilter(0.5);
-	s1.set_refraction(Color(0.1, 0.1, 0.1));
-	s1.set_refractionfilter(0.1);
+	s1.Alpha = 0.5;
+	s1.Depth = 10.0;
+	s1.Background = Color(0.5, 0.5, 0.5);
+	s1.Normal = Color(0.6, 0.4, 1.0);
+	s1.Position = Color(10.0, 10.0, 10.0);
+	s1.Diffuse = Color(0.4, 0.0, 0.8);
+	s1.Specular = Color(0.1, 0.1, 0.1);
+	s1.Lighting = Color(0.5, 0.5, 0.5);
+	s1.GlobalIllumination = Color(0.2, 0.2, 0.2);
+	s1.Reflection = Color(1.0, 1.0, 1.0);
+	s1.ReflectionFilter = 0.5;
+	s1.Refraction =Color(0.1, 0.1, 0.1);
+	s1.RefractionFilter =0.1;
 
 	s1.calculate_sample();
 
@@ -3871,19 +3871,19 @@ TEST(Sampling, multiplyingSamplesByAScalar)
 	result = s1 * 4.0;
 
 	ASSERT_EQ(result.get_rgb(), Color(1.39 * 4.0, 1.11 * 4.0, 1.67 * 4.0));
-	ASSERT_EQ(result.get_alpha(), 2.0);
-	ASSERT_EQ(result.get_depth(), 40.0);
-	ASSERT_EQ(result.get_background(), Color(2.0, 2.0, 2.0));
-	ASSERT_EQ(result.get_normal(), Color(2.4, 1.6, 4.0));
-	ASSERT_EQ(result.get_position(), Color(40.0, 40.0, 40.0));
-	ASSERT_EQ(result.get_diffuse(), Color(1.6, 0.0, 3.2));
-	ASSERT_EQ(result.get_specular(), Color(0.4, 0.4, 0.4));
-	ASSERT_EQ(result.get_lighting(), Color(2.0, 2.0, 2.0));
-	ASSERT_EQ(result.get_globalillumination(), Color(0.8, 0.8, 0.8));
-	ASSERT_EQ(result.get_reflection(), Color(4.0, 4.0, 4.0));
-	ASSERT_EQ(result.get_reflectionfilter(), 2.0);
-	ASSERT_EQ(result.get_refraction(), Color(0.4, 0.4, 0.4));
-	ASSERT_EQ(result.get_refractionfilter(), 0.4);
+	ASSERT_EQ(result.Alpha, 2.0);
+	ASSERT_EQ(result.Depth, 40.0);
+	ASSERT_EQ(result.Background, Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.Normal, Color(2.4, 1.6, 4.0));
+	ASSERT_EQ(result.Position, Color(40.0, 40.0, 40.0));
+	ASSERT_EQ(result.Diffuse, Color(1.6, 0.0, 3.2));
+	ASSERT_EQ(result.Specular, Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.Lighting, Color(2.0, 2.0, 2.0));
+	ASSERT_EQ(result.GlobalIllumination, Color(0.8, 0.8, 0.8));
+	ASSERT_EQ(result.Reflection, Color(4.0, 4.0, 4.0));
+	ASSERT_EQ(result.ReflectionFilter, 2.0);
+	ASSERT_EQ(result.Refraction, Color(0.4, 0.4, 0.4));
+	ASSERT_EQ(result.RefractionFilter, 0.4);
 }
 
 // ------------------------------------------------------------------------
@@ -3910,7 +3910,7 @@ TEST(SamplePixel, CreatingASamplePixelWithData)
     auto px_1 = std::make_shared<SampledPixel>();
 
     Sample smp = Sample(Tuple::Point(0.5, 0.5, 0.0));
-    smp.set_background(gray);
+    smp.Background = gray;
 
     px_1->write_sample(smp);
     px_1->full_average();
@@ -3923,19 +3923,19 @@ TEST(SamplePixel, AveragingASamplePixel)
     auto px_1 = std::make_shared<SampledPixel>();
 
     Sample smp_1 = Sample(Tuple::Point(0.5, 0.5, 0.0));
-    smp_1.set_background(Color(1.0, 1.0, 0.5));
+    smp_1.Background = Color(1.0, 1.0, 0.5);
 
     Sample smp_2 = Sample(Tuple::Point(0.25, 0.25, 0.0));
-    smp_2.set_background(Color(1.0, 0.5, 0.25));
+    smp_2.Background = Color(1.0, 0.5, 0.25);
 
     Sample smp_3 = Sample(Tuple::Point(0.25, 0.75, 0.0));
-    smp_3.set_background(Color(0.5, 0.25, 1.0));
+    smp_3.Background = Color(0.5, 0.25, 1.0);
 
     Sample smp_4 = Sample(Tuple::Point(0.75, 0.25, 0.0));
-    smp_4.set_background(Color(0.25, 1.0, 1.0));
+    smp_4.Background = Color(0.25, 1.0, 1.0);
 
     Sample smp_5 = Sample(Tuple::Point(0.75, 0.75, 0.0));
-    smp_5.set_background(Color(1.0, 1.0, 1.0));
+    smp_5.Background = Color(1.0, 1.0, 1.0);
 
     px_1->write_sample(smp_1);
     px_1->write_sample(smp_2);
@@ -4003,7 +4003,7 @@ TEST(SampleBuffer, WritingPixelsToABuffer)
 
     Color red = Color(1.0, 0.0, 0.0);
     Sample smp = Sample(sb.coordinates_from_pixel(x, y));
-    smp.set_diffuse(red);
+    smp.Diffuse = red;
 
     sb.write_sample(x, y, smp);
 
@@ -4035,7 +4035,7 @@ TEST(SampleBuffer, PastingIntoABuffer)
     for (const std::shared_ptr<SampledPixel> & p : sb_small)
     {
         Sample smp = Sample(sb_small.coordinates_from_index(i));
-        smp.set_diffuse(red);
+        smp.Diffuse = red;
 
         p->write_sample(smp);
         p->full_average();
@@ -4080,8 +4080,8 @@ TEST(SampleBuffer, ToCanvasExtraChannel)
     for (const std::shared_ptr<SampledPixel> & p : sb)
     {
         Sample smp = Sample(sb.coordinates_from_index(ind));
-        smp.set_diffuse(lavender);
-        smp.set_alpha(0.5);
+        smp.Diffuse = lavender;
+        smp.Alpha = 0.5;
 
         p->write_sample(smp);
         p->full_average();

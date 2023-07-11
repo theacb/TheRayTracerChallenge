@@ -34,7 +34,7 @@ SampledPixel::~SampledPixel()
 
 void SampledPixel::write_sample(const Sample& sample)
 {
-	auto qn = std::make_shared<QuadNode<Sample>>(sample.get_canvas_origin(), sample);
+	auto qn = std::make_shared<QuadNode<Sample>>(sample.CanvasOrigin, sample);
 
 	this->sp_sub_samples_.insert(qn);
 }
@@ -206,7 +206,7 @@ void SampleBuffer::write_sample(int x, int y, const Sample& sample)
 void SampleBuffer::write_sample(const Sample& sample)
 {
 	// Hallowed are the Ori
-	Tuple ori = sample.get_canvas_origin();
+	Tuple ori = sample.CanvasOrigin;
 
 
 	int x = this->sb_x_from_pos_(ori);

@@ -262,7 +262,8 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
                 // Samples at the Ray
                 Sample sample = w.sample_at(r);
                 // Assign origin coordinate
-                sample.set_canvas_origin(bucket.coordinates_from_pixel(this_x, this_y, px_os_x, px_os_y));
+                sample.CanvasOrigin = bucket.coordinates_from_pixel(this_x, this_y, px_os_x, px_os_y);
+                sample.WorldOrigin = r.origin;
                 sample.calculate_sample();
 
                 // Write to bucket

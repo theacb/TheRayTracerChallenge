@@ -21,9 +21,9 @@ Background::~Background()
 Sample Background::sample_at(IxComps & comps) const
 {
     Sample sample = Sample();
-    sample.set_background(0.0);
-    sample.set_diffuse(0.0);
-    sample.set_alpha(0.0);
+    sample.Background = 0.0;
+    sample.Diffuse = 0.0;
+    sample.Alpha = 0.0;
 	return sample;
 }
 
@@ -52,9 +52,9 @@ Sample NormalGradientBackground::sample_at(IxComps & comps) const
 	Tuple n = comps.normal_v - Tuple::Vector(0.0, 0.0, -1.0);
 	Color grad = Color(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
 
-    sample.set_background(grad);
-    sample.set_diffuse(0.0);
-    sample.set_alpha(0.0);
+    sample.Background = grad;
+    sample.Diffuse = 0.0;
+    sample.Alpha = 0.0;
     return sample;
 }
 
@@ -77,8 +77,8 @@ HosekWilkieBackground::~HosekWilkieBackground()
 Sample HosekWilkieBackground::sample_at(IxComps & comps) const
 {
     Sample sample = Sample();
-    sample.set_background(0.0);
-    sample.set_diffuse(0.0);
-    sample.set_alpha(0.0);
+    sample.Background = 0.0;
+    sample.Diffuse = 0.0;
+    sample.Alpha = 0.0;
     return sample;
 }
