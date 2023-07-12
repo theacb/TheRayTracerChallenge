@@ -24,8 +24,9 @@ Sample::Sample(const Tuple & canvas_origin)
 	this->Background = Color(0.0);
 
 	this->Depth = 0.0;
-	this->Normal = Color(0.0, 0.0, 0.0);
+	this->Normal = Color(0.0);
 	this->Position = Color(0.0);
+    this->BucketID = 0;
 
 	this->Diffuse = Color(0.0);
 	this->Specular = Color(0.0);
@@ -54,6 +55,7 @@ Sample::Sample(const Sample & src)
 	this->Depth = src.Depth;
 	this->Normal = src.Normal;
 	this->Position = src.Position;
+    this->BucketID = src.BucketID;
 
 	this->Diffuse = src.Diffuse;
 	this->Specular = src.Specular;
@@ -82,11 +84,11 @@ Color Sample::get_channel(RE channel) const
 	case rgb:
 		return this->s_rgb_;
 	case alpha:
-		return this->Alpha;
+		return Color(this->Alpha);
 	case background:
 		return this->Background;
 	case depth:
-		return this->Depth;
+		return Color(this->Depth);
 	case normal:
 		return this->Normal;
 	case position:
@@ -102,11 +104,13 @@ Color Sample::get_channel(RE channel) const
 	case reflection:
 		return this->Reflection;
 	case reflectionfilter:
-		return this->ReflectionFilter;
+		return Color(this->ReflectionFilter);
 	case refraction:
 		return this->Refraction;
 	case refractionfilter:
-		return this->RefractionFilter;
+		return Color(this->RefractionFilter);
+    case bucketid:
+        return Sample::id_to_color(this->BucketID);
 	default:
 		return this->s_rgb_;
 	}
@@ -157,6 +161,7 @@ Sample Sample::operator*(const Sample & right_sample) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ * right_sample.get_current_rgb());
 	result.Alpha = this->Alpha * right_sample.Alpha;
@@ -184,6 +189,7 @@ Sample Sample::operator/(const Sample & right_sample) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ / right_sample.get_current_rgb());
 	result.Alpha = safe_comp_divide(this->Alpha, right_sample.Alpha);
@@ -211,6 +217,7 @@ Sample Sample::operator+(const Sample & right_sample) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ + right_sample.get_current_rgb());
 	result.Alpha = this->Alpha + right_sample.Alpha;
@@ -238,6 +245,7 @@ Sample Sample::operator-(const Sample & right_sample) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ - right_sample.get_current_rgb());
 	result.Alpha = this->Alpha - right_sample.Alpha;
@@ -265,6 +273,7 @@ Sample Sample::operator*(const double & scalar) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ * scalar);
 	result.Alpha = this->Alpha * scalar;
@@ -292,6 +301,7 @@ Sample Sample::operator/(const double & scalar) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ / scalar);
 	result.Alpha = safe_comp_divide(this->Alpha, scalar);
@@ -319,8 +329,9 @@ Sample Sample::operator+(const double & scalar) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
-	result.set_rgb(this->get_current_rgb() + scalar);
+	result.set_rgb(this->s_rgb_ + scalar);
 	result.Alpha = this->Alpha + scalar;
 	result.Background = this->Background + scalar;
 
@@ -346,6 +357,7 @@ Sample Sample::operator-(const double & scalar) const
 	Sample result = Sample(this->CanvasOrigin);
 
     result.WorldOrigin = this->WorldOrigin;
+    result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ - scalar);
 	result.Alpha = this->Alpha - scalar;
@@ -368,6 +380,18 @@ Sample Sample::operator-(const double & scalar) const
 	return result;
 }
 
+Color Sample::id_to_color(const int &id)
+{
+
+    int r = ((int) id & 0x000000FF) >> 0;
+    int g = ((int) id & 0x0000FF00) >> 8;
+    int b = ((int) id & 0x00FF0000) >> 16;
+
+    Color col = Color(Color8Bit(r, g, b));
+
+    return col;
+}
+
 std::ostream & operator<<(std::ostream & os, const Sample & s)
 {
 	os << "[ Sample: RGB: " << s.get_current_rgb()
@@ -384,6 +408,9 @@ std::ostream & operator<<(std::ostream & os, const Sample & s)
 		<< ", Refl Filter: " << s.ReflectionFilter
 		<< ", Refraction: " << s.Refraction
 		<< ", Rafr Filter: " << s.RefractionFilter
+        << ", Bucket ID: " << s.BucketID
+        << ", Canvas Origin: " << s.CanvasOrigin
+        << ", World Origin: " << s.WorldOrigin
 		<< " ]";
 	return os;
 }

@@ -4053,6 +4053,88 @@ TEST(SampleBuffer, PastingIntoABuffer)
     ASSERT_EQ(sb.pixel_at(7, 12)->get_channel(diffuse), Color());
 }
 
+TEST(SampleBuffer, FillSolid)
+{
+
+    AABB2D sb_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(20, 20, sb_extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Color green = Color(0.0, 1.0, 0.0);
+    Color blue = Color(0.0, 0.0, 1.0);
+
+    Sample smp = Sample();
+
+    smp.set_rgb(red);
+    sb.fill_solid(smp);
+
+    EXPECT_EQ(sb.pixel_at(10, 10)->get_channel(rgb), red);
+    EXPECT_EQ(sb.pixel_at(5, 7)->get_channel(rgb), red);
+    EXPECT_EQ(sb.pixel_at(15, 12)->get_channel(rgb), red);
+
+    smp.set_rgb(green);
+    sb.fill_solid(smp);
+
+    EXPECT_EQ(sb.pixel_at(10, 10)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(5, 7)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 12)->get_channel(rgb), green);
+
+    smp.set_rgb(blue);
+    sb.fill_solid(smp);
+
+    EXPECT_EQ(sb.pixel_at(10, 10)->get_channel(rgb), blue);
+    EXPECT_EQ(sb.pixel_at(5, 7)->get_channel(rgb), blue);
+    EXPECT_EQ(sb.pixel_at(15, 12)->get_channel(rgb), blue);
+}
+
+TEST(SampleBuffer, StitchingBuckets)
+{
+
+    AABB2D sb_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(20, 20, sb_extents);
+
+    AABB2D bk_01_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(0.5, 0.5));
+    SampleBuffer bk_01 = SampleBuffer(10, 10, bk_01_extents);
+
+    AABB2D bk_02_extents = AABB2D(Tuple::Point2D(0.5, 0.0), Tuple::Point2D(0.1, 0.5));
+    SampleBuffer bk_02 = SampleBuffer(10, 10, bk_02_extents);
+
+    AABB2D bk_03_extents = AABB2D(Tuple::Point2D(0.0, 0.5), Tuple::Point2D(0.5, 1.0));
+    SampleBuffer bk_03 = SampleBuffer(10, 10, bk_03_extents);
+
+    AABB2D bk_04_extents = AABB2D(Tuple::Point2D(0.5, 0.5), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer bk_04 = SampleBuffer(10, 10, bk_04_extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Color green = Color(0.0, 1.0, 0.0);
+    Color blue = Color(0.0, 0.0, 1.0);
+    Color yellow = Color(1.0, 1.0, 0.0);
+
+    Sample smp = Sample();
+
+    smp.set_rgb(red);
+    bk_01.fill_solid(smp);
+
+    smp.set_rgb(green);
+    bk_02.fill_solid(smp);
+
+    smp.set_rgb(blue);
+    bk_03.fill_solid(smp);
+
+    smp.set_rgb(yellow);
+    bk_04.fill_solid(smp);
+
+    sb.write_portion(bk_01);
+    sb.write_portion(bk_02);
+    sb.write_portion(bk_03);
+    sb.write_portion(bk_04);
+
+    EXPECT_EQ(sb.pixel_at(5, 5)->get_channel(rgb), red);
+    EXPECT_EQ(sb.pixel_at(15, 5)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(5, 15)->get_channel(rgb), blue);
+    EXPECT_EQ(sb.pixel_at(15, 15)->get_channel(rgb), yellow);
+}
+
 TEST(SampleBuffer, ToCanvas)
 {
     int width = 10;

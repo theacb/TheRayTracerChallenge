@@ -126,15 +126,15 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
     auto bucket_results = std::vector<std::future<SampleBuffer>>();
 
     // lambda to execute rendering of the line
-    auto f = [](const Camera * camera, const World & w, int x, int y, int width, int height, int bucket_number, int total_buckets)
+    auto f = [](const Camera * camera, const World & w, int x, int y, int width, int height, int bucket_id, int total_buckets)
             {
                 std::ostringstream oss;
-                oss << "Starting Bucket: " << bucket_number << "/" << total_buckets
+                oss << "Starting Bucket: " << bucket_id << "/" << total_buckets
                 << " - Start Coordinates: (" << x << ", "<< y << ") - Dimensions ["
                 << width << ", " << height << "]" << std::endl;
 
                 std::cout << oss.str();
-                return camera->multi_sample_render_bucket(w, x, y, width, height);
+                return camera->multi_sample_render_bucket(w, x, y, width, height, bucket_id);
             };
 
     // Queue up all the lines
@@ -163,15 +163,17 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
                 int x_offset = x * w.bucket_size;
                 int y_offset = y * w.bucket_size;
 
-                int number = (x * vertical_buckets) + y;
+                int bucket_id = (x * vertical_buckets) + y;
 
                 // Adds bucket to the queue
-                bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, number, num_buckets));
+                bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, bucket_id, num_buckets));
             }
         }
     }
 
-    std::cout << "Stitching final image from " << bucket_results.size() << " buckets.\n";
+    std::ostringstream oss;
+    oss << "Stitching final image from " << bucket_results.size() << " buckets.\n";
+    std::cout << oss.str();
 
     // Create bounding box and final SampleBuffer
     AABB2D extents = this->extent_from_bucket_(0, 0, this->c_h_size_, this->c_v_size_);
@@ -179,32 +181,33 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
 
     std::cout << image << std::endl;
 
-//    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
-//    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
-//    int i = 0;
-//    for (auto & br : bucket_results)
-//    {
-//        SampleBuffer bucket = br.get();
-//
-//        std::cout << "Bucket " << i << " - " << bucket << " - [";
-//
-//        for (const auto & px: bucket)
-//        {
-//            std::cout << px->get_samples().size() << ", ";
-//        }
-//
-//        std::cout << "]" << std::endl;
-//
-//        canvas_to_ppm(bucket.to_canvas(background), folder + std::to_string(i) + ".ppm", true);
-//
-//        i++;
-//    }
-
-    // stitch them back together
+    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
+    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
+    int i = 0;
     for (auto & br : bucket_results)
     {
-        image.write_portion(br.get());
+        SampleBuffer bucket = br.get();
+
+        std::cout << "Bucket " << i << " - " << bucket << " - [";
+
+        for (const auto & px: bucket)
+        {
+            std::cout << px->get_samples().size() << ", ";
+        }
+
+        std::cout << "]" << std::endl;
+
+        canvas_to_ppm(bucket.to_canvas(rgb), folder + std::to_string(i) + ".ppm", true);
+        image.write_portion(bucket);
+
+        i++;
     }
+
+    // stitch them back together
+//    for (auto & br : bucket_results)
+//    {
+//        image.write_portion(br.get());
+//    }
 
     std::cout << "Imaged stitched!\n";
 
@@ -233,7 +236,7 @@ Canvas Camera::render_scanline(const World & w, int line) const
 	return image_line;
 }
 
-SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, int width, int height) const
+SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, int width, int height, int bucket_id) const
 {
     // Generate extents
     AABB2D extents = this->extent_from_bucket_(x, y, width, height);
@@ -249,25 +252,23 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
             // Multi Sample
             for (int s = 0; s < w.sample_min; s++)
             {
-
                 // Random between 0.0 and 1.0 that translates to a pixel offset
                 double px_os_x = random_double();
                 double px_os_y = random_double();
 
-                int this_x = xs;
-                int this_y = ys;
-
                 // Casts ray to a random point within the pixel
-                Ray r = this->ray_from_pixel(this_x, this_y, px_os_x, px_os_y);
+                // TODO: This is not delivering the correct offsets per bucket and seems to be rendering the same tile over and over again
+                Ray r = this->ray_from_pixel(xs, ys, px_os_x, px_os_y);
                 // Samples at the Ray
                 Sample sample = w.sample_at(r);
                 // Assign origin coordinate
-                sample.CanvasOrigin = bucket.coordinates_from_pixel(this_x, this_y, px_os_x, px_os_y);
+                sample.CanvasOrigin = bucket.coordinates_from_pixel(xs, ys, px_os_x, px_os_y);
                 sample.WorldOrigin = r.origin;
+                sample.BucketID = bucket_id;
                 sample.calculate_sample();
 
                 // Write to bucket
-                bucket.write_sample(this_x, this_y, sample);
+                bucket.write_sample(xs, ys, sample);
             }
         }
     }

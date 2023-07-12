@@ -79,19 +79,20 @@ void SampledPixel::quick_average(const std::vector<Sample> & sample_group)
 	// This is then placed into a copy of the first sample in the list
 	// Use for noise threshold calculation
 	Sample base = Sample(sample_group[0]);
-	Color mean = Color(0.0);
 
-	// Add up colors
-	for (Sample i : sample_group)
-	{
-		mean = mean + i.get_calculated_rgb();
-	}
+    if (! sample_group.empty()) {
+        Color mean = base.get_current_rgb();
 
-	mean = mean / static_cast<double>(sample_group.size());
+        for (int i = 1; i < sample_group.size(); ++i) {
+            mean = mean + sample_group[i].get_current_rgb();
+        }
 
-	base.set_rgb(mean);
+        mean = mean / static_cast<double>(sample_group.size());
 
-	this->sp_average_ = base;
+        base.set_rgb(mean);
+
+        this->sp_average_ = base;
+    }
 }
 
 void SampledPixel::full_average()
@@ -103,17 +104,20 @@ void SampledPixel::full_average(const std::vector<Sample>& sample_group)
 {
 	// This averages every channel, so it is much slower than quick average
 	// Use for final channel calculation
-	Sample mean;
 
-	// Add up samples
-	for (const auto & i : sample_group)
-	{
-		mean = mean + i;
-	}
+    if (! sample_group.empty())
+    {
+        Sample mean = sample_group[0];
 
-	mean = mean / static_cast<double>(sample_group.size());
+        // Add up samples
+        for (int i = 1; i < sample_group.size(); ++i) {
+            mean = mean + sample_group[i];
+        }
 
-	this->sp_average_ = mean;
+        mean = mean / static_cast<double>(sample_group.size());
+
+        this->sp_average_ = mean;
+    }
 }
 
 std::vector<Sample> SampledPixel::nodes_to_samples(const std::vector<std::shared_ptr<QuadNode<Sample>>>& nodes)
@@ -181,13 +185,7 @@ SampleBuffer::SampleBuffer(int x, int y, int grid_width, int grid_height, const 
     this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
     this->sb_pixels_.resize(this->sb_total_size_);
 
-    // Fill the buffer with SamplePixels that have had their areas initialized to their pixel's AABB
-    for (int i = 0; i < this->sb_total_size_; i++)
-    {
-        Tuple center = this->coordinates_from_index(i);
-        AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
-        this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
-    }
+    this->sb_initialize_elements_();
 }
 
 SampleBuffer::~SampleBuffer()
@@ -255,6 +253,7 @@ void SampleBuffer::write_portion(const SampleBuffer & grid)
 void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
 {
     // TODO: Update the pixel bounds
+    // TODO: This does not seem to be working at all, needs fixing
 	if (y >= 0 && y + grid.height() < this->sb_height_ && x >= 0 && x + grid.width() < this->sb_width_)
 	{
 		std::vector<std::shared_ptr<SampledPixel>> pixels = grid.get_pixels();
@@ -280,6 +279,25 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
 			")), is not within the bounds of the grid."
 		);
 	}
+}
+
+void SampleBuffer::fill_solid(const Sample & sample)
+{
+    // Reset Buffer
+    this->sb_initialize_elements_();
+
+    // Fills the entire buffer with copies of one sample
+    int i = 0;
+    for (std::shared_ptr<SampledPixel> & p : this->sb_pixels_)
+    {
+        Sample smp = Sample(sample);
+        smp.CanvasOrigin = this->coordinates_from_index(i);
+
+        p->write_sample(smp);
+        p->full_average();
+
+        i++;
+    }
 }
 
 std::shared_ptr<SampledPixel> SampleBuffer::pixel_at(int x, int y)
@@ -429,12 +447,25 @@ int SampleBuffer::sb_index_from_coordinates_(int x, int y) const
 	return (y * this->sb_width_) + x;
 }
 
-int SampleBuffer::sb_x_from_index_(int i) const {
+int SampleBuffer::sb_x_from_index_(int i) const
+{
     return i % this->sb_width_;
 }
 
-int SampleBuffer::sb_y_from_index_(int i) const {
+int SampleBuffer::sb_y_from_index_(int i) const
+{
     return i / this->sb_width_;
+}
+
+void SampleBuffer::sb_initialize_elements_()
+{
+    // Fill the buffer with SamplePixels that have had their areas initialized to their pixel's AABB
+    for (int i = 0; i < this->sb_total_size_; i++)
+    {
+        Tuple center = this->coordinates_from_index(i);
+        AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
+        this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
+    }
 }
 
 std::ostream & operator<<(std::ostream & os, const SampleBuffer & s) {

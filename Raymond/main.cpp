@@ -30,7 +30,7 @@ World render_ch13_world()
 	auto matte_gray_mtl = std::make_shared<PhongMaterial>();
 	matte_gray_mtl->color = Color(0.18);
 	matte_gray_mtl->specular = 0.0;
-	matte_gray_mtl->ambient = 0.01;
+	matte_gray_mtl->ambient = Color(0.01);
 
 	auto gray_checkers_tex = std::make_shared<CheckerMap>(Color(0.18), Color(0.36));
 	auto gray_ring_tex = std::make_shared<RingMap>(Color(0.18), Color(0.36));
@@ -83,7 +83,7 @@ World render_ch13_world()
 	auto shiny_yellow_mtl = std::make_shared<PhongMaterial>();
 	shiny_yellow_mtl->color = Color(Color8Bit(245, 209, 66)).convert_srgb_to_linear();
 	shiny_yellow_mtl->specular = 0.9;
-	shiny_yellow_mtl->ambient = 0.01;
+	shiny_yellow_mtl->ambient = Color(0.01);
 
 	auto gold_metal_mtl = std::make_shared<PhongMaterial>();
 	gold_metal_mtl->ior.set_value(12.0);
@@ -96,7 +96,7 @@ World render_ch13_world()
 	auto matte_blue_mtl = std::make_shared<PhongMaterial>();
 	matte_blue_mtl->color = Color(Color8Bit(21, 80, 117)).convert_srgb_to_linear();
 	matte_blue_mtl->specular = 0.0;
-	matte_blue_mtl->ambient = 0.01;
+	matte_blue_mtl->ambient = Color(0.01);
 
 	auto nor_mtl = std::make_shared<NormalsMaterial>();
 
@@ -210,8 +210,8 @@ int render_still()
 
 	// 560 x 315
 
-	int width = 256;
-	int height = 128;
+	int width = 72;
+	int height = 36;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
@@ -275,7 +275,7 @@ int render_still()
 
 	std::cout << "Writing file: " << file_path << std::endl;
 
-	canvas_to_ppm(image.to_canvas(diffuse), file_path);
+	canvas_to_ppm(image.to_canvas(rgb), file_path);
 	std::cout << "Complete" << std::endl;
 
 	return 0;

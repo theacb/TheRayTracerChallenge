@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Color.h"
 
 // ------------------------------------------------------------------------
@@ -34,8 +33,7 @@ Color::Color(const Color8Bit & col) : Color(double(col.r) / 255.0, double(col.g)
 }
 
 Color::~Color()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -103,20 +101,20 @@ Color Color::screen(const Color & top_layer, const double & alpha)
 
 Color Color::convert_linear_to_srgb()
 {
-	return Color(
+	return {
 		linear_to_srgb(x), 
 		linear_to_srgb(y),
 		linear_to_srgb(z)
-		);
+		};
 }
 
 Color Color::convert_srgb_to_linear()
 {
-	return Color(
+	return {
 		srgb_to_linear(x),
 		srgb_to_linear(y),
 		srgb_to_linear(z)
-	);
+	};
 }
 
 double Color::luminosity() const
@@ -126,38 +124,74 @@ double Color::luminosity() const
 
 Color Color::operator*(const Color & right_color) const
 {
-	return Color(
+	return {
 		this->x * right_color.x,
 		this->y * right_color.y,
 		this->z * right_color.z
-	);
+	};
 }
 
 Color Color::operator/(const Color & right_color) const
 {
-	return Color(
+	return {
 		safe_comp_divide(this->x, right_color.x),
 		safe_comp_divide(this->y, right_color.y),
 		safe_comp_divide(this->z, right_color.z)
-	);
+	};
 }
 
 Color Color::operator+(const Color & right_color) const
 {
-	return Color(
+	return {
 		this->x + right_color.x,
 		this->y + right_color.y,
 		this->z + right_color.z
-	);
+	};
 }
 
 Color Color::operator-(const Color & right_color) const
 {
-	return Color(
+	return {
 		this->x - right_color.x,
 		this->y - right_color.y,
 		this->z - right_color.z
-	);
+	};
+}
+
+Color Color::operator*(const double &scalar) const
+{
+    return {
+            this->x * scalar,
+            this->y * scalar,
+            this->z * scalar
+    };
+}
+
+Color Color::operator/(const double &scalar) const
+{
+    return {
+            safe_comp_divide(this->x, scalar),
+            safe_comp_divide(this->y, scalar),
+            safe_comp_divide(this->z, scalar)
+    };
+}
+
+Color Color::operator+(const double &scalar) const
+{
+    return {
+            this->x + scalar,
+            this->y + scalar,
+            this->z + scalar
+    };
+}
+
+Color Color::operator-(const double &scalar) const
+{
+    return {
+            this->x - scalar,
+            this->y - scalar,
+            this->z - scalar
+    };
 }
 
 // ------------------------------------------------------------------------
@@ -192,10 +226,9 @@ Color8Bit::Color8Bit(const Color & source_color)
 }
 
 Color8Bit::~Color8Bit()
-{
-}
+= default;
 
-std::string Color8Bit::output()
+std::string Color8Bit::output() const
 {
 	// returns a string representing the channel digits separated by spaces
 	// Examples 

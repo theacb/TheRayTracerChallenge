@@ -72,6 +72,7 @@ public:
 	void write_portion_as_line(int y, const SampleBuffer & line);
 	void write_portion(int x, int y, const SampleBuffer & grid);
     void write_portion(const SampleBuffer & grid);
+    void fill_solid(const Sample & sample);
 	std::shared_ptr<SampledPixel> pixel_at(int x, int y);
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y) const;
     [[nodiscard]] Tuple coordinates_from_pixel(const int & x, const int & y, const double & px_os_x, const double & px_os_y) const;
@@ -113,6 +114,7 @@ private:
 	[[nodiscard]] int sb_index_from_coordinates_(int x, int y) const;
     [[nodiscard]] int sb_x_from_index_(int i) const;
     [[nodiscard]] int sb_y_from_index_(int i) const;
+    void sb_initialize_elements_();
 };
 
 std::ostream & operator<<(std::ostream & os, const SampleBuffer & s);

@@ -21,12 +21,12 @@ public:
 	void write_pixel(int x, int y, const Color& color);
 	void write_canvas_as_line(int y, const Canvas & canvas);
 	Color pixel_at(int x, int y);
-	std::stringstream to_ppm_lines(const bool convert_toSRGB);
-	std::vector<Color> get_pixels() const;
+	std::stringstream to_ppm_lines(bool convert_toSRGB);
+	[[nodiscard]] std::vector<Color> get_pixels() const;
 
 	// Accessors
-	int width() const;
-	int height() const;
+	[[nodiscard]] int width() const;
+	[[nodiscard]] int height() const;
 
 	// iterators
 	Color * begin();

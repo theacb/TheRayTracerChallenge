@@ -32,10 +32,11 @@ class ColorMapSlot :
 public:
 	ColorMapSlot();
 	ColorMapSlot(const Color & col);
+    ColorMapSlot(const double & luminosity);
 	~ColorMapSlot();
 
 	// Methods
-	Color value() const;
+	[[nodiscard]] Color value() const;
 	void set_value(const Color & col);
 	void set_value(const double & lum);
 

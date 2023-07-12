@@ -54,9 +54,12 @@ ColorMapSlot::ColorMapSlot(const Color & col) : TexMapSlot()
 	this->value_ = col;
 }
 
-ColorMapSlot::~ColorMapSlot()
+ColorMapSlot::ColorMapSlot(const double &luminosity) : ColorMapSlot(Color(luminosity))
 {
 }
+
+ColorMapSlot::~ColorMapSlot()
+= default;
 
 // ------------------------------------------------------------------------
 // Methods

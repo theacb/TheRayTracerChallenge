@@ -31,7 +31,7 @@ public:
 	Canvas threaded_render(const World & w) const;
 	Canvas render_scanline(const World & w, int line) const;
 
-    SampleBuffer multi_sample_render_bucket(const World & w, int x, int y, int width, int height) const;
+    SampleBuffer multi_sample_render_bucket(const World & w, int x, int y, int width, int height, int bucket_id) const;
     SampleBuffer multi_sample_threaded_render(const World & w) const;
 
 	// Accessors

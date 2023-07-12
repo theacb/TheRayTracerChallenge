@@ -17,11 +17,11 @@ class Color :
 public:
 	// Constructors
 	Color();
-	Color(double luminosity);
+	explicit Color(double luminosity);
 	Color(double red, double green, double blue);
 	Color(double red, double green, double blue, double alpha);
-	Color(const Tuple & a);
-	Color(const Color8Bit & col);
+	explicit Color(const Tuple & a);
+	explicit Color(const Color8Bit & col);
 
 	// Destructor
 	~Color();
@@ -44,15 +44,20 @@ public:
 	Color convert_linear_to_srgb();
 	Color convert_srgb_to_linear();
 
-	double luminosity() const;
+	[[nodiscard]] double luminosity() const;
 
 	Color operator*(const Color & right_color) const;
 	Color operator/(const Color & right_color) const;
 	Color operator+(const Color & right_color) const;
 	Color operator-(const Color & right_color) const;
+
+    Color operator*(const double & scalar) const;
+    Color operator/(const double & scalar) const;
+    Color operator+(const double & scalar) const;
+    Color operator-(const double & scalar) const;
 };
 
-// 8 Bit Color
+// 8-Bit Color
 
 class Color8Bit
 {
@@ -60,7 +65,7 @@ public:
 	// Constructors
 	Color8Bit();
 	Color8Bit(int red, int green, int blue);
-	Color8Bit(const Color& source_color);
+	explicit Color8Bit(const Color& source_color);
 
 	~Color8Bit();
 
@@ -68,7 +73,7 @@ public:
 	unsigned r, g, b;
 
 	// Methods
-	std::string output();
+	std::string output() const;
 
 };
 
@@ -79,10 +84,10 @@ std::ostream & operator<<(std::ostream & os, const Color8Bit & col);
 std::ostream & operator<<(std::ostream & os, const Color & col);
 
 // Helper Functions
-double linear_to_srgb(const double x);
-double srgb_to_linear(const double x);
-double overlay_channel(const double a, const double b);
-double screen_channel(const double a, const double b);
-double safe_comp_divide(const double a, const double b);
+double linear_to_srgb(double x);
+double srgb_to_linear(double x);
+double overlay_channel(double a, double b);
+double screen_channel(double a, double b);
+double safe_comp_divide(double a, double b);
 
 #endif

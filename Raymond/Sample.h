@@ -6,7 +6,8 @@
 
 enum RE { 
 	rgb, alpha, background, depth, normal, position, diffuse, specular, lighting, 
-	globalillumination, reflection, reflectionfilter, refraction, refractionfilter
+	globalillumination, reflection, reflectionfilter, refraction, refractionfilter,
+    bucketid
 };
 
 class Sample
@@ -17,6 +18,8 @@ public:
 	Sample(const Sample & src);
 
 	~Sample();
+
+    [[nodiscard]] static Color id_to_color(const int & id);
 
 	// Properties
 	std::string name;
@@ -47,6 +50,8 @@ public:
     double Depth;
     Color Normal;
     Color Position;
+
+    int BucketID;
 
     Color Diffuse;
     Color Specular;

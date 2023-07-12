@@ -88,8 +88,8 @@ Sample World::shade(IxComps & comps) const
     // TODO: Break up lighting into Diffuse, Specular, and Lighting
     // TODO: Determine Depth, Position, Normal, and Alpha
     Sample sample = Sample();
-    sample.Position = comps.point;
-    sample.Normal = comps.normal_v;
+    sample.Position = Color(comps.point);
+    sample.Normal = Color(comps.normal_v);
     sample.Depth = comps.ray_depth;
 
     sample.Diffuse = Color(1.0);
@@ -208,7 +208,7 @@ Color World::shadowed(const std::shared_ptr<Light>& light, const Tuple & point, 
 
 		return obj_prim->material->transmit(light, *this, comps, ix);
 	}
-	return {1.0};
+	return Color(1.0);
 }
 
 // ------------------------------------------------------------------------

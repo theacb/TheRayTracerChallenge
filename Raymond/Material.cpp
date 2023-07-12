@@ -19,8 +19,7 @@ BaseMaterial::BaseMaterial()
 
 
 BaseMaterial::~BaseMaterial()
-{
-}
+= default;
 
 Color BaseMaterial::lighting(const std::shared_ptr<Light>, const IxComps &) const
 {
@@ -57,8 +56,7 @@ NormalsMaterial::NormalsMaterial() : BaseMaterial()
 }
 
 NormalsMaterial::~NormalsMaterial()
-{
-}
+= default;
 
 Color NormalsMaterial::lighting(const std::shared_ptr<Light>, const IxComps & comps) const
 {
@@ -97,8 +95,7 @@ PhongMaterial::PhongMaterial() : BaseMaterial()
 }
 
 PhongMaterial::~PhongMaterial()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
