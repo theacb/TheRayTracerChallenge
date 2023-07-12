@@ -70,7 +70,7 @@ public:
 	void write_sample(const Sample& sample);
 	void write_pixel(int x, int y, std::shared_ptr<SampledPixel> pixel);
 	void write_portion_as_line(int y, const SampleBuffer & line);
-	void write_portion(int x, int y, const SampleBuffer & grid);
+	void write_portion(int x, int y, const SampleBuffer & bucket);
     void write_portion(const SampleBuffer & grid);
     void fill_solid(const Sample & sample);
 	std::shared_ptr<SampledPixel> pixel_at(int x, int y);

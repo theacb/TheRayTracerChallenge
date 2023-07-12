@@ -250,35 +250,37 @@ void SampleBuffer::write_portion(const SampleBuffer & grid)
     this->write_portion(grid.x_position(), grid.y_position(), grid);
 }
 
-void SampleBuffer::write_portion(int x, int y, const SampleBuffer & grid)
+void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
 {
     // TODO: Update the pixel bounds
     // TODO: This does not seem to be working at all, needs fixing
-	if (y >= 0 && y + grid.height() < this->sb_height_ && x >= 0 && x + grid.width() < this->sb_width_)
-	{
-		std::vector<std::shared_ptr<SampledPixel>> pixels = grid.get_pixels();
+    // if (y >= 0 && y + bucket.height() < this->sb_height_ && x >= 0 && x + bucket.width() < this->sb_width_)
 
-		for (int i = 0; i < grid.height(); i++)
-		{
-            // Declaring std::vector<std::shared_ptr<SampledPixel>>::iterator with auto
-			auto this_start_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
-			auto grid_start_index = pixels.begin() + i;
+    // Bucket Data
+    std::vector<std::shared_ptr<SampledPixel>> pixels = bucket.get_pixels();
 
-			std::copy(grid_start_index, grid_start_index + grid.width(), this_start_index);
-		}
+    // Iterate over the bucket, adding it line by line to this buffer
+    for (int i = 0; i < bucket.height(); i++)
+    {
+        // Declaring "std::vector<std::shared_ptr<SampledPixel>>::iterator" with auto
 
-	}
-	else
-	{
-		throw std::out_of_range(
-			"The requested sub-grid, ((" +
-			std::to_string(x) + ", " + 
-			std::to_string(y) + "), (" +
-			std::to_string(x + grid.width()) + ", " +
-			std::to_string(y + grid.height()) +
-			")), is not within the bounds of the grid."
-		);
-	}
+        // This Buffer indices
+        // TODO: Make this value offset correctly. It doesn't respect starting from non-0 indices
+        auto this_start_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
+        auto maximum_line_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
+
+        // Bucket indices
+        auto bucket_start_index = pixels.begin() + (i * bucket.width());
+        // TODO: Build a guard to truncate writing at the edge of the buffer
+        auto bucket_end_index = bucket_start_index + bucket.width();
+
+        std::cout << "Start Index: " << std::distance(pixels.begin(), bucket_start_index)
+        << " - End Index: " << std::distance(pixels.begin(), bucket_end_index)
+        << " - Result index: " << std::distance(this->sb_pixels_.begin(), this_start_index)
+        << std::endl;
+
+        std::copy(bucket_start_index, bucket_end_index, this_start_index);
+    }
 }
 
 void SampleBuffer::fill_solid(const Sample & sample)
