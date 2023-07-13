@@ -262,24 +262,40 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
     // Iterate over the bucket, adding it line by line to this buffer
     for (int i = 0; i < bucket.height(); i++)
     {
+        // TODO: Build a guard to truncate writing at the bottom edge of the buffer
         // Declaring "std::vector<std::shared_ptr<SampledPixel>>::iterator" with auto
 
         // This Buffer indices
-        // TODO: Make this value offset correctly. It doesn't respect starting from non-0 indices
-        auto this_start_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
-        auto maximum_line_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
+        // Starting point for the line
+        auto this_result_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x);
+        // Calculate the end point of this line
+        auto maximum_line_index = this->sb_pixels_.begin() + (((i + y) * this->sb_width_) + x + (this->sb_width_ - x));
 
         // Bucket indices
         auto bucket_start_index = pixels.begin() + (i * bucket.width());
-        // TODO: Build a guard to truncate writing at the edge of the buffer
         auto bucket_end_index = bucket_start_index + bucket.width();
 
-        std::cout << "Start Index: " << std::distance(pixels.begin(), bucket_start_index)
+        long long int result_index_int = std::distance(this->sb_pixels_.begin(), this_result_index);
+        long long int maximum_line_index_int = std::distance(this->sb_pixels_.begin(), maximum_line_index);
+        // TODO: Figure out why this is returning true when it shouldn't be
+        bool overflow_y = maximum_line_index < (bucket_end_index + result_index_int);
+
+        // If the bucket is partially outside the bounds of the buffer, truncate the line at the buffer's edge
+        if (overflow_y)
+        {
+            bucket_end_index -= (maximum_line_index_int - result_index_int);
+        }
+
+        std::cout << "X: " << x << " Y: " << y << " - Bucket size: (" << bucket.width() << ", " << bucket.height()
+        << ") - Line Max: " << std::distance(this->sb_pixels_.begin(), maximum_line_index)
+        << " - Truncating: " << (overflow_y)
+        << " - Start Index: " << std::distance(pixels.begin(), bucket_start_index)
         << " - End Index: " << std::distance(pixels.begin(), bucket_end_index)
-        << " - Result index: " << std::distance(this->sb_pixels_.begin(), this_start_index)
+        << " - Result index: " << std::distance(this->sb_pixels_.begin(), this_result_index)
+        << " - RI int: " << result_index_int
         << std::endl;
 
-        std::copy(bucket_start_index, bucket_end_index, this_start_index);
+        std::copy(bucket_start_index, bucket_end_index, this_result_index);
     }
 }
 

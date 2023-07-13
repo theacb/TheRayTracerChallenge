@@ -4094,16 +4094,16 @@ TEST(SampleBuffer, StitchingBuckets)
     SampleBuffer sb = SampleBuffer(20, 20, sb_extents);
 
     AABB2D bk_01_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(0.5, 0.5));
-    SampleBuffer bk_01 = SampleBuffer(10, 10, bk_01_extents);
+    SampleBuffer bk_01 = SampleBuffer(0,0, 10, 10, bk_01_extents);
 
     AABB2D bk_02_extents = AABB2D(Tuple::Point2D(0.5, 0.0), Tuple::Point2D(0.1, 0.5));
-    SampleBuffer bk_02 = SampleBuffer(10, 10, bk_02_extents);
+    SampleBuffer bk_02 = SampleBuffer(10, 0, 10, 10, bk_02_extents);
 
     AABB2D bk_03_extents = AABB2D(Tuple::Point2D(0.0, 0.5), Tuple::Point2D(0.5, 1.0));
-    SampleBuffer bk_03 = SampleBuffer(10, 10, bk_03_extents);
+    SampleBuffer bk_03 = SampleBuffer(0, 10, 10, 10, bk_03_extents);
 
     AABB2D bk_04_extents = AABB2D(Tuple::Point2D(0.5, 0.5), Tuple::Point2D(1.0, 1.0));
-    SampleBuffer bk_04 = SampleBuffer(10, 10, bk_04_extents);
+    SampleBuffer bk_04 = SampleBuffer(10, 10, 10, 10, bk_04_extents);
 
     Color red = Color(1.0, 0.0, 0.0);
     Color green = Color(0.0, 1.0, 0.0);
@@ -4133,6 +4133,39 @@ TEST(SampleBuffer, StitchingBuckets)
     EXPECT_EQ(sb.pixel_at(15, 5)->get_channel(rgb), green);
     EXPECT_EQ(sb.pixel_at(5, 15)->get_channel(rgb), blue);
     EXPECT_EQ(sb.pixel_at(15, 15)->get_channel(rgb), yellow);
+}
+
+TEST(SampleBuffer, StitchingBucketsWithOverflow)
+{
+    AABB2D sb_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(20, 20, sb_extents);
+
+    AABB2D bk_01_extents = AABB2D(Tuple::Point2D(0.5, 0.5), Tuple::Point2D(1.5, 1.5));
+    SampleBuffer bk_01 = SampleBuffer(15, 0, 10, 10, bk_01_extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Color green = Color(0.0, 1.0, 0.0);
+
+    Sample smp = Sample();
+
+    smp.set_rgb(red);
+    bk_01.fill_solid(smp);
+
+    smp.set_rgb(green);
+    sb.fill_solid(smp);
+
+    sb.write_portion(bk_01);
+
+    EXPECT_EQ(sb.pixel_at(14, 0)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 0)->get_channel(rgb), red);
+
+    EXPECT_EQ(sb.pixel_at(14, 9)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(14, 10)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 9)->get_channel(rgb), red);
+    EXPECT_EQ(sb.pixel_at(15, 10)->get_channel(rgb), green);
+
+    EXPECT_EQ(sb.pixel_at(19, 9)->get_channel(rgb), red);
+    EXPECT_EQ(sb.pixel_at(19, 10)->get_channel(rgb), green);
 }
 
 TEST(SampleBuffer, ToCanvas)
