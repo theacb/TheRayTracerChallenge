@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 #include "Tuple.h"
 #include "Utilities.h"
@@ -17,11 +18,11 @@ class Color :
 public:
 	// Constructors
 	Color();
-	explicit Color(double luminosity);
+	Color(double luminosity); // NOLINT(google-explicit-constructor)
 	Color(double red, double green, double blue);
 	Color(double red, double green, double blue, double alpha);
-	explicit Color(const Tuple & a);
-	explicit Color(const Color8Bit & col);
+	Color(const Tuple & a); // NOLINT(google-explicit-constructor)
+	Color(const Color8Bit & col); // NOLINT(google-explicit-constructor)
 
 	// Destructor
 	~Color();
@@ -51,10 +52,6 @@ public:
 	Color operator+(const Color & right_color) const;
 	Color operator-(const Color & right_color) const;
 
-    Color operator*(const double & scalar) const;
-    Color operator/(const double & scalar) const;
-    Color operator+(const double & scalar) const;
-    Color operator-(const double & scalar) const;
 };
 
 // 8-Bit Color
@@ -73,7 +70,7 @@ public:
 	unsigned r, g, b;
 
 	// Methods
-	std::string output() const;
+	[[nodiscard]] std::string output() const;
 
 };
 

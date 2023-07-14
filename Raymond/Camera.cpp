@@ -190,11 +190,6 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
 
         std::cout << "Bucket " << i << " - " << bucket << " - [";
 
-        for (const auto & px: bucket)
-        {
-            std::cout << px->get_samples().size() << ", ";
-        }
-
         std::cout << "]" << std::endl;
 
         canvas_to_ppm(bucket.to_canvas(rgb), folder + std::to_string(i) + ".ppm", true);
@@ -203,11 +198,13 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
         i++;
     }
 
-    // stitch them back together
+//    // stitch them back together
 //    for (auto & br : bucket_results)
 //    {
 //        image.write_portion(br.get());
 //    }
+
+    // TODO: Figure out the box filter and process the re-sample the average across multiple pixels (distance based curve perhaps)
 
     std::cout << "Imaged stitched!\n";
 
@@ -243,11 +240,12 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
     // Create new sample buffer to place buckets into
     SampleBuffer bucket = SampleBuffer(x, y, width, height, extents);
 
-    // Iterate through the pixels of the sample buffer
-    for (int ys = 0; ys < height; ys++)
+
+    // Iterate through the pixels of the sample buffer (Bucket x and y)
+    for (int bk_y = 0; bk_y < height; bk_y++)
     {
 
-        for (int xs = 0; xs < width; xs++)
+        for (int bk_x = 0; bk_x < width; bk_x++)
         {
             // Multi Sample
             for (int s = 0; s < w.sample_min; s++)
@@ -258,17 +256,17 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
 
                 // Casts ray to a random point within the pixel
                 // TODO: This is not delivering the correct offsets per bucket and seems to be rendering the same tile over and over again
-                Ray r = this->ray_from_pixel(xs, ys, px_os_x, px_os_y);
+                Ray r = this->ray_from_pixel(bk_x + x, bk_y + y, px_os_x, px_os_y);
                 // Samples at the Ray
                 Sample sample = w.sample_at(r);
                 // Assign origin coordinate
-                sample.CanvasOrigin = bucket.coordinates_from_pixel(xs, ys, px_os_x, px_os_y);
+                sample.CanvasOrigin = bucket.coordinates_from_pixel(bk_x, bk_y, px_os_x, px_os_y);
                 sample.WorldOrigin = r.origin;
                 sample.BucketID = bucket_id;
                 sample.calculate_sample();
 
                 // Write to bucket
-                bucket.write_sample(xs, ys, sample);
+                bucket.write_sample(bk_x, bk_y, sample);
             }
         }
     }

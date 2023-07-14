@@ -158,42 +158,6 @@ Color Color::operator-(const Color & right_color) const
 	};
 }
 
-Color Color::operator*(const double &scalar) const
-{
-    return {
-            this->x * scalar,
-            this->y * scalar,
-            this->z * scalar
-    };
-}
-
-Color Color::operator/(const double &scalar) const
-{
-    return {
-            safe_comp_divide(this->x, scalar),
-            safe_comp_divide(this->y, scalar),
-            safe_comp_divide(this->z, scalar)
-    };
-}
-
-Color Color::operator+(const double &scalar) const
-{
-    return {
-            this->x + scalar,
-            this->y + scalar,
-            this->z + scalar
-    };
-}
-
-Color Color::operator-(const double &scalar) const
-{
-    return {
-            this->x - scalar,
-            this->y - scalar,
-            this->z - scalar
-    };
-}
-
 // ------------------------------------------------------------------------
 //
 // Color 8 Bit
@@ -315,7 +279,7 @@ double safe_comp_divide(const double a, const double b)
 {
 	double result = 0.0;
 
-	if (abs(b) > SAFE_DIV_MIN)
+	if (std::abs(b) > SAFE_DIV_MIN)
 	{
 		result = a / b;
 		result = clip(result, -SAFE_DIV_MAX, SAFE_DIV_MAX);

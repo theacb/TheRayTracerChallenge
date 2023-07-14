@@ -20,7 +20,7 @@ World render_ch13_world()
 	light_000->set_name("light 000");
 	w.add_object(light_000);
 
-	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0, 1.0, 5.0), Color(1.0, 0.0, 0.0), 500.0);
+	auto light_001 = std::make_shared<PointLight>(Tuple::Point(0.0, 1.0, 5.0), Color(1.0, 0.0, 0.0), 500.0, 0.2);
 	light_001->falloff = true;
 	light_001->set_name("light 001");
 	w.add_object(light_001);
@@ -210,8 +210,8 @@ int render_still()
 
 	// 560 x 315
 
-	int width = 72;
-	int height = 36;
+	int width = 1280;
+	int height = 720;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
@@ -223,7 +223,9 @@ int render_still()
 	std::cout << "Building World...\n";
 	World w = render_ch13_world();
 
-    w.sample_min = 4;
+    w.sample_min = 8;
+
+    w.shadow_subdivs = 4;
 
 	// Execution
 	SampleBuffer image;
@@ -271,7 +273,7 @@ int render_still()
 	std::cout << std::endl << std::endl;
 
 	// File Name
-	std::string file_path = generate_name(chapter, folder, version);
+	std::string file_path = generate_name(chapter, folder, version, "_rgb", diff);
 
 	std::cout << "Writing file: " << file_path << std::endl;
 

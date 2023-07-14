@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Utilities.h"
 
 double deg_to_rad(double degrees)
@@ -14,7 +13,7 @@ double rad_to_deg(double radians)
 double random_double()
 {
 	// Returns a random real in [0,1).
-	return rand() / (RAND_MAX + 1.0);
+	return rand() / (RAND_MAX + 1.0); // NOLINT(cert-msc50-cpp)
 }
 
 double random_double(double min, double max)
@@ -29,10 +28,10 @@ std::string pad_num(int num, int pad)
 	return std::string(pad - ts.length(), '0') + ts;
 }
 
-std::string generate_name(std::string name, std::string folder, int version)
+std::string generate_name(const std::string& name, const std::string& folder, int version, const std::string& suffix, std::chrono::duration<double, std::nano> dur)
 {
 	time_t rawtime = time(0);
-	struct tm ltm;
+	struct tm ltm{};
 	localtime_s(&ltm, &rawtime);
 
 	std::string date_time_string = (
@@ -45,14 +44,35 @@ std::string generate_name(std::string name, std::string folder, int version)
 		pad_num(ltm.tm_sec, 2)
 		);
 
+    std::ostringstream dur_oss;
+    char fill = dur_oss.fill();
+    dur_oss.fill('0');
+    auto h = std::chrono::duration_cast<std::chrono::hours>(dur);
+    dur -= h;
+    auto m = std::chrono::duration_cast<std::chrono::minutes>(dur);
+    dur -= m;
+    auto s = std::chrono::duration_cast<std::chrono::seconds>(dur);
+    dur -= s;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur);
+
+    dur_oss << std::setw(2) << h.count() << "."
+            << std::setw(2) << m.count() << "."
+            << std::setw(2) << s.count() << ".";
+    dur_oss.fill(fill);
+
+    dur_oss << ms.count();
+
 	return (
-		folder +
-		"\\" +
-		date_time_string +
-		"_" +
+            folder +
+            "\\" +
+            date_time_string +
+            "__" +
+            dur_oss.str() +
+            "_" +
 		name +
 		"_" +
 		pad_num(version, 2) +
+        suffix +
 		".ppm"
 		);
 }

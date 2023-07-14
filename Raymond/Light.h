@@ -12,19 +12,20 @@ class Light :
 {
 public:
 	Light();
-	Light(Color color);
-	Light(Color color, double multiplier);
+	Light(const Color& color);
+	Light(const Color& color, double multiplier);
 	~Light();
 
-	//properties
+	// properties
 	Color color;
 	double multiplier;
 
 	bool falloff;
 	double cutoff;
 
-	// Methods
-	Tuple position() const;
+     // Methods
+     Tuple position() const;
+     virtual Tuple area_position() const;
 };
 
 class PointLight :
@@ -32,9 +33,16 @@ class PointLight :
 {
 public:
 	PointLight();
-	PointLight(Tuple position, Color color);
-	PointLight(Tuple position, Color color, double multiplier);
+	PointLight(const Tuple& position, const Color& color);
+	PointLight(const Tuple& position, const Color& color, double multiplier);
+    PointLight(const Tuple& position, const Color& color, double multiplier, double radius);
 	~PointLight();
+
+    // Methods
+    Tuple area_position() const override;
+
+    // properties
+    double radius;
 };
 
 //Overloaded Operators

@@ -1489,7 +1489,7 @@ TEST(Chapter06Tests, ASphereMayBeAssignedAMaterial)
 {
 	Sphere s = Sphere();
 	auto m = std::make_shared<PhongMaterial>();
-	m->ambient = 1.0;
+	m->ambient = Color(1.0);
 
 	s.material = m;
 
@@ -1725,11 +1725,11 @@ TEST(Chapter07Tests, TheColorWithAnIntersectionBehindTheRay)
 
 	std::shared_ptr<PrimitiveBase> outer = w.get_primitives()[0];
 	auto outer_mat = std::dynamic_pointer_cast<PhongMaterial>(outer->material);
-	outer_mat->ambient = 1.0;
+	outer_mat->ambient = Color(1.0);
 
 	std::shared_ptr<PrimitiveBase> inner = w.get_primitives()[1];
 	auto inner_mat = std::dynamic_pointer_cast<PhongMaterial>(inner->material);
-	inner_mat->ambient = 1.0;
+	inner_mat->ambient = Color(1.0);
 
 	Color sample = w.color_at(r);
 
@@ -2000,7 +2000,7 @@ TEST(Chapter09Tests, AssigningAMaterial)
 {
 	TestShape s = TestShape();
 	auto m = std::make_shared<PhongMaterial>();
-	m->ambient = 1.0;
+	m->ambient = Color(1.0);
 
 	s.material = m;
 
@@ -2176,7 +2176,7 @@ TEST(Chapter10Tests, LightingWithAPatternApplied)
 
 	PhongMaterial m = PhongMaterial();
 	m.color.connect(pattern);
-	m.ambient = 1.0;
+	m.ambient = Color(1.0);
 	m.diffuse = 0.0;
 	m.specular = 0.0;
 
@@ -4166,6 +4166,49 @@ TEST(SampleBuffer, StitchingBucketsWithOverflow)
 
     EXPECT_EQ(sb.pixel_at(19, 9)->get_channel(rgb), red);
     EXPECT_EQ(sb.pixel_at(19, 10)->get_channel(rgb), green);
+}
+
+TEST(SampleBuffer, StitchingBucketsWithBottomOverflow)
+{
+    AABB2D sb_extents = AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0));
+    SampleBuffer sb = SampleBuffer(20, 20, sb_extents);
+    size_t sb_size = sb.get_pixels().size();
+
+    AABB2D bk_01_extents = AABB2D(Tuple::Point2D(0.5, 0.5), Tuple::Point2D(1.5, 1.5));
+    SampleBuffer bk_01 = SampleBuffer(15, 15, 10, 10, bk_01_extents);
+
+    Color red = Color(1.0, 0.0, 0.0);
+    Color green = Color(0.0, 1.0, 0.0);
+
+    Sample smp = Sample();
+
+    smp.set_rgb(red);
+    bk_01.fill_solid(smp);
+
+    smp.set_rgb(green);
+    sb.fill_solid(smp);
+
+    sb.write_portion(bk_01);
+
+//    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
+//    canvas_to_ppm(sb.to_canvas(rgb), folder + "StitchingBucketsWithBottomOverflow.ppm", true);
+
+    EXPECT_EQ(sb.pixel_at(0, 0)->get_channel(rgb), green);
+
+    EXPECT_EQ(sb.pixel_at(14, 14)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(14, 15)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 14)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 15)->get_channel(rgb), red);
+
+    EXPECT_EQ(sb.pixel_at(14, 19)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(15, 19)->get_channel(rgb), red);
+
+    EXPECT_EQ(sb.pixel_at(19, 14)->get_channel(rgb), green);
+    EXPECT_EQ(sb.pixel_at(19, 15)->get_channel(rgb), red);
+
+    EXPECT_EQ(sb.pixel_at(19, 19)->get_channel(rgb), red);
+
+    ASSERT_EQ(sb_size, sb.get_pixels().size());
 }
 
 TEST(SampleBuffer, ToCanvas)

@@ -2,7 +2,6 @@
 #define H_RAYMOND_TUPLE
 
 #include <iostream>
-#include "math.h"
 
 #include "Constants.h"
 #include "Utilities.h"

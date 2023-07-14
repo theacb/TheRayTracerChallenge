@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "World.h"
 
 // ------------------------------------------------------------------------
@@ -15,7 +14,10 @@ World::World()
 
     // Render Settings
     this->sample_min = 1;
+    this->sample_max = 4;
     this->bucket_size = 32;
+
+    this->shadow_subdivs = 4;
 }
 
 World::~World()
@@ -54,6 +56,8 @@ World World::Default()
 Intersections World::intersect_world(const Ray & r) const
 {
 	Intersections result;
+
+    // TODO: change this to first intersect bounding boxes. Then, later, it should intersect the BVH.
 
 	for (const std::shared_ptr<PrimitiveBase> & obj: this->w_primitives_)
 	{
@@ -100,8 +104,13 @@ Sample World::shade(IxComps & comps) const
 
 	for (std::shared_ptr<Light> lgt : this->w_lights_) // NOLINT(performance-for-range-copy)
 	{
-
-		comps.shadow_multiplier = this->shadowed(lgt, comps.over_point, comps.ray_depth);
+        // Each Sample can have multiple shadow subdivs
+        Color shadow_average = Color(0.0);
+        for (int i = 0; i < this->shadow_subdivs; ++i)
+        {
+            shadow_average = shadow_average + this->shadowed(lgt, comps.over_point, comps.ray_depth);
+        }
+		comps.shadow_multiplier = (shadow_average / double(this->shadow_subdivs));
 
 		if (lgt->falloff)
 		{
@@ -192,15 +201,19 @@ bool World::is_shadowed(const std::shared_ptr<Light>& light, const Tuple & point
 
 Color World::shadowed(const std::shared_ptr<Light>& light, const Tuple & point, const int depth) const
 {
-	Tuple v = light->position() - point;
+    // Get vector between sample point and light
+	Tuple v = light->area_position() - point;
+    // Calculate distance and direction
 	double distance = v.magnitude();
 	Tuple direction = v.normalize();
 
+    // Cast a ray between the point and the light
 	Ray r = Ray(point, direction, depth);
 	Intersections ix = this->intersect_world(r);
 
 	Intersection h = ix.hit();
 
+    // If there is a hit, return transmitted light (refracted shadows)
 	if (h.is_valid() && h.t_value < distance)
 	{
 		IxComps comps = IxComps(h, r, ix);
@@ -208,7 +221,7 @@ Color World::shadowed(const std::shared_ptr<Light>& light, const Tuple & point, 
 
 		return obj_prim->material->transmit(light, *this, comps, ix);
 	}
-	return Color(1.0);
+	return {1.0};
 }
 
 // ------------------------------------------------------------------------
