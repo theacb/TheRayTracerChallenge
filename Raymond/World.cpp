@@ -13,11 +13,14 @@ World::World()
 	this->background = std::make_shared<Background>();
 
     // Render Settings
-    this->sample_min = 1;
-    this->sample_max = 4;
+    this->aa_sample_min = 1;
+    this->aa_sample_max = 4;
     this->bucket_size = 32;
 
     this->shadow_subdivs = 4;
+    this->reflection_subdivs = 1;
+    this->refraction_subdivs = 1;
+    this->gi_subdivs = 1;
 }
 
 World::~World()

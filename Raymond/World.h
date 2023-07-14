@@ -44,8 +44,8 @@ public:
 	// Public Properties
 	std::shared_ptr<Background> background;
     // Sampling
-    int sample_min, sample_max, bucket_size;
-    int shadow_subdivs;
+    int aa_sample_min, aa_sample_max, bucket_size;
+    int shadow_subdivs, reflection_subdivs, refraction_subdivs, gi_subdivs;
 
 private:
 	// private properties

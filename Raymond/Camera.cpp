@@ -181,28 +181,28 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
 
     std::cout << image << std::endl;
 
-    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
-    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
-    int i = 0;
-    for (auto & br : bucket_results)
-    {
-        SampleBuffer bucket = br.get();
-
-        std::cout << "Bucket " << i << " - " << bucket << " - [";
-
-        std::cout << "]" << std::endl;
-
-        canvas_to_ppm(bucket.to_canvas(rgb), folder + std::to_string(i) + ".ppm", true);
-        image.write_portion(bucket);
-
-        i++;
-    }
-
-//    // stitch them back together
+//    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
+//    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
+//    int i = 0;
 //    for (auto & br : bucket_results)
 //    {
-//        image.write_portion(br.get());
+//        SampleBuffer bucket = br.get();
+//
+//        std::cout << "Bucket " << i << " - " << bucket << " - [";
+//
+//        std::cout << "]" << std::endl;
+//
+//        canvas_to_ppm(bucket.to_canvas(rgb), folder + std::to_string(i) + ".ppm", true);
+//        image.write_portion(bucket);
+//
+//        i++;
 //    }
+
+    // stitch them back together
+    for (auto & br : bucket_results)
+    {
+        image.write_portion(br.get());
+    }
 
     // TODO: Figure out the box filter and process the re-sample the average across multiple pixels (distance based curve perhaps)
 
@@ -248,7 +248,7 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
         for (int bk_x = 0; bk_x < width; bk_x++)
         {
             // Multi Sample
-            for (int s = 0; s < w.sample_min; s++)
+            for (int s = 0; s < w.aa_sample_min; s++)
             {
                 // Random between 0.0 and 1.0 that translates to a pixel offset
                 double px_os_x = random_double();

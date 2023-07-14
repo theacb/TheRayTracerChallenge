@@ -30,10 +30,10 @@ public:
 	double x, y, z, w;
 
 	// Methods
-	double magnitude() const;
-	double magnitude_squared() const;
-	Tuple normalize() const;
-	Tuple multiplicative_inverse() const;
+	[[nodiscard]] double magnitude() const;
+	[[nodiscard]] double magnitude_squared() const;
+	[[nodiscard]] Tuple normalize() const;
+	[[nodiscard]] Tuple multiplicative_inverse() const;
 
 	static double dot(const Tuple & left_tuple, const Tuple & right_tuple);
 	static Tuple cross(const Tuple & left_tuple, const Tuple & right_tuple);
@@ -59,6 +59,6 @@ bool operator!=(const Tuple & left_tuple, const Tuple & right_tuple);
 Tuple operator*(const double & scalar, const Tuple & right_tuple);
 
 // Helper Functions
-double safe_divide(const double a, const double b);
+double safe_divide(double a, double b);
 
 #endif

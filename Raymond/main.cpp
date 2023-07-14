@@ -210,8 +210,8 @@ int render_still()
 
 	// 560 x 315
 
-	int width = 1280;
-	int height = 720;
+	int width = 256;
+	int height = 128;
 	double fov = 90.0;
 
 	std::cout << "Executing Render " << chapter << " v" << pad_num(version, 2) << std::endl << std::endl;
@@ -223,9 +223,9 @@ int render_still()
 	std::cout << "Building World...\n";
 	World w = render_ch13_world();
 
-    w.sample_min = 8;
+    w.aa_sample_min = 4;
 
-    w.shadow_subdivs = 4;
+    w.shadow_subdivs = 2;
 
 	// Execution
 	SampleBuffer image;
