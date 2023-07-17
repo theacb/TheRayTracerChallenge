@@ -1,8 +1,8 @@
 #ifndef H_RAYMOND_TUPLE
 #define H_RAYMOND_TUPLE
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 #include "Constants.h"
 #include "Utilities.h"
@@ -31,9 +31,9 @@ public:
 
 	// Methods
 	[[nodiscard]] double magnitude() const;
-	[[nodiscard]] double magnitude_squared() const;
-	[[nodiscard]] Tuple normalize() const;
-	[[nodiscard]] Tuple multiplicative_inverse() const;
+    [[nodiscard]] double magnitude_squared() const;
+    [[nodiscard]] Tuple normalize() const;
+    [[nodiscard]] Tuple multiplicative_inverse() const;
 
 	static double dot(const Tuple & left_tuple, const Tuple & right_tuple);
 	static Tuple cross(const Tuple & left_tuple, const Tuple & right_tuple);

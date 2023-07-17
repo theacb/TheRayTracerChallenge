@@ -119,22 +119,22 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
     int horizontal_buckets = std::ceil(double(this->c_h_size_) / double(w.bucket_size));
     int vertical_buckets = std::ceil(double(this->c_v_size_) / double(w.bucket_size));
 
-    int num_buckets = horizontal_buckets * vertical_buckets;
+    int total_buckets = horizontal_buckets * vertical_buckets;
 
     unsigned int c = std::thread::hardware_concurrency();
 
     auto bucket_results = std::vector<std::future<SampleBuffer>>();
 
     // lambda to execute rendering of the line
-    auto f = [](const Camera * camera, const World & w, int x, int y, int width, int height, int bucket_id, int total_buckets)
+    auto f = [](const Camera * l_camera, const World & l_w, int l_x, int l_y, int l_width, int l_height, int l_bucket_id, int l_total_buckets)
             {
                 std::ostringstream oss;
-                oss << "Starting Bucket: " << bucket_id << "/" << total_buckets
-                << " - Start Coordinates: (" << x << ", "<< y << ") - Dimensions ["
-                << width << ", " << height << "]" << std::endl;
+                oss << "Starting Bucket: " << l_bucket_id << "/" << l_total_buckets
+                    << " - Start Coordinates: (" << l_x << ", " << l_y << ") - Dimensions ["
+                    << l_width << ", " << l_height << "]" << std::endl;
 
                 std::cout << oss.str();
-                return camera->multi_sample_render_bucket(w, x, y, width, height, bucket_id);
+                return l_camera->multi_sample_render_bucket(l_w, l_x, l_y, l_width, l_height, l_bucket_id);
             };
 
     // Queue up all the lines
@@ -150,23 +150,27 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
             // This ensures that the overflow is not rendered, as that may result in thousands of discarded pixels
             if (x == horizontal_buckets - 1)
             {
-                width = int(fmod(double(this->c_h_size_), double(w.bucket_size))) - 1;
+                int mod = int(fmod(double(this->c_h_size_), double(w.bucket_size)));
+                width = (mod == 0) ? w.bucket_size : mod;
             }
             if (y == vertical_buckets - 1)
             {
-                height = int(fmod(double(this->c_v_size_), double(w.bucket_size))) - 1;
+                int mod = int(fmod(double(this->c_h_size_), double(w.bucket_size)));
+                height = (mod == 0) ? w.bucket_size : mod;
             }
 
-            if (width >= 0 && height >= 0)
+            // Prevent buckets with no pixels
+            if (width > 0 && height > 0)
             {
+                // Calculate the number of this bucket
+                int bucket_id = (x * vertical_buckets) + y + 1;
+
                 // Offset of the bucket from top left (0, 0)
                 int x_offset = x * w.bucket_size;
                 int y_offset = y * w.bucket_size;
 
-                int bucket_id = (x * vertical_buckets) + y;
-
                 // Adds bucket to the queue
-                bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, bucket_id, num_buckets));
+                 bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, bucket_id, total_buckets));
             }
         }
     }

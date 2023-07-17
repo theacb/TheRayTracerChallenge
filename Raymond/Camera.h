@@ -32,7 +32,7 @@ public:
 	Canvas render_scanline(const World & w, int line) const;
 
     SampleBuffer multi_sample_render_bucket(const World & w, int x, int y, int width, int height, int bucket_id) const;
-    SampleBuffer multi_sample_threaded_render(const World & w) const;
+    SampleBuffer multi_sample_threaded_render(const World & l_camera) const;
 
 	// Accessors
 	int get_horizontal_size() const;

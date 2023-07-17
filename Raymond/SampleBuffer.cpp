@@ -290,7 +290,7 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
                 bucket_end_index -= (maximum_line_index_int - result_index_int);
             }
 
-            // Debugging print (only uncomment in the case of a problem with this method)
+//            // Debugging print (only uncomment in the case of a problem with this method)
 //            std::cout << "X: " << x << " Y: " << y << " - Bucket size: (" << bucket.width() << ", " << bucket.height()
 //                      << ") - Line Max: " << std::distance(this->sb_pixels_.begin(), maximum_line_index)
 //                      << " - Truncating: " << (overflow_y)
@@ -300,7 +300,7 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
 //                      << " - Result index: " << std::distance(this->sb_pixels_.begin(), this_result_index)
 //                      << std::endl;
 
-            std::copy(bucket_start_index, bucket_end_index, this_result_index);
+            std::move(bucket_start_index, bucket_end_index, this_result_index);
         }
     }
 }

@@ -75,7 +75,7 @@ Tuple TransformController::normal_vector_to_world_space(const Tuple & v) const
 {
 	Tuple nor = this->x_inverse_transform_.transpose() * v;
 	nor.w = 0;
-	nor.normalize();
+	nor = nor.normalize();
 	return nor;
 }
 
