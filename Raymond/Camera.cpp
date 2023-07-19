@@ -167,43 +167,26 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
                 int y_offset = y * w.bucket_size;
 
                 // Adds bucket to the queue
-                 bucket_results.push_back(std::async(f, this, w, x_offset, y_offset, width, height, bucket_id, total_buckets));
+                 bucket_results.push_back(std::async(std::launch::async,f, this, w, x_offset, y_offset, width, height, bucket_id, total_buckets));
             }
         }
     }
 
-    std::ostringstream oss;
-    oss << "Stitching final image from " << bucket_results.size() << " buckets.\n";
-    std::cout << oss.str();
-
     // Create bounding box and final SampleBuffer
     AABB2D extents = this->extent_from_bucket_(0, 0, this->c_h_size_, this->c_v_size_);
     SampleBuffer image = SampleBuffer(0, 0, this->c_h_size_, this->c_v_size_, extents);
-
-    std::cout << image << std::endl;
-
-//    std::cout << "Pixel size: " << this->c_pixel_size_ << std::endl;
-//    std::string folder = R"(I:\projects\Raymond\frames\dump\)";
-//    int i = 0;
-//    for (auto & br : bucket_results)
-//    {
-//        SampleBuffer bucket = br.get();
-//
-//        std::cout << "Bucket " << i << " - " << bucket << " - [";
-//
-//        std::cout << "]" << std::endl;
-//
-//        canvas_to_ppm(bucket.to_canvas(rgb), folder + std::to_string(i) + ".ppm", true);
-//        image.write_portion(bucket);
-//
-//        i++;
-//    }
 
     // stitch them back together
     for (auto & br : bucket_results)
     {
         image.write_portion(br.get());
     }
+
+    std::ostringstream oss;
+    oss << "Stitching final image from " << bucket_results.size() << " buckets.\n";
+    std::cout << oss.str();
+
+    std::cout << image << std::endl;
 
     std::cout << "Imaged stitched!\n";
 
@@ -246,13 +229,9 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
 
         for (int bk_x = 0; bk_x < width; bk_x++)
         {
-            // Multi Sample
-            int s = 0;
-            bool noise_threshold_reached = false;
 
             // While the noise threshold has not been reached, and the sample number is below the minimum
-            while((! noise_threshold_reached) && (s < w.aa_sample_min))
-            {
+            for (int i = 0; i < w.aa_sample_max; ++i) {
                 // Random between 0.0 and 1.0 that translates to a pixel offset
                 // TODO: Implement a Lanczos transform that spreads samples outside of the pixel (Filter Importance Sampling)
                 // TODO: This function should take a 0.0-1.0 value and the sample size to produce a pleasant distribution
@@ -273,9 +252,9 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
                 bucket.write_sample(bk_x, bk_y, sample);
 
                 // Test samples to determine if the noise threshold has been reached
-                noise_threshold_reached = bucket.test_noise_threshold(bk_x, bk_y, w.noise_threshold);
+                if (bucket.test_noise_threshold(bk_x, bk_y, w.noise_threshold) && i > w.aa_sample_min)
+                    break;
 
-                s++;
             }
         }
     }
@@ -284,6 +263,11 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
     {
         s->full_average();
     }
+
+    std::ostringstream oss;
+    oss << "Bucket: " << bucket_id << " Completed!" << std::endl;
+
+    std::cout << oss.str();
 
     return bucket;
 }

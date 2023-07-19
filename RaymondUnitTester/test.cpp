@@ -4241,3 +4241,148 @@ TEST(SampleBuffer, ToCanvasExtraChannel)
 // ------------------------------------------------------------------------
 // Multisample Rendering
 // ------------------------------------------------------------------------
+
+TEST(BoundingBox, ARayIntersectsASphereAtTwoPoints)
+{
+    Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        std::vector<double> xs = S.intersect_t(r);
+
+        ASSERT_EQ(xs.size(), 2);
+        ASSERT_TRUE(flt_cmp(xs[0], 4.0));
+        ASSERT_TRUE(flt_cmp(xs[1], 6.0));
+    }
+}
+
+TEST(BoundingBox, ARayIntersectsASphereAtATangent)
+{
+    Ray r = Ray(Tuple::Point(0.0, 1.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        std::vector<double> xs = S.intersect_t(r);
+
+        ASSERT_EQ(xs.size(), 2);
+        ASSERT_TRUE(flt_cmp(xs[0], 5.0)) << xs[0];
+        ASSERT_TRUE(flt_cmp(xs[1], 5.0)) << xs[1];
+    }
+}
+
+TEST(BoundingBox, ARayHitsABoundingBoxButMissesASphere)
+{
+    Ray r = Ray(Tuple::Point(0.9, 0.9, -5.0), Tuple::Vector(0.9, 0.9, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        std::vector<double> xs = S.intersect_t(r);
+
+        ASSERT_EQ(xs.size(), 0);
+    }
+}
+
+TEST(BoundingBox, ARayMissesASphere)
+{
+    Ray r = Ray(Tuple::Point(0.0, 2.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    ASSERT_FALSE(bb_hit);
+
+}
+
+TEST(BoundingBox, ARayOriginatesInsideASphere)
+{
+    Ray r = Ray(Tuple::Point(0.0, 0.0, 0.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        std::vector<double> xs = S.intersect_t(r);
+
+        ASSERT_EQ(xs.size(), 2);
+        ASSERT_TRUE(flt_cmp(xs[0], -1.0));
+        ASSERT_TRUE(flt_cmp(xs[1], 1.0));
+    }
+}
+
+TEST(BoundingBox, ASphereIsBehindARay)
+{
+    Ray r = Ray(Tuple::Point(0.0, 0.0, 5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    Sphere S = Sphere();
+
+    bool bb_hit = S.get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        std::vector<double> xs = S.intersect_t(r);
+
+        ASSERT_EQ(xs.size(), 2);
+        ASSERT_TRUE(flt_cmp(xs[0], -6.0));
+        ASSERT_TRUE(flt_cmp(xs[1], -4.0));
+    }
+}
+
+TEST(BoundingBox, IntersectingAScaledSphereWithARay)
+{
+    Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    auto S = std::make_shared<Sphere>(Sphere());
+
+    Matrix4 t = Matrix4::Scaling(2.0, 2.0, 2.0);
+
+    S->set_transform(t);
+    S->get_definition()->bounding_box().transform(t);
+
+    bool bb_hit = S->get_definition()->bounding_box().intersect(r);
+    EXPECT_TRUE(bb_hit);
+
+    if (bb_hit)
+    {
+        Intersections xs = intersect(r, S);
+
+        ASSERT_EQ(xs.size(), 2);
+
+        ASSERT_TRUE(flt_cmp(xs[0].t_value, 3.0)) << xs[0].t_value;
+        ASSERT_TRUE(flt_cmp(xs[1].t_value, 7.0));
+    }
+}
+
+TEST(BoundingBox, IntersectingATranslatedSphereWithARay)
+{
+    Ray r = Ray(Tuple::Point(0.0, 0.0, -5.0), Tuple::Vector(0.0, 0.0, 1.0));
+
+    auto S = std::make_shared<Sphere>(Sphere());
+
+    Matrix4 t = Matrix4::Translation(5.0, 0.0, 0.0);
+    S->get_definition()->bounding_box().transform(t);
+
+    S->set_transform(t);
+
+    bool bb_hit = S->get_definition()->bounding_box().intersect(r);
+    EXPECT_FALSE(bb_hit);
+
+}

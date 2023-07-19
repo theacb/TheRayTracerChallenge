@@ -8,7 +8,7 @@ class BoundingBox
 {
 public:
 	BoundingBox();
-	BoundingBox(Tuple min, Tuple max);
+	BoundingBox(const Tuple& min, const Tuple& max);
 	~BoundingBox();
 
 	// Properties

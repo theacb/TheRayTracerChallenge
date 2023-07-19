@@ -149,11 +149,16 @@ Intersections ObjectBase::intersect_i(const Ray & r)
 	// Transform ray to object space
 	Ray transformed_ray = this->ray_to_object_space(r);
 
+    if (! this->o_definition_->bounding_box().intersect(r))
+    {
+        return {};
+    }
+
 	// Calculate intersections for the parent object (this)
 	Intersections result = Intersections(this->o_definition_->local_intersect_t(transformed_ray), this->get_ptr());
 
 	// Calculate Intersections for Child objects using the transformed Ray
-	for (std::shared_ptr<ObjectBase> obj : this->o_children_)
+	for (const std::shared_ptr<ObjectBase>& obj : this->o_children_)
 	{
 		// generates an intersection for each object in the scene
 		Intersections obj_xs = obj->intersect_i(transformed_ray);

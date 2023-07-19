@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "BoundingBox.h"
 
 // ------------------------------------------------------------------------
@@ -13,15 +12,14 @@ BoundingBox::BoundingBox() : BoundingBox(Tuple::Point(-1.0, -1.0, -1.0), Tuple::
 {
 }
 
-BoundingBox::BoundingBox(Tuple min, Tuple max)
+BoundingBox::BoundingBox(const Tuple& min, const Tuple& max)
 {
 	this->minimum = min;
 	this->maximum = max;
 }
 
 BoundingBox::~BoundingBox()
-{
-}
+= default;
 
 // ------------------------------------------------------------------------
 // Methods
@@ -29,7 +27,8 @@ BoundingBox::~BoundingBox()
 
 void BoundingBox::transform(const Matrix4 & m)
 {
-
+    this->minimum = m * this->minimum;
+    this->maximum = m * this->maximum;
 }
 
 // Code by Tavian Barnes from Fast, Branchless Ray/Bounding Box Intersections, Part 2: NaNs
@@ -68,5 +67,4 @@ BoundingVolumeNode::BoundingVolumeNode()
 }
 
 BoundingVolumeNode::~BoundingVolumeNode()
-{
-}
+= default;

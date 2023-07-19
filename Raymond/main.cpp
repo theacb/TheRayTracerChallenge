@@ -223,7 +223,8 @@ int render_still()
 	std::cout << "Building World...\n";
 	World w = render_ch13_world();
 
-    w.aa_sample_min = 8;
+    w.aa_sample_min = 4;
+    w.aa_sample_max = 32;
 
     w.shadow_subdivs = 8;
 

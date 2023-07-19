@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "PrimitiveDefinition.h"
 
 // ------------------------------------------------------------------------
@@ -76,7 +75,7 @@ Tuple SphereDefinition::local_normal_at(const Tuple & object_space_point) const
 
 BoundingBox SphereDefinition::bounding_box() const
 {
-	return {Tuple::Point(-1.0, -1.0, -1.0), Tuple::Point(1.0, 1.0, 1.0)};
+	return {Tuple::Point(-1.05, -1.05, -1.05), Tuple::Point(1.05, 1.05, 1.05)};
 }
 
 // ------------------------------------------------------------------------
@@ -258,7 +257,7 @@ std::vector<double> CylinderDefinition::local_intersect_t(const Ray & r) const
 
 	double a = (r.direction.x * r.direction.x) + (r.direction.z * r.direction.z);
 
-	// return a miss if a is 0
+	// return a miss if "a" is 0
 	if (abs(a) > std::numeric_limits<double>::epsilon())
 	{
 		double b = (2.0 * r.origin.x * r.direction.x) + (2.0 * r.origin.z * r.direction.z);
@@ -301,7 +300,7 @@ std::vector<double> CylinderDefinition::local_intersect_t(const Ray & r) const
 		}
 	}
 
-	// Caps only matter if the cylinder is closed, and might possibly be 
+	// Caps only matter if the cylinder is closed, and might be
 	// intersected by the ray
 	if (this->closed && abs(r.direction.y) > 0.0)
 	{
@@ -401,7 +400,7 @@ std::vector<double> DoubleNappedConeDefinition::local_intersect_t(const Ray & r)
 	double b = (2.0 * r.origin.x * r.direction.x) - (2.0 * r.origin.y * r.direction.y) + (2.0 * r.origin.z * r.direction.z);
 	double c = (r.origin.x * r.origin.x) - (r.origin.y * r.origin.y) + (r.origin.z * r.origin.z);
 
-	// return a miss if a is 0
+	// return a miss if "a" is 0
 	if (abs(a) > std::numeric_limits<double>::epsilon())
 	{
 		double disc = (b * b) - 4.0 * a * c;
@@ -452,7 +451,7 @@ std::vector<double> DoubleNappedConeDefinition::local_intersect_t(const Ray & r)
 		}
 	}
 
-	// Caps only matter if the cylinder is closed, and might possibly be 
+	// Caps only matter if the cylinder is closed, and might be
 	// intersected by the ray
 	if (this->closed && abs(r.direction.y) > 0.0)
 	{
@@ -519,7 +518,7 @@ void DoubleNappedConeDefinition::intersect_caps_(const Ray & r, std::vector<doub
 
 bool DoubleNappedConeDefinition::check_caps_(const Ray & r, const double & t, const double & radius)
 {
-	// Checks to see if the intersection at 't' is within the radius of the Cone cap
+	// Checks to see if the intersection at "t" is within the radius of the Cone cap
 	// Prevents duplications on a corner hit
 	double x = r.origin.x + (t * r.direction.x);
 	double z = r.origin.z + (t * r.direction.z);
@@ -559,5 +558,5 @@ Tuple NullShapeDefinition::local_normal_at(const Tuple & object_space_point) con
 
 BoundingBox NullShapeDefinition::bounding_box() const
 {
-	return {Tuple::Point(0.0, 0.0, 0.0), Tuple::Point(0.0, 0.0, 0.0)};;
+	return {Tuple::Point(0.0, 0.0, 0.0), Tuple::Point(0.0, 0.0, 0.0)};
 }
