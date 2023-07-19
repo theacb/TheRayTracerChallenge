@@ -90,7 +90,6 @@ Canvas Camera::render(const World & w) const
 Canvas Camera::threaded_render(const World & w) const
 {
 	Canvas image = Canvas(this->c_h_size_, this->c_v_size_);
-	unsigned int c = std::thread::hardware_concurrency();
 
 	auto line_results = std::vector<std::future<Canvas>>();
 
@@ -120,8 +119,6 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
     int vertical_buckets = std::ceil(double(this->c_v_size_) / double(w.bucket_size));
 
     int total_buckets = horizontal_buckets * vertical_buckets;
-
-    unsigned int c = std::thread::hardware_concurrency();
 
     auto bucket_results = std::vector<std::future<SampleBuffer>>();
 
@@ -208,8 +205,6 @@ SampleBuffer Camera::multi_sample_threaded_render(const World &w) const
         image.write_portion(br.get());
     }
 
-    // TODO: Figure out the box filter and process the re-sample the average across multiple pixels (distance based curve perhaps)
-
     std::cout << "Imaged stitched!\n";
 
     return image;
@@ -252,25 +247,35 @@ SampleBuffer Camera::multi_sample_render_bucket(const World & w, int x, int y, i
         for (int bk_x = 0; bk_x < width; bk_x++)
         {
             // Multi Sample
-            for (int s = 0; s < w.aa_sample_min; s++)
+            int s = 0;
+            bool noise_threshold_reached = false;
+
+            // While the noise threshold has not been reached, and the sample number is below the minimum
+            while((! noise_threshold_reached) && (s < w.aa_sample_min))
             {
                 // Random between 0.0 and 1.0 that translates to a pixel offset
-                double px_os_x = random_double();
-                double px_os_y = random_double();
+                // TODO: Implement a Lanczos transform that spreads samples outside of the pixel (Filter Importance Sampling)
+                // TODO: This function should take a 0.0-1.0 value and the sample size to produce a pleasant distribution
+                // TODO: Link this to world.sample_size
+                double px_os_x = random_double() * w.sample_size;
+                double px_os_y = random_double() * w.sample_size;
 
                 // Casts ray to a random point within the pixel
-                // TODO: This is not delivering the correct offsets per bucket and seems to be rendering the same tile over and over again
                 Ray r = this->ray_from_pixel(bk_x + x, bk_y + y, px_os_x, px_os_y);
                 // Samples at the Ray
                 Sample sample = w.sample_at(r);
                 // Assign origin coordinate
                 sample.CanvasOrigin = bucket.coordinates_from_pixel(bk_x, bk_y, px_os_x, px_os_y);
-                sample.WorldOrigin = r.origin;
                 sample.BucketID = bucket_id;
                 sample.calculate_sample();
 
                 // Write to bucket
                 bucket.write_sample(bk_x, bk_y, sample);
+
+                // Test samples to determine if the noise threshold has been reached
+                noise_threshold_reached = bucket.test_noise_threshold(bk_x, bk_y, w.noise_threshold);
+
+                s++;
             }
         }
     }

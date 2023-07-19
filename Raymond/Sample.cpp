@@ -17,7 +17,7 @@ Sample::Sample(const Tuple & canvas_origin)
 	this->name = "default sample";
 
 	this->CanvasOrigin = canvas_origin;
-    this->WorldOrigin = Tuple::Point(0.0, 0.0, 0.0);
+    Tuple::Point(0.0, 0.0, 0.0);
 
 	this->s_rgb_ = Color(0.0);
 	this->Alpha = 0.0;
@@ -46,7 +46,6 @@ Sample::Sample(const Sample & src)
 	this->name = src.name;
 
 	this->CanvasOrigin = src.CanvasOrigin;
-    this->WorldOrigin = src.WorldOrigin;
 
 	this->s_rgb_ = src.get_current_rgb();
 	this->Alpha = src.Alpha;
@@ -160,7 +159,6 @@ Sample Sample::operator*(const Sample & right_sample) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ * right_sample.get_current_rgb());
@@ -188,7 +186,6 @@ Sample Sample::operator/(const Sample & right_sample) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ / right_sample.get_current_rgb());
@@ -216,7 +213,6 @@ Sample Sample::operator+(const Sample & right_sample) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ + right_sample.get_current_rgb());
@@ -244,7 +240,6 @@ Sample Sample::operator-(const Sample & right_sample) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ - right_sample.get_current_rgb());
@@ -272,7 +267,6 @@ Sample Sample::operator*(const double & scalar) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ * scalar);
@@ -300,7 +294,6 @@ Sample Sample::operator/(const double & scalar) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ / scalar);
@@ -328,7 +321,6 @@ Sample Sample::operator+(const double & scalar) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ + scalar);
@@ -356,7 +348,6 @@ Sample Sample::operator-(const double & scalar) const
 {
 	Sample result = Sample(this->CanvasOrigin);
 
-    result.WorldOrigin = this->WorldOrigin;
     result.BucketID = this->BucketID;
 
 	result.set_rgb(this->s_rgb_ - scalar);
@@ -410,7 +401,6 @@ std::ostream & operator<<(std::ostream & os, const Sample & s)
 		<< ", Rafr Filter: " << s.RefractionFilter
         << ", Bucket ID: " << s.BucketID
         << ", Canvas Origin: " << s.CanvasOrigin
-        << ", World Origin: " << s.WorldOrigin
 		<< " ]";
 	return os;
 }

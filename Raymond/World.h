@@ -46,6 +46,7 @@ public:
     // Sampling
     int aa_sample_min, aa_sample_max, bucket_size;
     int shadow_subdivs, reflection_subdivs, refraction_subdivs, gi_subdivs;
+    double sample_size, noise_threshold;
 
 private:
 	// private properties

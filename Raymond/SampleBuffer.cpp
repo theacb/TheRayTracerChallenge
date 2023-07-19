@@ -9,19 +9,8 @@
 // Constructors
 // ------------------------------------------------------------------------
 
-SampledPixel::SampledPixel() : SampledPixel(AABB2D(Tuple::Point2D(0.0, 0.0), Tuple::Point2D(1.0, 1.0)))
+SampledPixel::SampledPixel()
 {
-}
-
-SampledPixel::SampledPixel(const Tuple& top_left, const Tuple& bottom_right) : SampledPixel(AABB2D(top_left, bottom_right))
-{
-}
-
-SampledPixel::SampledPixel(const AABB2D& range)
-{
-	this->sp_subdivs_ = 1;
-	this->sp_sub_samples_ = QuadBranch<Sample>(range, 4);
-
 	this->sp_average_ = Sample();
 }
 
@@ -32,11 +21,9 @@ SampledPixel::~SampledPixel()
 // Methods
 // ------------------------------------------------------------------------
 
-void SampledPixel::write_sample(const Sample& sample)
+void SampledPixel::add_sample(const Sample& sample)
 {
-	auto qn = std::make_shared<QuadNode<Sample>>(sample.CanvasOrigin, sample);
-
-	this->sp_sub_samples_.insert(qn);
+    this->sp_samples_vec_.push_back(sample);
 }
 
 
@@ -56,84 +43,57 @@ Sample SampledPixel::get_calculated_average() const
 
 std::vector<Sample> SampledPixel::get_samples() const
 {
-	return SampledPixel::nodes_to_samples(this->sp_sub_samples_.get_all_nodes());
+	return this->sp_samples_vec_;
 }
 
-std::vector<Sample> SampledPixel::query_range(const AABB2D &range) const
-{
-	return SampledPixel::nodes_to_samples(this->sp_sub_samples_.query_range(range));
-}
-
-void SampledPixel::quick_average()
-{
-    this->quick_average(this->get_samples());
-}
-
-AABB2D SampledPixel::get_bounds() const {
-    return this->sp_sub_samples_.get_bounds();
-}
-
-void SampledPixel::quick_average(const std::vector<Sample> & sample_group)
+Color SampledPixel::quick_average() const
 {
 	// Because this is a quick average, it only averages the RGB color channel.
 	// This is then placed into a copy of the first sample in the list
 	// Use for noise threshold calculation
-	Sample base = Sample(sample_group[0]);
 
-    if (! sample_group.empty()) {
-        Color mean = base.get_current_rgb();
+    if (! this->sp_samples_vec_.empty()) {
+        Color mean = this->sp_samples_vec_[0].get_current_rgb();
 
-        for (int i = 1; i < sample_group.size(); ++i) {
-            mean = mean + sample_group[i].get_current_rgb();
+        for (int i = 1; i < this->sp_samples_vec_.size(); ++i)
+        {
+            mean = mean + this->sp_samples_vec_[i].get_current_rgb();
         }
 
-        mean = mean / static_cast<double>(sample_group.size());
+        mean = mean / double(this->sp_samples_vec_.size());
 
-        base.set_rgb(mean);
-
-        this->sp_average_ = base;
+        return mean;
     }
+    return {};
 }
 
 void SampledPixel::full_average()
 {
-    this->full_average(this->get_samples());
-}
-
-void SampledPixel::full_average(const std::vector<Sample>& sample_group)
-{
 	// This averages every channel, so it is much slower than quick average
 	// Use for final channel calculation
 
-    if (! sample_group.empty())
+    if (! this->sp_samples_vec_.empty())
     {
-        Sample mean = sample_group[0];
+        Sample mean = this->sp_samples_vec_[0];
 
         // Add up samples
-        for (int i = 1; i < sample_group.size(); ++i) {
-            mean = mean + sample_group[i];
+        for (int i = 1; i < this->sp_samples_vec_.size(); ++i)
+        {
+            mean = mean + this->sp_samples_vec_[i];
         }
 
-        mean = mean / static_cast<double>(sample_group.size());
+        mean = mean / double(this->sp_samples_vec_.size());
 
         this->sp_average_ = mean;
     }
 }
 
-std::vector<Sample> SampledPixel::nodes_to_samples(const std::vector<std::shared_ptr<QuadNode<Sample>>>& nodes)
+bool SampledPixel::test_noise_threshold(const double &noise_threshold) const
 {
-	std::vector<Sample> sample_vec = std::vector<Sample>();
-	sample_vec.reserve(nodes.size());
-
-	for (const auto & node : nodes)
-	{
-		sample_vec.push_back(node->data);
-	}
-
-	return sample_vec;
+    Color average = this->quick_average();
+    // TODO: Implement a noise test function
+    return false;
 }
-
-
 
 
 // ------------------------------------------------------------------------
@@ -156,9 +116,10 @@ SampleBuffer::SampleBuffer(const SampleBuffer & src)
     this->sb_x_pos_ = src.x_position();
     this->sb_y_pos_ = src.y_position();
 
-	this->sb_total_size_ = this->sb_width_ * this->sb_height_;
+	this->sb_total_size_ = src.width() * src.height();
     this->sb_longest_side_ = (this->sb_width_ > this->sb_height_) ? this->sb_width_ : this->sb_height_;
 
+    this->sb_pixels_.resize(this->sb_total_size_);
 	this->sb_pixels_ = src.get_pixels();
 
 	this->sb_extents_ = src.extents();
@@ -183,9 +144,8 @@ SampleBuffer::SampleBuffer(int x, int y, int grid_width, int grid_height, const 
     this->sb_pixel_size_ = extents.width / static_cast<double>(grid_width);
 
     this->sb_pixels_ = std::vector<std::shared_ptr<SampledPixel>>();
-    this->sb_pixels_.resize(this->sb_total_size_);
-
     this->sb_initialize_elements_();
+
 }
 
 SampleBuffer::~SampleBuffer()
@@ -198,7 +158,7 @@ SampleBuffer::~SampleBuffer()
 void SampleBuffer::write_sample(int x, int y, const Sample& sample)
 {
 	std::shared_ptr<SampledPixel> sp = this->sb_get_element_(x, y);
-	sp->write_sample(sample);
+    sp->add_sample(sample);
 }
 
 void SampleBuffer::write_sample(const Sample& sample)
@@ -212,9 +172,7 @@ void SampleBuffer::write_sample(const Sample& sample)
 
 	std::shared_ptr<SampledPixel> sp = this->sb_get_element_(x, y);
 
-    AABB2D box = sp->get_bounds();
-
-	sp->write_sample(sample);
+    sp->add_sample(sample);
 }
 
 void SampleBuffer::write_pixel(int x, int y, std::shared_ptr<SampledPixel> pixel)
@@ -252,10 +210,6 @@ void SampleBuffer::write_portion(const SampleBuffer & grid)
 
 void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
 {
-    // TODO: Update the pixel bounds - yes, will need this for filtering samples
-    // TODO: This is now working but still leaving un-stitched buckets on the edges of the buffer
-    // if (y >= 0 && y + bucket.height() < this->sb_height_ && x >= 0 && x + bucket.width() < this->sb_width_)
-
     // Bucket Data
     std::vector<std::shared_ptr<SampledPixel>> pixels = bucket.get_pixels();
 
@@ -307,9 +261,6 @@ void SampleBuffer::write_portion(int x, int y, const SampleBuffer & bucket)
 
 void SampleBuffer::fill_solid(const Sample & sample)
 {
-    // Reset Buffer
-    this->sb_initialize_elements_();
-
     // Fills the entire buffer with copies of one sample
     int i = 0;
     for (std::shared_ptr<SampledPixel> & p : this->sb_pixels_)
@@ -317,7 +268,7 @@ void SampleBuffer::fill_solid(const Sample & sample)
         Sample smp = Sample(sample);
         smp.CanvasOrigin = this->coordinates_from_index(i);
 
-        p->write_sample(smp);
+        p->add_sample(smp);
         p->full_average();
 
         i++;
@@ -383,10 +334,9 @@ Tuple SampleBuffer::coordinates_from_index(const int &i) const
     return this->sb_pixel_center_point_(this->sb_x_from_index_(i), sb_y_from_index_(i));
 }
 
-bool SampleBuffer::test_noise_threshold(const int &i, const double &noise_threshold) const
+bool SampleBuffer::test_noise_threshold(const int & x, const int & y, const double & noise_threshold) const
 {
-    // TODO: Implement a noise test function
-    return false;
+    return this->sb_get_element_(x, y)->test_noise_threshold(noise_threshold);
 }
 
 // ------------------------------------------------------------------------
@@ -437,6 +387,11 @@ std::shared_ptr<SampledPixel> SampleBuffer::sb_get_element_(int x, int y)
 	return this->sb_pixels_.at(this->sb_index_from_coordinates_(x, y));
 }
 
+std::shared_ptr<SampledPixel> SampleBuffer::sb_get_element_(int x, int y) const
+{
+    return this->sb_pixels_.at(this->sb_index_from_coordinates_(x, y));
+}
+
 Tuple SampleBuffer::sb_pixel_center_point_(int x, int y) const
 {
 	Tuple raw = Tuple::Point2D((x + 0.5) * this->sb_pixel_size_, (y + 0.5) * sb_pixel_size_);
@@ -483,12 +438,13 @@ int SampleBuffer::sb_y_from_index_(int i) const
 
 void SampleBuffer::sb_initialize_elements_()
 {
+    // Resizes the buffer to fit the total number of elements
+    this->sb_pixels_.resize(this->sb_total_size_);
+
     // Fill the buffer with SamplePixels that have had their areas initialized to their pixel's AABB
     for (int i = 0; i < this->sb_total_size_; i++)
     {
-        Tuple center = this->coordinates_from_index(i);
-        AABB2D range = AABB2D(center, this->sb_pixel_size_ * 0.5);
-        this->sb_pixels_[i] = std::make_shared<SampledPixel>(range);
+        this->sb_pixels_[i] = std::make_shared<SampledPixel>();
     }
 }
 

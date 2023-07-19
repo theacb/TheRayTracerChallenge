@@ -106,3 +106,24 @@ bool flt_cmp(const double & left_double, const double & right_double)
 {
 	return fabs(left_double - right_double) < EPSILON;
 }
+
+double SincFunction(double x)
+{
+    // Absolute value
+    x = fabs(x);
+    // If 0, return 0
+    if (flt_cmp(x, 0.0))
+        return 0.0;
+
+    // sin of x divided by x
+    return (sin(M_PI * x)) / M_PI * x;
+}
+
+double LanczosFunction(double x, double a)
+{
+    // a = filter size
+    if ((-1 * a) < x && x < a)
+        return SincFunction(M_PI * x) * SincFunction((M_PI * x) / a);
+    else
+        return 0.0;
+}

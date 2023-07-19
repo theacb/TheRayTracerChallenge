@@ -7,8 +7,6 @@
 #include "Constants.h"
 #include "Utilities.h"
 
-// TODO: Figure out why switching from "math.h" to cmath does not commit with git
-
 class Tuple
 {
 public:

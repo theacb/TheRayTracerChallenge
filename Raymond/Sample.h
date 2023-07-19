@@ -63,7 +63,6 @@ public:
     Color Refraction;
     double RefractionFilter;
 
-    Tuple WorldOrigin;
     Tuple CanvasOrigin;
 
 private:

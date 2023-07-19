@@ -21,6 +21,8 @@ World::World()
     this->reflection_subdivs = 1;
     this->refraction_subdivs = 1;
     this->gi_subdivs = 1;
+    this->sample_size = 1.5;
+    this->noise_threshold = 0.01;
 }
 
 World::~World()

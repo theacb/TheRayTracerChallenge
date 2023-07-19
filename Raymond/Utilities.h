@@ -56,4 +56,10 @@ inline T remap(const T & value, const T & in_min, const T & in_max, const T & ou
 	return out_min + (out_max - out_min) * ((value - in_min) / (in_max - in_min));
 }
 
+// Filters
+
+double SincFunction(double x);
+
+double LanczosFunction(double x, double a);
+
 #endif
